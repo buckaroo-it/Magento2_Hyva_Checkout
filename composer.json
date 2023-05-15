@@ -1,0 +1,39 @@
+{
+    "name": "buckaroo/magento2-hyva-checkout",
+    "description": "Buckaroo Magento 2 hyva checkout extension",
+    "require": {
+        "php": "~8.1.0"
+    },
+    "type": "magento2-module",
+    "license": "CC-BY-NC-ND-3.0",
+    "authors": [
+        {
+            "name": "Buckaroo",
+            "email": "support@buckaroo.nl",
+            "homepage": "https://www.buckaroo.nl"
+        }
+    ],
+    "support": {
+        "email": "support@buckaroo.nl",
+        "issues": "https://support.buckaroo.nl/contact",
+        "wiki": "https://support.buckaroo.nl",
+        "docs": "https://support.buckaroo.nl"
+    },
+    "homepage": "https://www.buckaroo.nl",
+    "version" : "v1.0.0",
+    "minimum-stability": "stable",
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Buckaroo\\HyvaCheckout\\": ""
+        }
+    },
+    "repositories": {
+        "magento": {
+            "type": "composer",
+            "url": "https://repo.magento.com/"
+        }
+    }
+}

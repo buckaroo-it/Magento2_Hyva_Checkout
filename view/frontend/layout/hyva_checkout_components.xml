@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
+>
+    <body>
+        <referenceBlock name="checkout.payment.methods">
+            <!-- Payment Renderer: iDEAL -->
+            <block name="checkout.payment.method.buckaroo_magento2_ideal"
+                    as="buckaroo_magento2_ideal"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/ideal.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Ideal
+                    </argument>
+                </arguments>
+            </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_idealprocessing"
+                    as="buckaroo_magento2_idealprocessing"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/ideal.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Ideal
+                    </argument>
+                </arguments>
+            </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_klarna"
+                    as="buckaroo_magento2_klarna"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/klarna.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Klarna
+                    </argument>
+                </arguments>
+            </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_klarnain"
+                    as="buckaroo_magento2_klarnain"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/klarna.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Klarna
+                    </argument>
+                </arguments>
+            </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_creditcard"
+                    as="buckaroo_magento2_creditcard"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/creditcard.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Creditcard
+                    </argument>
+                </arguments>
+            </block>
+
+             <block name="checkout.payment.method.buckaroo_magento2_afterpay20"
+                    as="buckaroo_magento2_afterpay20"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/afterpay20.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Afterpay20
+                    </argument>
+                </arguments>
+            </block>
+
+             <block name="checkout.payment.method.buckaroo_magento2_afterpay2"
+                    as="buckaroo_magento2_afterpay2"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/afterpay.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Afterpay2
+                    </argument>
+                </arguments>
+            </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_afterpay"
+                    as="buckaroo_magento2_afterpay"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/afterpay.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Afterpay
+                    </argument>
+                </arguments>
+            </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_billink"
+                    as="buckaroo_magento2_billink"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/billink.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Billink
+                    </argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+
+
+        <referenceBlock name="price-summary.total-segments">
+            <block name="price-summary.total-segment.pretax_buckaroo_fee"
+                as="pretax_buckaroo_fee"
+                template="Buckaroo_HyvaCheckout::total-segments/empty.phtml"/>
+        </referenceBlock>
+    </body>
+</page>

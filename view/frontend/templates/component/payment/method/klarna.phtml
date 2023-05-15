@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+/** @var Escaper $escaper */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Klarna $magewire */
+
+use Magento\Framework\Escaper;
+
+$genders = $magewire->getGenderList();
+
+?>
+<div class="col-span-6">
+    <div class="flex flex-col gap-y-2">
+        <label for="buckaroo_klarna_gender"><?= $escaper->escapeHtml(__('Salutation:')); ?></label>
+        <select name="issuer" id="buckaroo_klarna_gender" wire:model="gender" class="form-select">
+            <option value=""><?= $escaper->escapeHtml(__('-- Please Select Your Gender--')); ?></option>
+            <?php
+            foreach ($genders as $gender) {
+            ?>
+                <option value="<?= $escaper->escapeHtmlAttr($gender["code"]) ?>">
+                    <?= $escaper->escapeHtml($gender["name"]) ?>
+                </option>
+            <?php
+            }
+            ?>
+        </select>
+    </div>
+</div>

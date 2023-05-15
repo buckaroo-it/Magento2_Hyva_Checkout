@@ -1,0 +1,98 @@
+<?php
+
+declare(strict_types=1);
+/** @var Escaper $escaper */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Afterpay20 $magewire */
+
+use Magento\Framework\Escaper;
+?>
+<div class="col-span-6">
+    <div class="flex flex-col gap-y-2 field field-reserved">
+        <label for="buckaroo_billink_tos_fullname">
+            <?= $escaper->escapeHtml(__('Billing Name:')); ?>
+        </label>
+        <input type="text" wire:model.lazy="fullName" disabled id="buckaroo_billink_tos_fullname" class="bg-gray-200">
+    </div>
+
+    <div class="flex flex-col gap-y-2 field field-reserved">
+        <label for="buckaroo_klarna_gender"><?= $escaper->escapeHtml(__('Salutation:')); ?></label>
+        <select name="issuer" id="buckaroo_klarna_gender" wire:model="gender" class="form-select">
+            <option value=""><?= $escaper->escapeHtml(__('-- Please Select Your Gender--')); ?></option>
+            <?php
+            foreach ($magewire->getGenderList() as $gender) {
+            ?>
+                <option value="<?= $escaper->escapeHtmlAttr($gender["code"]) ?>">
+                    <?= $escaper->escapeHtml($gender["name"]) ?>
+                </option>
+            <?php
+            }
+            ?>
+        </select>
+        <?php if ($magewire->hasError('gender')) : ?>
+            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('gender')) ?></div>
+        <?php endif; ?>
+    </div>
+
+    <div class="flex flex-col gap-y-2 field field-reserved">
+        <label for="buckaroo_billink_dob">
+            <?= $escaper->escapeHtml(__('Date of Birth:')); ?>
+            <span class="text-red">*</span>
+        </label>
+        <input type="date" x-data value="<?= $magewire->dateOfBirth ?>" @blur="$wire.call('updatedDateOfBirth', $event.target.value); console.log($event.target.value)" id="buckaroo_billink_dob">
+        <?php if ($magewire->hasError('dateOfBirth')) : ?>
+            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
+        <?php endif; ?>
+    </div>
+
+
+    <?php if ($magewire->showPhone()) {
+    ?>
+        <div class="flex flex-col gap-y-2 field field-reserved">
+            <label for="buckaroo_billink_phone">
+                <?= $escaper->escapeHtml(__('Telephone:')); ?>
+                <span class="text-red">*</span>
+            </label>
+            <input type="text" wire:model.lazy="phone" id="buckaroo_billink_phone">
+            <?php if ($magewire->hasError('phone')) : ?>
+                <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('phone')) ?></div>
+            <?php endif; ?>
+        </div>
+    <?php
+    } ?>
+
+    <?php if ($magewire->showB2b()) {
+    ?>
+        <div class="flex flex-col gap-y-2 field field-reserved">
+            <label for="buckaroo_billink_coc">
+                <?= $escaper->escapeHtml(__('COC Number:')); ?>
+                <span class="text-red">*</span>
+            </label>
+            <input type="text" wire:model.lazy="coc" id="buckaroo_billink_coc">
+            <?php if ($magewire->hasError('coc')) : ?>
+                <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('coc')) ?></div>
+            <?php endif; ?>
+        </div>
+
+        <div class="flex flex-col gap-y-2 field field-reserved">
+            <label for="buckaroo_billink_vat_number">
+                <?= $escaper->escapeHtml(__( 'Bank Account Number:')); ?>
+            </label>
+            <input type="text" wire:model.lazy="vatNumber" id="buckaroo_billink_vat_number">
+            <?php if ($magewire->hasError('vatNumber')) : ?>
+                <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('vatNumber')) ?></div>
+            <?php endif; ?>
+        </div>
+    <?php
+    } ?>
+
+    <div class="flex flex-col gap-y-2 ">
+        <label for="buckaroo_billink_tos"><?= $escaper->escapeHtml(__('Terms and Conditions:')); ?></label>
+        <div class="flex flex-row gap-x-2">
+            <input class="mt-1" type="checkbox" wire:model.lazy="tos" id="buckaroo_billink_tos">
+            <a class="grow" href="https://www.billink.nl/app/uploads/2021/05/Gebruikersvoorwaarden-Billink_V11052021.pdf"><?= $escaper->escapeHtml(__('Accept terms of use')) ?></a>
+        </div>
+        <?php if ($magewire->hasError('tos')) : ?>
+            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('tos')) ?></div>
+        <?php endif; ?>
+    </div>
+</div>
