@@ -94,6 +94,46 @@
                     </argument>
                 </arguments>
             </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_capayablein3"
+                    as="buckaroo_magento2_capayablein3"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/in3.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\In3
+                    </argument>
+                </arguments>
+            </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_giropay"
+                    as="buckaroo_magento2_giropay"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/giropay.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Giropay
+                    </argument>
+                </arguments>
+            </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_tinka"
+                    as="buckaroo_magento2_tinka"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/tinka.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Tinka
+                    </argument>
+                </arguments>
+            </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_sepadirectdebit"
+                    as="buckaroo_magento2_sepadirectdebit"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/sepaDirect.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\SepaDirect
+                    </argument>
+                </arguments>
+            </block>
         </referenceBlock>
 
 

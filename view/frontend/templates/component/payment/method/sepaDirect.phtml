@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+/** @var Escaper $escaper */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\SepaDirect $magewire */
+
+use Magento\Framework\Escaper;
+
+$genders = $magewire->getGenderList();
+
+?>
+<div class="col-span-6">
+
+    <div class="flex flex-col gap-y-2 field field-reserved">
+        <label for="buckaroo_sepa_bank_holder">
+            <?= $escaper->escapeHtml(__('Bank account holder')); ?>
+            <span class="text-red">*</span>
+        </label>
+        <input type="text" wire:model.lazy="bankHolder" id="buckaroo_sepa_bank_holder">
+        <?php if ($magewire->hasError('bankHolder')) : ?>
+            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('bankHolder')) ?></div>
+        <?php endif; ?>
+    </div>
+
+    <div class="flex flex-col gap-y-2 field field-reserved">
+        <label for="buckaroo_sepa_direct_iban">
+            <?= $escaper->escapeHtml(__('Bank account number')); ?>
+            <span class="text-red">*</span>
+        </label>
+        <input type="text" wire:model.lazy="iban" id="buckaroo_sepa_direct_iban">
+        <?php if ($magewire->hasError('iban')) : ?>
+            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('iban')) ?></div>
+        <?php endif; ?>
+    </div>
+    <?php if (!$magewire->isNl()) {
+    ?>
+        <div class="flex flex-col gap-y-2 field field-reserved">
+            <label for="buckaroo_spea_direct_bic">
+                <?= $escaper->escapeHtml(__('BIC Number')); ?>
+                <span class="text-red">*</span>
+            </label>
+            <input type="text" wire:model.lazy="bic" id="buckaroo_spea_direct_bic" placeholder="AAAABBCCDDD">
+            <?php if ($magewire->hasError('bic')) : ?>
+                <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('bic')) ?></div>
+            <?php endif; ?>
+        </div>
+    <?php
+    }
+    ?>
+
+</div>
