@@ -1,0 +1,69 @@
+<?php
+
+declare(strict_types=1);
+/** @var Escaper $escaper */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\PayPerEmail $magewire */
+
+use Magento\Framework\Escaper;
+
+?>
+<div class="col-span-6">
+    <div class="flex flex-col gap-y-2 field field-reserved">
+        <label for="buckaroo_klarna_gender"><?= $escaper->escapeHtml(__('Salutation:')); ?></label>
+        <select name="issuer" id="buckaroo_klarna_gender" wire:model="gender" class="form-select">
+            <option value=""><?= $escaper->escapeHtml(__('-- Please Select Your Gender--')); ?></option>
+            <?php
+            foreach ($magewire->getGenderList() as $gender) {
+            ?>
+                <option value="<?= $escaper->escapeHtmlAttr($gender["code"]) ?>">
+                    <?= $escaper->escapeHtml($gender["name"]) ?>
+                </option>
+            <?php
+            }
+            ?>
+        </select>
+        <?php if ($magewire->hasError('gender')) : ?>
+            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('gender')) ?></div>
+        <?php endif; ?>
+    </div>
+
+    <div class="flex flex-col gap-y-2 field field-reserved">
+        <label for="buckaroo_paypermail_first_name">
+            <?= $escaper->escapeHtml(__('Billing First Name:')); ?>
+            <span class="text-red">*</span>
+        </label>
+        <input type="text" wire:model.lazy="firstName" id="buckaroo_paypermail_first_name" placeholder="John">
+        <?php if ($magewire->hasError('firstName')) : ?>
+            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('firstName')) ?></div>
+        <?php endif; ?>
+    </div>
+
+    <div class="flex flex-col gap-y-2 field field-reserved">
+        <label for="buckaroo_paypermail_middle_name">
+            <?= $escaper->escapeHtml(__('Billing Middle Name:')); ?>
+        </label>
+        <input type="text" wire:model.lazy="middleName" id="buckaroo_paypermail_middle_name" placeholder="S">
+    </div>
+
+    <div class="flex flex-col gap-y-2 field field-reserved">
+        <label for="buckaroo_paypermail_last_name">
+            <?= $escaper->escapeHtml(__('Billing Last Name:')); ?>
+            <span class="text-red">*</span>
+        </label>
+        <input type="text" wire:model.lazy="lastName" id="buckaroo_paypermail_last_name" placeholder="Doe">
+        <?php if ($magewire->hasError('lastName')) : ?>
+            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('lastName')) ?></div>
+        <?php endif; ?>
+    </div>
+
+    <div class="flex flex-col gap-y-2 field field-reserved">
+        <label for="buckaroo_paypermail_email">
+            <?= $escaper->escapeHtml(__('Email:')); ?>
+            <span class="text-red">*</span>
+        </label>
+        <input type="text" wire:model.lazy="email" id="buckaroo_paypermail_email" placeholder="email@example.com">
+        <?php if ($magewire->hasError('email')) : ?>
+            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('email')) ?></div>
+        <?php endif; ?>
+    </div>
+</div>

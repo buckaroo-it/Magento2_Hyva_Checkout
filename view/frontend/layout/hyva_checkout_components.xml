@@ -134,6 +134,16 @@
                     </argument>
                 </arguments>
             </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_payperemail"
+                    as="buckaroo_magento2_payperemail"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/payperemail.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\PayPerEmail
+                    </argument>
+                </arguments>
+            </block>
         </referenceBlock>
 
 
