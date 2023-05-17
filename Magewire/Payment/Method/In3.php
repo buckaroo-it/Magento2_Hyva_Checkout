@@ -9,7 +9,6 @@ use Rakit\Validation\Validator;
 use Magewirephp\Magewire\Component;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Framework\Exception\LocalizedException;
-use Buckaroo\HyvaCheckout\Model\Validation\Rules\Iban;
 use Magento\Checkout\Model\Session as SessionCheckout;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -45,7 +44,7 @@ class In3 extends Component\Form implements EvaluationInterface
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
-        CartRepositoryInterface $quoteRepository,
+        CartRepositoryInterface $quoteRepository
     ) {
         if($validator->getValidator("nlBeDePhone") === null) {
             $validator->addValidator("nlBeDePhone", new NlBeDePhone());

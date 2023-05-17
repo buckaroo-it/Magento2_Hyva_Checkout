@@ -1,0 +1,93 @@
+<?php
+
+declare(strict_types=1);
+/** @var Escaper $escaper */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\MrCash $magewire */
+
+use Magento\Framework\Escaper;
+
+?>
+<div class="col-span-6">
+    <?php if ($magewire->showClientSideEncryption()) {
+    ?>
+        <form x-data="Object.assign(hyva.formValidation($el), {
+                    cseHasLoaded: false,
+                    cardHolder: '',
+                    cardNumber: '',
+                    cardExpiration: '',
+                    async saveEncryptedData() {
+                        let parts = this.cardExpiration.split('/');
+                        const year = parts[1];
+                        const month = parts[0];
+                        const wire = this.$wire;
+                        const enc = new Promise((resolve) => {
+                            BuckarooClientSideEncryption.V001.encryptCardData(
+                                this.cardNumber,
+                                year,
+                                month,
+                                '',
+                                this.cardHolder,
+                                function(encryptedCardData) {
+                                    resolve(encryptedCardData);
+                                });
+                        })
+                        return await enc;
+                    },
+                    register() {
+                        console.log('init');
+                        window.addEventListener('buckaroo-cse-load', () => {
+                            this.cseHasLoaded = true;
+                        }, {
+                            once: true
+                        })
+
+                        const formValid = async () => {
+                            try {
+                                await this.validate();
+                            } catch (error) {
+                                return false;
+                            }
+                            return true;
+                        }
+                        const v = async () => {
+                            const isValid = await formValid();
+                            if (this.cseHasLoaded && isValid) {
+                                const encryptedCardData = await this.saveEncryptedData();
+                                await this.$wire.updatedEncryptedData(encryptedCardData);
+                            }
+                        };
+                        window.dispatchEvent(new CustomEvent('buckaroo-add-task', {
+                            detail: {
+                                buckarooTask: v
+                            }
+                        }));
+
+                    }
+                })" x-init="register()" novalidate>
+            <div class="flex flex-col gap-y-2 field field-reserved">
+                <label for="buckaroo_mrcash_card_holder">
+                    <?= $escaper->escapeHtml(__('Name on card:')); ?>
+                    <span class="text-red">*</span>
+                </label>
+                <input type="text" x-model="cardHolder" data-validate='{"bk-validateCardHolderName": true}' @change="onChange" id="buckaroo_mrcash_card_holder" name="buckaroo_mrcash_card_holder" placeholder="John Doe" />
+            </div>
+
+            <div class="flex flex-col gap-y-2 field field-reserved">
+                <label for="buckaroo_mrcash_card_number">
+                    <?= $escaper->escapeHtml(__('Card number:')); ?>
+                    <span class="text-red">*</span>
+                </label>
+                <input type="text" x-model="cardNumber" data-validate='{"bk-validateCardNumber": true}' @change="onChange" id="buckaroo_mrcash_card_number" name="buckaroo_mrcash_card_number" placeholder="0000 0000 0000 0000" />
+            </div>
+
+            <div class="flex flex-col gap-y-2 field field-reserved">
+                <label for="buckaroo_mrcash_card_expiration">
+                    <?= $escaper->escapeHtml(__('Expiration:')); ?>
+                    <span class="text-red">*</span>
+                </label>
+                <input type="text" x-model="cardExpiration" data-validate='{"bk-ValidateYear": true, "bk-ValidateMonth": true}' @change="onChange" id="buckaroo_mrcash_card_expiration" name="buckaroo_mrcash_card_expiration" placeholder="MM/YY" />
+            </div>
+        </form>
+    <?php
+    } ?>
+</div>
