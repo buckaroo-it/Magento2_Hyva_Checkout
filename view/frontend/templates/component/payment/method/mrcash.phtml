@@ -34,7 +34,6 @@ use Magento\Framework\Escaper;
                         return await enc;
                     },
                     register() {
-                        console.log('init');
                         window.addEventListener('buckaroo-cse-load', () => {
                             this.cseHasLoaded = true;
                         }, {
@@ -72,20 +71,24 @@ use Magento\Framework\Escaper;
                 <input type="text" x-model="cardHolder" data-validate='{"bk-validateCardHolderName": true}' @change="onChange" id="buckaroo_mrcash_card_holder" name="buckaroo_mrcash_card_holder" placeholder="John Doe" />
             </div>
 
-            <div class="flex flex-col gap-y-2 field field-reserved">
-                <label for="buckaroo_mrcash_card_number">
-                    <?= $escaper->escapeHtml(__('Card number:')); ?>
-                    <span class="text-red">*</span>
-                </label>
-                <input type="text" x-model="cardNumber" data-validate='{"bk-validateCardNumber": true}' @change="onChange" id="buckaroo_mrcash_card_number" name="buckaroo_mrcash_card_number" placeholder="0000 0000 0000 0000" />
-            </div>
+            <div class="field field-reserved">
+                <div class="flex gap-x-2">
+                    <div class="flex flex-col gap-y-2  w-8/12">
+                        <label for="buckaroo_mrcash_card_number">
+                            <?= $escaper->escapeHtml(__('Card number:')); ?>
+                            <span class="text-red">*</span>
+                        </label>
+                        <input type="text" x-model="cardNumber" data-validate='{"bk-validateCardNumber": true}' @change="onChange" id="buckaroo_mrcash_card_number" name="buckaroo_mrcash_card_number" placeholder="0000 0000 0000 0000" />
+                    </div>
 
-            <div class="flex flex-col gap-y-2 field field-reserved">
-                <label for="buckaroo_mrcash_card_expiration">
-                    <?= $escaper->escapeHtml(__('Expiration:')); ?>
-                    <span class="text-red">*</span>
-                </label>
-                <input type="text" x-model="cardExpiration" data-validate='{"bk-ValidateYear": true, "bk-ValidateMonth": true}' @change="onChange" id="buckaroo_mrcash_card_expiration" name="buckaroo_mrcash_card_expiration" placeholder="MM/YY" />
+                    <div class="flex flex-col gap-y-2  w-4/12">
+                        <label for="buckaroo_mrcash_card_expiration">
+                            <?= $escaper->escapeHtml(__('Expiration:')); ?>
+                            <span class="text-red">*</span>
+                        </label>
+                        <input type="text" maxlength="5" x-model="cardExpiration" data-validate='{"bk-ValidateYear": true, "bk-ValidateMonth": true}' @change="onChange" id="buckaroo_mrcash_card_expiration" name="buckaroo_mrcash_card_expiration" placeholder="MM/YY" />
+                    </div>
+                </div>
             </div>
         </form>
     <?php

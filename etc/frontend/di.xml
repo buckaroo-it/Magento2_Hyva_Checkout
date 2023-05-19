@@ -32,6 +32,7 @@
                 <item name="buckaroo_magento2_payperemail" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_giftcards" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_mrcash" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
+                <item name="buckaroo_magento2_voucher" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
             </argument>
         </arguments>
     </type>

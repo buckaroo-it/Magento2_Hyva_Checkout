@@ -1,0 +1,99 @@
+<?php
+
+declare(strict_types=1);
+/** @var Escaper $escaper */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\MrCash $magewire */
+
+use Magento\Framework\Escaper;
+
+?>
+<div class="col-span-6">
+
+    <form x-data="Object.assign(hyva.formValidation($el), {
+        code:'',
+        canSubmit:false,
+        async formValid() {
+                try {
+                    await this.validate();
+                } catch (error) {
+                    return false;
+                }
+                return true;
+        },
+        async submit() {
+            if(!await this.formValid()) {
+                return;
+            }
+
+            const params = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({voucherCode: this.code})
+            };
+
+            const response = await (await fetch('<?= $escaper->escapeUrl($magewire->getAjaxUrl()); ?>', params)).json();
+            if (response.error) {
+                this.displayError(errorMessage);
+            } else if(response.remainder_amount === undefined) {
+                this.displayError(response.message);
+            } else if (response.remainder_amount == 0) {
+                this.canSubmit = true;
+                await this.$wire.setCanSubmit(true);
+                await hyvaCheckout.order.place();
+            } else if (response.remainder_amount != 0) {
+                this.displaySuccess(response);
+            }
+        },
+        displaySuccess(response) {
+            window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
+                detail: {
+                    data: {
+                        title: '<?= $escaper->escapeHtml(__('Success')); ?>',
+                        content: response.message,
+                        showClose: false,
+                        buttons: [{
+                            label: response.remaining_amount_message
+                        }]
+                    }
+                }
+            }));
+        },
+        displayError(message) {
+            window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
+                detail: {
+                    data: {
+                        title: '<?= $escaper->escapeHtml(__('Error')); ?>',
+                        content: message,
+                    }
+                }
+            }));
+        },
+        register() {
+            const v = async () => {
+                if(!this.canSubmit) {
+                    await this.submit();
+                }
+            };
+            window.dispatchEvent(new CustomEvent('buckaroo-add-task', {
+                detail: {
+                    buckarooTask: v
+                }
+            }));
+
+        },
+
+    })" x-init="register()" novalidate>
+        <div class="flex flex-col gap-y-2 field field-reserved">
+            <label for="buckaroo_voucher_code">
+                <?= $escaper->escapeHtml(__('Voucher code:')); ?>
+                <span class="text-red">*</span>
+            </label>
+            <input type="text" x-model="code" data-validate='{"required": true}' @change="onChange" id="buckaroo_voucher_code" name="buckaroo_voucher_code" placeholder="1A2B-3C4D-6E7F-8G9H-1I2J" />
+        </div>
+        <button type="button" @click="submit" class="btn btn-primary"><?= $escaper->escapeHtml(__('Apply Voucher')); ?></button>
+    </form>
+
+
+</div>

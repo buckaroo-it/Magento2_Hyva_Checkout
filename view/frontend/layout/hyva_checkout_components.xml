@@ -161,6 +161,26 @@
                 </arguments>
             </block>
 
+            <block name="checkout.payment.method.buckaroo_magento2_creditcards"
+                    as="buckaroo_magento2_creditcards"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/creditcards.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Creditcards
+                    </argument>
+                </arguments>
+            </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_voucher"
+                    as="buckaroo_magento2_voucher"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/voucher.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Voucher
+                    </argument>
+                </arguments>
+            </block>
+
         </referenceBlock>
 
 
