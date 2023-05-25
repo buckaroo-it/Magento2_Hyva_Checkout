@@ -181,6 +181,16 @@
                 </arguments>
             </block>
 
+            <block name="checkout.payment.method.buckaroo_magento2_applepay"
+                    as="buckaroo_magento2_applepay"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/applepay.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Applepay
+                    </argument>
+                </arguments>
+            </block>
+
         </referenceBlock>
 
 
