@@ -198,6 +198,10 @@
             <block name="price-summary.total-segment.pretax_buckaroo_fee"
                 as="pretax_buckaroo_fee"
                 template="Buckaroo_HyvaCheckout::total-segments/empty.phtml"/>
+            <block name="price-summary.total-segment.buckaroo_fee"
+                class="Buckaroo\HyvaCheckout\Block\Totals\Fee"
+                as="buckaroo_fee"
+                template="Buckaroo_HyvaCheckout::total-segments/fee.phtml"/>
         </referenceBlock>
     </body>
 </page>

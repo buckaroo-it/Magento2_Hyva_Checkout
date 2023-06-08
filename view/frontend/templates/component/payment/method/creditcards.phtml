@@ -129,29 +129,28 @@ use Magento\Framework\Escaper;
                 <input type="text" class="w-full" maxlength="23" x-model="cardNumber" data-validate='{"bk-validateCardNumber": true}' @change="onChange" id="buckaroo_creditcards_card_number" name="buckaroo_creditcards_card_number" placeholder="0000 0000 0000 0000" />
                 <div class="absolute inset-y-0 right-3 flex items-center pr-3">
                     <img :src="getIssuerImage()" style="height: 100%;padding: 10px 0;">
-                    </duv>
                 </div>
 
             </div>
+        </div>
+        <div class="field field-reserved">
+            <div class="flex gap-x-2 gap-y-2">
+                <div class="flex flex-col w-7/12">
+                    <label for="buckaroo_creditcards_card_expiration">
+                        <?= $escaper->escapeHtml(__('Expiration:')); ?>
+                        <span class="text-red">*</span>
+                    </label>
+                    <input type="text" maxlength="5" x-model="cardExpiration" data-validate='{"bk-ValidateYear": true, "bk-ValidateMonth": true}' @change="onChange" id="buckaroo_creditcards_card_expiration" name="buckaroo_creditcards_card_expiration" placeholder="MM/YY" />
+                </div>
 
-            <div class="field field-reserved">
-                <div class="flex gap-x-2 gap-y-2">
-                    <div class="flex flex-col w-7/12">
-                        <label for="buckaroo_creditcards_card_expiration">
-                            <?= $escaper->escapeHtml(__('Expiration:')); ?>
-                            <span class="text-red">*</span>
-                        </label>
-                        <input type="text" maxlength="5" x-model="cardExpiration" data-validate='{"bk-ValidateYear": true, "bk-ValidateMonth": true}' @change="onChange" id="buckaroo_creditcards_card_expiration" name="buckaroo_creditcards_card_expiration" placeholder="MM/YY" />
-                    </div>
-
-                    <div class="flex flex-col w-5/12">
-                        <label for="buckaroo_creditcards_card_cvc">
-                            <?= $escaper->escapeHtml(__('CVC / CVV:')); ?>
-                            <span class="text-red">*</span>
-                        </label>
-                        <input type="text" x-model="cardCvc" maxlength="4" data-validate='{"bk-validateCardCvc": true}' @change="onChange" id="buckaroo_creditcards_card_cvc" name="buckaroo_creditcards_card_cvc" placeholder="123" />
-                    </div>
+                <div class="flex flex-col w-5/12">
+                    <label for="buckaroo_creditcards_card_cvc">
+                        <?= $escaper->escapeHtml(__('CVC / CVV:')); ?>
+                        <span class="text-red">*</span>
+                    </label>
+                    <input type="text" x-model="cardCvc" maxlength="4" data-validate='{"bk-validateCardCvc": true}' @change="onChange" id="buckaroo_creditcards_card_cvc" name="buckaroo_creditcards_card_cvc" placeholder="123" />
                 </div>
             </div>
+        </div>
     </form>
 </div>
