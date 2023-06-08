@@ -202,6 +202,10 @@
                 class="Buckaroo\HyvaCheckout\Block\Totals\Fee"
                 as="buckaroo_fee"
                 template="Buckaroo_HyvaCheckout::total-segments/fee.phtml"/>
+            <block name="price-summary.total-segment.buckaroo_already_paid"
+                class="Buckaroo\HyvaCheckout\Block\Totals\AlreadyPaid"
+                as="buckaroo_already_paid"
+                template="Buckaroo_HyvaCheckout::total-segments/already-paid.phtml"/>
         </referenceBlock>
     </body>
 </page>

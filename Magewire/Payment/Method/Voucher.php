@@ -41,7 +41,7 @@ class Voucher extends Component\Form implements EvaluationInterface
     {
         $quote = $this->sessionCheckout->getQuote();
         $this->canSubmit = abs(
-            $this->groupTransaction->getAlreadyPaid($quote->getReservedOrderId()) - round($quote->getGrandTotal(), 2)
+            $this->groupTransaction->getAlreadyPaid($quote->getReservedOrderId()) - round(floatval($quote->getGrandTotal()), 2)
         ) < 0.05;
     }
 
@@ -64,5 +64,10 @@ class Voucher extends Component\Form implements EvaluationInterface
     public function setCanSubmit(bool $canSubmit): void
     {
         $this->canSubmit = $canSubmit;
+    }
+
+    public function refreshTotals(): void
+    {
+        $this->emit('payment_method_selected');
     }
 }
