@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /** @var Escaper $escaper */
-/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\MrCash $magewire */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Voucher $magewire */
 
 use Magento\Framework\Escaper;
 
@@ -36,7 +36,7 @@ use Magento\Framework\Escaper;
             const response = await (await fetch('<?= $escaper->escapeUrl($magewire->getAjaxUrl()); ?>', params)).json();
             await this.$wire.refreshTotals();
             if (response.error) {
-                this.displayError(errorMessage);
+                this.displayError(response.error);
             } else if(response.remainder_amount === undefined) {
                 this.displayError(response.message);
             } else if (response.remainder_amount == 0) {

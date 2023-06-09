@@ -1,0 +1,123 @@
+<?php
+
+declare(strict_types=1);
+/** @var Escaper $escaper */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Giftcards $magewire */
+
+use Magento\Framework\Escaper;
+
+if (!$magewire->isRedirect()) {
+?>
+    <div class="col-span-6">
+
+        <form x-data="Object.assign(hyva.formValidation($el), {
+        card:'',
+        pin: '',
+        cardNumber: '',
+        canSubmit:false,
+        async formValid() {
+                try {
+                    await this.validate();
+                } catch (error) {
+                    return false;
+                }
+                return true;
+        },
+        async submit() {
+            if(!await this.formValid()) {
+                return;
+            }
+            await this.$wire.applyGiftcard(this.card, this.cardNumber, this.pin);
+        },
+        displaySuccess(response) {
+            window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
+                detail: {
+                    data: {
+                        title: '<?= $escaper->escapeHtml(__('Success')); ?>',
+                        content: response.message,
+                        showClose: false,
+                        buttons: [{
+                            label: response.remaining_amount_message
+                        }]
+                    }
+                }
+            }));
+        },
+        displayError(message) {
+            window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
+                detail: {
+                    data: {
+                        title: '<?= $escaper->escapeHtml(__('Error')); ?>',
+                        content: message,
+                    }
+                }
+            }));
+        },
+        listenToSubmit() {
+            this.$wire.on('giftcard_response', async (response) => {
+                console.log(response);
+                if (response.error) {
+                    this.displayError(response.error);
+                } else if(response.remainder_amount === undefined) {
+                    this.displayError(response.message);
+                } else if (response.remainder_amount == 0) {
+                    this.canSubmit = true;
+                    await hyvaCheckout.order.place();
+                } else if (response.remainder_amount != 0) {
+                    this.displaySuccess(response);
+                }
+            })
+        },   
+        register() {
+            this.listenToSubmit();
+            const v = async () => {
+                if(!this.canSubmit) {
+                    await this.submit();
+                }
+            };
+            window.dispatchEvent(new CustomEvent('buckaroo-add-task', {
+                detail: {
+                    buckarooTask: v
+                }
+            }));
+
+        },
+
+    })" x-init="register()" novalidate>
+
+            <div class="flex flex-col gap-y-2 field field-reserved">
+                <label for="buckaroo_giftcard_issuer"><?= $escaper->escapeHtml(__('Salutation:')); ?></label>
+                <select name="issuer" id="buckaroo_giftcard_issuer" x-model="card" data-validate='{"required": true}'  class="form-select">
+                    <option value=""><?= $escaper->escapeHtml(__('Please Select Card')); ?></option>
+                    <?php
+                    foreach ($magewire->getGiftcardIssuers() as $issuer) {
+                    ?>
+                        <option value="<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>">
+                            <?= $escaper->escapeHtml($issuer["title"]) ?>
+                        </option>
+                    <?php
+                    }
+                    ?>
+                </select>
+
+            </div>
+
+            <div class="flex flex-col gap-y-2 field field-reserved">
+                <label for="buckaroo_giftcard_card_number">
+                    <?= $escaper->escapeHtml(__('PIN / Security code:')); ?>
+                    <span class="text-red">*</span>
+                </label>
+                <input type="text" x-model="cardNumber" data-validate='{"required": true}' @change="onChange" id="buckaroo_giftcard_card_number" name="buckaroo_giftcard_number" />
+            </div>
+            <div class="flex flex-col gap-y-2 field field-reserved">
+                <label for="buckaroo_giftcard_pin">
+                    <?= $escaper->escapeHtml(__('PIN / Security code:')); ?>
+                    <span class="text-red">*</span>
+                </label>
+                <input type="text" x-model="pin" data-validate='{"required": true}' @change="onChange" id="buckaroo_giftcard_pin" name="buckaroo_giftcard_pin" />
+            </div>
+            <button type="button" @click="submit" class="btn btn-primary"><?= $escaper->escapeHtml(__('Apply Gift Card')); ?></button>
+        </form>
+    </div>
+<?php
+}

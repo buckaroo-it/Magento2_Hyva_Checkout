@@ -191,6 +191,16 @@
                 </arguments>
             </block>
 
+            <block name="checkout.payment.method.buckaroo_magento2_giftcards"
+                    as="buckaroo_magento2_giftcards"
+                    template="Buckaroo_HyvaCheckout::component/payment/method/giftcards.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Giftcards
+                    </argument>
+                </arguments>
+            </block>
+
         </referenceBlock>
 
 
