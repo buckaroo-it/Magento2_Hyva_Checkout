@@ -45,7 +45,7 @@ class Tinka extends Component\Form implements EvaluationInterface
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
-        CartRepositoryInterface $quoteRepository,
+        CartRepositoryInterface $quoteRepository
     ) {
         parent::__construct($validator);
 

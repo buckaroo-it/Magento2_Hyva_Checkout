@@ -51,7 +51,7 @@ class PayPerEmail extends Component\Form implements EvaluationInterface
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
-        CartRepositoryInterface $quoteRepository,
+        CartRepositoryInterface $quoteRepository
     ) {
         if ($validator->getValidator("nlBeDePhone") === null) {
             $validator->addValidator("nlBeDePhone", new NlBeDePhone());

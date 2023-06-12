@@ -34,7 +34,7 @@ class Giropay extends Component\Form implements EvaluationInterface
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
-        CartRepositoryInterface $quoteRepository,
+        CartRepositoryInterface $quoteRepository
     ) {
         if($validator->getValidator("bic") === null) {
             $validator->addValidator("bic", new Bic());

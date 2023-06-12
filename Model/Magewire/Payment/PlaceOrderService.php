@@ -14,7 +14,7 @@ class PlaceOrderService extends AbstractPlaceOrderService
 
     public function __construct(
         CartManagementInterface $cartManagement,
-        Registry $registry,
+        Registry $registry
     ) {
         $this->registry = $registry;
         parent::__construct($cartManagement);
