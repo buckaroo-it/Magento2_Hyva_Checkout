@@ -86,9 +86,9 @@ if (!$magewire->isRedirect()) {
     })" x-init="register()" novalidate>
 
             <div class="flex flex-col gap-y-2 field field-reserved">
-                <label for="buckaroo_giftcard_issuer"><?= $escaper->escapeHtml(__('Salutation:')); ?></label>
+                <label for="buckaroo_giftcard_issuer"><?= $escaper->escapeHtml(__('Select giftcard issuer:')); ?></label>
                 <select name="issuer" id="buckaroo_giftcard_issuer" x-model="card" data-validate='{"required": true}'  class="form-select">
-                    <option value=""><?= $escaper->escapeHtml(__('Please Select Card')); ?></option>
+                    <option value=""><?= $escaper->escapeHtml(__('Please select issuer')); ?></option>
                     <?php
                     foreach ($magewire->getGiftcardIssuers() as $issuer) {
                     ?>
@@ -104,7 +104,7 @@ if (!$magewire->isRedirect()) {
 
             <div class="flex flex-col gap-y-2 field field-reserved">
                 <label for="buckaroo_giftcard_card_number">
-                    <?= $escaper->escapeHtml(__('PIN / Security code:')); ?>
+                    <?= $escaper->escapeHtml(__('Card number:')); ?>
                     <span class="text-red">*</span>
                 </label>
                 <input type="text" x-model="cardNumber" data-validate='{"required": true}' @change="onChange" id="buckaroo_giftcard_card_number" name="buckaroo_giftcard_number" />

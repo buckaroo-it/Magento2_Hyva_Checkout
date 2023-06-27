@@ -37,7 +37,7 @@ use Magento\Framework\Escaper;
                 <?= $escaper->escapeHtml(__('BIC Number')); ?>
                 <span class="text-red">*</span>
             </label>
-            <input type="text" wire:model.lazy="bic" id="buckaroo_sepa_direct_bic" placeholder="AAAABBCCDDD">
+            <input type="text" wire:model.lazy="bic" id="buckaroo_sepa_direct_bic" placeholder="<?= $escaper->escapeHtml(__('AAAABBCCDDD')); ?>">
             <?php if ($magewire->hasError('bic')) : ?>
                 <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('bic')) ?></div>
             <?php endif; ?>
