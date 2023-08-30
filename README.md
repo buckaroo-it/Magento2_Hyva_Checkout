@@ -9,8 +9,9 @@
 mkdir app/code/Buckaroo
 cd app/code/Buckaroo
 git clone https://github.com/buckaroo-it/Magento2_Hyva_Checkout.git
-git checkout 1.0.0-RC1
 mv Magento2_Hyva_Checkout HyvaCheckout
+cd HyvaCheckout
+git checkout 1.0.0-RC1
 php bin/magento module:enable Buckaroo_HyvaCheckout
 php bin/magento setup:upgrade
 php bin/magento setup:static-content:deploy
