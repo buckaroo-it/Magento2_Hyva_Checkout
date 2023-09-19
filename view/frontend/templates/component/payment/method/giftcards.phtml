@@ -55,7 +55,6 @@ if (!$magewire->isRedirect()) {
         },
         listenToSubmit() {
             this.$wire.on('giftcard_response', async (response) => {
-                console.log(response);
                 if (response.error) {
                     this.displayError(response.error);
                 } else if(response.remainder_amount === undefined) {

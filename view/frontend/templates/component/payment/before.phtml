@@ -25,7 +25,6 @@
         }
 
         buckaroo_load_sdk().then(() => {
-
             hyva.formValidation.addRule('bk-validateCardNumber', (value) => {
                 if (!BuckarooClientSideEncryption.V001.validateCardNumber(value.replace(/\s+/g, ''))) {
                     return '<?= $escaper->escapeJs(__('Please enter a valid creditcard number.')) ?>';
@@ -94,7 +93,6 @@
     },
     initModal() {
         window.addEventListener('buckaroo-modal-show', (event) => {
-            console.log(event);
             if(event.detail.data) {
                 this.showModal = true;
                 Object.keys(event.detail.data).forEach((key) => {
