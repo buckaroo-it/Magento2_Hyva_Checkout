@@ -11,7 +11,13 @@ use Magento\Framework\Escaper;
         <label for="buckaroo_capayablein3_tos_fullname">
             <?= $escaper->escapeHtml(__('Billing Name:')); ?>
         </label>
-        <input type="text" wire:model.lazy="fullName" disabled id="buckaroo_capayablein3_tos_fullname" class="bg-gray-200">
+        <input
+            type="text"
+            wire:model.lazy="fullName"
+            disabled
+            id="buckaroo_capayablein3_tos_fullname"
+            class="bg-gray-200"
+        >
     </div>
 
     <div class="flex flex-col gap-y-2 field field-reserved">
@@ -19,7 +25,13 @@ use Magento\Framework\Escaper;
             <?= $escaper->escapeHtml(__('Date of Birth:')); ?>
             <span class="text-red">*</span>
         </label>
-        <input type="date" x-data value="<?= $magewire->dateOfBirth ?>" @blur="$wire.call('updatedDateOfBirth', $event.target.value)" id="buckaroo_capayablein3_dob">
+        <input
+            type="date"
+            x-data
+            value="<?= $magewire->dateOfBirth ?>"
+            @blur="$wire.call('updatedDateOfBirth', $event.target.value)"
+            id="buckaroo_capayablein3_dob"
+        >
         <?php if ($magewire->hasError('dateOfBirth')) : ?>
             <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
         <?php endif; ?>

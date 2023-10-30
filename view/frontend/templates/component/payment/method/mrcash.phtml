@@ -68,7 +68,15 @@ use Magento\Framework\Escaper;
                     <?= $escaper->escapeHtml(__('Name on card:')); ?>
                     <span class="text-red">*</span>
                 </label>
-                <input type="text" x-model="cardHolder" data-validate='{"bk-validateCardHolderName": true}' @change="onChange" id="buckaroo_mrcash_card_holder" name="buckaroo_mrcash_card_holder" placeholder="<?= $escaper->escapeHtml(__('John Doe')); ?>" />
+                <input
+                    type="text"
+                    x-model="cardHolder"
+                    data-validate='{"bk-validateCardHolderName": true}'
+                    @change="onChange"
+                    id="buckaroo_mrcash_card_holder"
+                    name="buckaroo_mrcash_card_holder"
+                    placeholder="<?= $escaper->escapeHtml(__('John Doe')); ?>"
+                />
             </div>
 
             <div class="field field-reserved">
@@ -78,7 +86,15 @@ use Magento\Framework\Escaper;
                             <?= $escaper->escapeHtml(__('Card number:')); ?>
                             <span class="text-red">*</span>
                         </label>
-                        <input type="text" x-model="cardNumber" data-validate='{"bk-validateCardNumber": true}' @change="onChange" id="buckaroo_mrcash_card_number" name="buckaroo_mrcash_card_number" placeholder="<?= $escaper->escapeHtml(__('0000 0000 0000 0000')); ?>" />
+                        <input
+                            type="text"
+                            x-model="cardNumber"
+                            data-validate='{"bk-validateCardNumber": true}'
+                            @change="onChange"
+                            id="buckaroo_mrcash_card_number"
+                            name="buckaroo_mrcash_card_number"
+                            placeholder="<?= $escaper->escapeHtml(__('0000 0000 0000 0000')); ?>"
+                        />
                     </div>
 
                     <div class="flex flex-col gap-y-2  w-4/12">
@@ -86,7 +102,16 @@ use Magento\Framework\Escaper;
                             <?= $escaper->escapeHtml(__('Expiration:')); ?>
                             <span class="text-red">*</span>
                         </label>
-                        <input type="text" maxlength="5" x-model="cardExpiration" data-validate='{"bk-ValidateYear": true, "bk-ValidateMonth": true}' @change="onChange" id="buckaroo_mrcash_card_expiration" name="buckaroo_mrcash_card_expiration" placeholder="<?= $escaper->escapeHtml(__('MM/YY')); ?>" />
+                        <input
+                            type="text"
+                            maxlength="5"
+                            x-model="cardExpiration"
+                            data-validate='{"bk-ValidateYear": true, "bk-ValidateMonth": true}'
+                            @change="onChange"
+                            id="buckaroo_mrcash_card_expiration"
+                            name="buckaroo_mrcash_card_expiration"
+                            placeholder="<?= $escaper->escapeHtml(__('MM/YY')); ?>"
+                        />
                     </div>
                 </div>
             </div>

@@ -11,13 +11,14 @@ $issuers = $magewire->getIssuers();
 <div class="col-span-6">
     <div class="flex flex-col gap-y-2">
         <?php if ($magewire->displayAsSelect()) { ?>
-            <label for="buckaroo_magento2_creditcard_issuer"><?= $escaper->escapeHtml(__('Select a Credit Card or Debit Card:')); ?></label>
+            <label for="buckaroo_magento2_creditcard_issuer">
+                <?= $escaper->escapeHtml(__('Select a Credit Card or Debit Card:')); ?>
+            </label>
             <select name="issuer" id="buckaroo_magento2_creditcard_issuer" wire:model="cardType" class="form-select">
                 <?php
                 foreach ($issuers as $issuer) {
                 ?>
-                    <option 
-                    value="<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>">
+                    <option value="<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>">
                         <?= $escaper->escapeHtml($issuer["name"]) ?>
                     </option>
                 <?php
@@ -40,8 +41,7 @@ $issuers = $magewire->getIssuers();
                     <label
                     for="bk_credicard_issuer_<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>"
                     class="flex flex-row grow gap-x-2 items-center">
-                        <img 
-                        src="<?= $escaper->escapeUrl($issuer["img"]) ?>"
+                        <img src="<?= $escaper->escapeUrl($issuer["img"]) ?>"
                         alt="<?= $issuer["name"] ?>"
                         style="max-height:25px;"
                         />

@@ -66,7 +66,7 @@ if (!$magewire->isRedirect()) {
                     this.displaySuccess(response);
                 }
             })
-        },   
+        },
         register() {
             this.listenToSubmit();
             const v = async () => {
@@ -85,8 +85,16 @@ if (!$magewire->isRedirect()) {
     })" x-init="register()" novalidate>
 
             <div class="flex flex-col gap-y-2 field field-reserved">
-                <label for="buckaroo_giftcard_issuer"><?= $escaper->escapeHtml(__('Select giftcard issuer:')); ?></label>
-                <select name="issuer" id="buckaroo_giftcard_issuer" x-model="card" data-validate='{"required": true}'  class="form-select">
+                <label for="buckaroo_giftcard_issuer">
+                    <?= $escaper->escapeHtml(__('Select giftcard issuer:')); ?>
+                </label>
+                <select
+                    name="issuer"
+                    id="buckaroo_giftcard_issuer"
+                    x-model="card"
+                    data-validate='{"required": true}'
+                    class="form-select"
+                >
                     <option value=""><?= $escaper->escapeHtml(__('Please select issuer')); ?></option>
                     <?php
                     foreach ($magewire->getGiftcardIssuers() as $issuer) {
@@ -106,16 +114,32 @@ if (!$magewire->isRedirect()) {
                     <?= $escaper->escapeHtml(__('Card number:')); ?>
                     <span class="text-red">*</span>
                 </label>
-                <input type="text" x-model="cardNumber" data-validate='{"required": true}' @change="onChange" id="buckaroo_giftcard_card_number" name="buckaroo_giftcard_number" />
+                <input
+                    type="text"
+                    x-model="cardNumber"
+                    data-validate='{"required": true}'
+                    @change="onChange"
+                    id="buckaroo_giftcard_card_number"
+                    name="buckaroo_giftcard_number"
+                />
             </div>
             <div class="flex flex-col gap-y-2 field field-reserved">
                 <label for="buckaroo_giftcard_pin">
                     <?= $escaper->escapeHtml(__('PIN / Security code:')); ?>
                     <span class="text-red">*</span>
                 </label>
-                <input type="text" x-model="pin" data-validate='{"required": true}' @change="onChange" id="buckaroo_giftcard_pin" name="buckaroo_giftcard_pin" />
+                <input
+                    type="text"
+                    x-model="pin"
+                    data-validate='{"required": true}'
+                    @change="onChange"
+                    id="buckaroo_giftcard_pin"
+                    name="buckaroo_giftcard_pin"
+                />
             </div>
-            <button type="button" @click="submit" class="btn btn-primary"><?= $escaper->escapeHtml(__('Apply Gift Card')); ?></button>
+            <button type="button" @click="submit" class="btn btn-primary">
+            <?= $escaper->escapeHtml(__('Apply Gift Card')); ?>
+        </button>
         </form>
     </div>
 <?php

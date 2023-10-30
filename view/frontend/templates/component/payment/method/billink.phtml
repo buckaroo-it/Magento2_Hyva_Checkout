@@ -38,7 +38,12 @@ use Magento\Framework\Escaper;
             <?= $escaper->escapeHtml(__('Date of Birth:')); ?>
             <span class="text-red">*</span>
         </label>
-        <input type="date" x-data value="<?= $magewire->dateOfBirth ?>" @blur="$wire.call('updatedDateOfBirth', $event.target.value)" id="buckaroo_billink_dob">
+        <input
+            type="date"
+            x-data
+            value="<?= $magewire->dateOfBirth ?>" @blur="$wire.call('updatedDateOfBirth', $event.target.value)"
+            id="buckaroo_billink_dob"
+        >
         <?php if ($magewire->hasError('dateOfBirth')) : ?>
             <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
         <?php endif; ?>
@@ -89,7 +94,12 @@ use Magento\Framework\Escaper;
         <label for="buckaroo_billink_tos"><?= $escaper->escapeHtml(__('Terms and Conditions:')); ?></label>
         <div class="flex flex-row gap-x-2">
             <input class="mt-1" type="checkbox" wire:model.lazy="tos" id="buckaroo_billink_tos">
-            <a class="grow" href="https://www.billink.nl/app/uploads/2021/05/Gebruikersvoorwaarden-Billink_V11052021.pdf"><?= $escaper->escapeHtml(__('Accept terms of use')) ?></a>
+            <a
+                class="grow"
+                href="https://www.billink.nl/app/uploads/2021/05/Gebruikersvoorwaarden-Billink_V11052021.pdf"
+            >
+                <?= $escaper->escapeHtml(__('Accept terms of use')) ?>
+            </a>
         </div>
         <?php if ($magewire->hasError('tos')) : ?>
             <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('tos')) ?></div>
