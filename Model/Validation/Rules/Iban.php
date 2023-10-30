@@ -41,7 +41,7 @@ class Iban extends Rule
                $checksum %= 97;
            }
 
-           return ((98 - $checksum) == $check);
+           return (98 - $checksum) == $check;
        } else {
            return false;
        }
