@@ -70,7 +70,7 @@ class Giftcards extends Component\Form implements EvaluationInterface
         if ($this->canSubmit === false) {
             return $resultFactory->createErrorMessageEvent()
                 ->withCustomEvent('payment:method:error')
-                ->withMessage('Cannot complete payment with voucher');
+                ->withMessage('Cannot complete payment with giftcards');
         }
 
         return $resultFactory->createSuccess();
@@ -142,10 +142,10 @@ class Giftcards extends Component\Form implements EvaluationInterface
                 $quote,
                 $this->buildGiftcardRequest($quote, $card, $cardNumber, $pin)->send()
             );
-            $this->emit("giftcard_response", [$response]);
+            $this->emit("giftcard_response", $response);
         } catch (\Throwable $th) {
             $this->logger->addDebug((string)$th);
-            $this->emit("giftcard_response", [["error" => __('Cannot apply giftcard')]]);
+            $this->emit("giftcard_response", ["error" => __('Cannot apply giftcard')]);
         }
     }
 
