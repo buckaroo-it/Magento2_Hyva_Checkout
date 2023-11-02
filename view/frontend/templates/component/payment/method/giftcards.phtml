@@ -69,17 +69,11 @@ if (!$magewire->isRedirect()) {
         },
         register() {
             this.listenToSubmit();
-            const v = async () => {
+            window.buckarooTask = async () => {
                 if(!this.canSubmit) {
                     await this.submit();
                 }
             };
-            window.dispatchEvent(new CustomEvent('buckaroo-add-task', {
-                detail: {
-                    buckarooTask: v
-                }
-            }));
-
         },
 
     })" x-init="register()" novalidate>
