@@ -11,7 +11,7 @@ use Magento\Framework\Escaper;
     <?php if ($magewire->showClientSideEncryption()) {
     ?>
         <form x-data="Object.assign(hyva.formValidation($el), {
-                    cseHasLoaded: false,
+                    cseHasLoaded: window.buckarooCseHasLoaded,
                     cardHolder: '',
                     cardNumber: '',
                     cardExpiration: '',

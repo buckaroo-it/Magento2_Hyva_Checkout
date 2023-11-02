@@ -69,7 +69,8 @@ class PayPerEmail extends Component\Form implements EvaluationInterface
      */
     public function mount(): void
     {
-        $payment = $this->getPayment();
+        $quote = $this->getQuote();
+        $payment = $quote->getPayment();
 
         $firstName = $payment->getAdditionalInformation('customer_billingFirstName');
         $lastName = $payment->getAdditionalInformation('customer_billingLastName');
@@ -77,7 +78,7 @@ class PayPerEmail extends Component\Form implements EvaluationInterface
         $email = $payment->getAdditionalInformation('customer_email');
         $this->gender = $payment->getAdditionalInformation('customer_gender');
 
-        $billingAddress = $this->getBillingAddress();
+        $billingAddress = $quote->getBillingAddress();
 
         if ($firstName === null) {
             $firstName = $billingAddress->getFirstname();
@@ -103,6 +104,7 @@ class PayPerEmail extends Component\Form implements EvaluationInterface
         $this->lastName = $lastName;
         $this->middleName = $middleName;
         $this->email = $email;
+        $this->quoteRepository->save($quote);
     }
 
 
@@ -138,24 +140,6 @@ class PayPerEmail extends Component\Form implements EvaluationInterface
         }
     }
 
-    /**
-     * Get payment from quote
-     *
-     * @return Payment
-     */
-    private function getPayment()
-    {
-        return $this->sessionCheckout->getQuote()->getPayment();
-    }
-    /**
-     * Get billing address from quote
-     *
-     * @return Address
-     */
-    private function getBillingAddress(): Address
-    {
-        return $this->sessionCheckout->getQuote()->getBillingAddress();
-    }
 
     /**
      * Validate single field with rules

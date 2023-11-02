@@ -11,7 +11,7 @@ use Magento\Framework\Escaper;
 
     <form x-data="Object.assign(hyva.formValidation($el), {
                     issuerImages: [],
-                    cseHasLoaded: false,
+                    cseHasLoaded: window.buckarooCseHasLoaded,
                     cardHolder: '',
                     cardNumber: '',
                     cardExpiration: '',
