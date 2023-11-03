@@ -11,7 +11,7 @@ use Magento\Framework\Escaper;
 
     <form x-data="Object.assign(hyva.formValidation($el), {
                     issuerImages: [],
-                    cseHasLoaded: false,
+                    cseHasLoaded: window.buckarooCseHasLoaded,
                     cardHolder: '',
                     cardNumber: '',
                     cardExpiration: '',
@@ -50,7 +50,7 @@ use Magento\Framework\Escaper;
                             }
                             return true;
                         }
-                        const v = async () => {
+                        window.buckarooTask = async () => {
                             const isValid = await formValid();
                             if (this.cseHasLoaded && isValid) {
                                 const encryptedCardData = await this.saveEncryptedData();
@@ -60,11 +60,6 @@ use Magento\Framework\Escaper;
                                 );
                             }
                         };
-                        window.dispatchEvent(new CustomEvent('buckaroo-add-task', {
-                            detail: {
-                                buckarooTask: v
-                            }
-                        }));
 
                     },
                     getIssuerImage: function() {

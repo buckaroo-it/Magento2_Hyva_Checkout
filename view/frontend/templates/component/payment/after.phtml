@@ -1,91 +1,3 @@
-<script>
-    let buckarooTask;
-    window.addEventListener("buckaroo-add-task", (event) => {
-        if (event.detail.buckarooTask) {
-            buckarooTask = event.detail.buckarooTask;
-        }
-    });
-
-    document.addEventListener("DOMContentLoaded", () => {
-        hyvaCheckout.navigation.addTask(async () => {
-            if (buckarooTask) {
-                await buckarooTask();
-            }
-        })
-
-        function buckaroo_load_sdk() {
-            return new Promise(resolve => {
-                const script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.src = '//static.buckaroo.nl/script/ClientSideEncryption001.js';
-                script.async = true;
-                script.onload = resolve;
-                document.head.appendChild(script);
-            })
-        }
-
-        buckaroo_load_sdk().then(() => {
-            hyva.formValidation.addRule('bk-validateCardNumber', (value) => {
-                if (!BuckarooClientSideEncryption.V001.validateCardNumber(value.replace(/\s+/g, ''))) {
-                    return '<?= $escaper->escapeJs(__('Please enter a valid creditcard number.')) ?>';
-                };
-                return true;
-            });
-
-            hyva.formValidation.addRule('bk-validateCardCvc', (value, options, field, context) => {
-                if (!BuckarooClientSideEncryption.V001.validateCvc(
-                    value,
-                    context.determineIssuer(context.cardNumber)
-                    )
-                ) {
-                    return '<?= $escaper->escapeJs(__('Please enter a valid Cvc number.')) ?>';
-                };
-                return true;
-            });
-
-            hyva.formValidation.addRule('bk-validateCardHolderName', (value) => {
-                if (!BuckarooClientSideEncryption.V001.validateCardholderName(value)) {
-                    return '<?= $escaper->escapeJs(__('Please enter a valid card holder name.')) ?>';
-                };
-                return true;
-            });
-
-            hyva.formValidation.addRule('bk-ValidateYear', (value) => {
-                const message = '<?= $escaper->escapeJs(__('Enter a valid year number.')) ?>';
-
-                if (value.length === 0) {
-                    return message;
-                }
-                const parts = value.split("/");
-                if (!BuckarooClientSideEncryption.V001.validateYear(parts[1])) {
-                    return message;
-                };
-                return true;
-            });
-
-            hyva.formValidation.addRule('bk-ValidateMonth', (value) => {
-                const message = '<?= $escaper->escapeJs(__('Enter a valid month number.')) ?>';
-                if (value.length === 0) {
-                    return message;
-                }
-
-                const parts = value.split("/");
-                if (!BuckarooClientSideEncryption.V001.validateMonth(parts[0])) {
-                    return message;
-                };
-                return true;
-            });
-            window.dispatchEvent(new CustomEvent("buckaroo-cse-load"));
-        })
-
-
-        Magewire.hook('element.removed', (el, component) => {
-            if (el.id !== undefined && el.id.indexOf('payment-method-view-buckaroo_magento2') > -1) {
-                buckarooTask = undefined;
-            }
-        })
-    });
-</script>
 <div class="bk-modal-wrap" x-data="{
     showModal: false,
     title: '<?= $escaper->escapeHtml(__('Success')); ?>',
@@ -96,6 +8,7 @@
         this.showModal = false;
     },
     initModal() {
+        buckarooStart();
         window.addEventListener('buckaroo-modal-show', (event) => {
             if(event.detail.data) {
                 this.showModal = true;
@@ -151,7 +64,7 @@
                     </p>
                 </div>
                 <!-- Modal footer -->
-                
+
                 <div class="flex items-center p-2 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
                     <template x-if="Array.isArray(buttons)">
                         <template x-for="(button, index) in buttons" :key="index">
@@ -173,3 +86,92 @@
         </div>
     </div>
 </div>
+<script>
+    function buckarooStart() {
+        const addTask = function() {
+            hyvaCheckout.navigation.addTask(async () => {
+                if (window.buckarooTask) {
+                    await window.buckarooTask();
+                }
+            })
+        }
+        addTask();
+        window.addEventListener('checkout:navigation:success', (event) => {
+            if (event.detail.route === 'payment')
+                addTask();
+        });
+
+
+        function buckaroo_load_sdk() {
+            return new Promise(resolve => {
+                const script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = '//static.buckaroo.nl/script/ClientSideEncryption001.js';
+                script.async = true;
+                script.onload = resolve;
+                document.head.appendChild(script);
+            })
+        }
+
+        buckaroo_load_sdk().then(() => {
+            window.buckarooCseHasLoaded = true;
+            hyva.formValidation.addRule('bk-validateCardNumber', (value) => {
+                if (!BuckarooClientSideEncryption.V001.validateCardNumber(value.replace(/\s+/g, ''))) {
+                    return '<?= $escaper->escapeJs(__('Please enter a valid creditcard number.')) ?>';
+                };
+                return true;
+            });
+
+            hyva.formValidation.addRule('bk-validateCardCvc', (value, options, field, context) => {
+                if (!BuckarooClientSideEncryption.V001.validateCvc(
+                        value,
+                        context.determineIssuer(context.cardNumber)
+                    )) {
+                    return '<?= $escaper->escapeJs(__('Please enter a valid Cvc number.')) ?>';
+                };
+                return true;
+            });
+
+            hyva.formValidation.addRule('bk-validateCardHolderName', (value) => {
+                if (!BuckarooClientSideEncryption.V001.validateCardholderName(value)) {
+                    return '<?= $escaper->escapeJs(__('Please enter a valid card holder name.')) ?>';
+                };
+                return true;
+            });
+
+            hyva.formValidation.addRule('bk-ValidateYear', (value) => {
+                const message = '<?= $escaper->escapeJs(__('Enter a valid year number.')) ?>';
+
+                if (value.length === 0) {
+                    return message;
+                }
+                const parts = value.split("/");
+                if (!BuckarooClientSideEncryption.V001.validateYear(parts[1])) {
+                    return message;
+                };
+                return true;
+            });
+
+            hyva.formValidation.addRule('bk-ValidateMonth', (value) => {
+                const message = '<?= $escaper->escapeJs(__('Enter a valid month number.')) ?>';
+                if (value.length === 0) {
+                    return message;
+                }
+
+                const parts = value.split("/");
+                if (!BuckarooClientSideEncryption.V001.validateMonth(parts[0])) {
+                    return message;
+                };
+                return true;
+            });
+            window.dispatchEvent(new CustomEvent("buckaroo-cse-load"));
+        })
+
+
+        Magewire.hook('element.removed', (el, component) => {
+            if (el.id !== undefined && el.id.indexOf('payment-method-view-buckaroo_magento2') > -1) {
+                buckarooTask = undefined;
+            }
+        })
+    }
+</script>

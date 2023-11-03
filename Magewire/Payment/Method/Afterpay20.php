@@ -30,7 +30,7 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
 
     public ?bool $tos = true;
 
-    public ?string $dateOfBirth = null;
+    public string $dateOfBirth = '';
 
     public string $fullName = '';
 
@@ -93,7 +93,7 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
         $this->coc = $payment->getAdditionalInformation('customer_coc');
         $this->phone = $payment->getAdditionalInformation('customer_telephone');
         $this->identificationNumber = $payment->getAdditionalInformation('customer_identificationNumber');
-        $this->dateOfBirth = $payment->getAdditionalInformation('customer_DoB');
+        $this->dateOfBirth = (string)$payment->getAdditionalInformation('customer_DoB');
         $this->fullName = $this->getFullName();
     }
 
@@ -136,6 +136,7 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
             ['coc.digits_between' => 'Invalid COC number']
         );
 
+        $this->updatePaymentField('customer_DoB', '', '');
         $this->updatePaymentField('customer_coc', $value);
         return $value;
     }
@@ -194,9 +195,9 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
      *
      * @return void
      */
-    private function updatePaymentField(string $name, $value): void
+    private function updatePaymentField(string $name, $value, $default = null): void
     {
-        $value = empty($value) ? null : $value;
+        $value = empty($value) ? $default : $value;
 
         try {
             $quote = $this->sessionCheckout->getQuote();

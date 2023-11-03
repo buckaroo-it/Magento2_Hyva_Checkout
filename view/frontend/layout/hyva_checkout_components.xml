@@ -3,12 +3,6 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
 >
     <body>
-        <referenceContainer name="checkout.payment.methods.before">
-             <block name="checkout.payment.method.buckaroo_before_payments"
-                    as="buckaroo_before_payments"
-                    template="Buckaroo_HyvaCheckout::component/payment/before.phtml">
-            </block>
-        </referenceContainer>
         <referenceBlock name="checkout.payment.methods">
             <!-- Payment Renderer: iDEAL -->
             <block name="checkout.payment.method.buckaroo_magento2_ideal"
