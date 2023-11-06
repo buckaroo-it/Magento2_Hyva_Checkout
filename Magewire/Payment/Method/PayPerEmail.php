@@ -140,6 +140,16 @@ class PayPerEmail extends Component\Form implements EvaluationInterface
         }
     }
 
+    /**
+     * Get billing address from quote
+     *
+     * @return Address
+     */
+    private function getBillingAddress(): Address
+    {
+        return $this->sessionCheckout->getQuote()->getBillingAddress();
+    }
+
 
     /**
      * Validate single field with rules

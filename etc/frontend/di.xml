@@ -43,6 +43,7 @@
             <argument name="customFields" xsi:type="array">
                 <item name="buckaroo_idin_iseighteenorolder" xsi:type="string">\Buckaroo\HyvaCheckout\Model\Form\Eav\Customer\Idin</item>
                 <item name="buckaroo_idin" xsi:type="string">\Buckaroo\HyvaCheckout\Model\Form\Eav\Customer\Idin</item>
+                <item name="buckaroo_last_paybybank_issuer" xsi:type="string">\Buckaroo\HyvaCheckout\Model\Form\Eav\Customer\Idin</item>
             </argument>
         </arguments>
     </type>
