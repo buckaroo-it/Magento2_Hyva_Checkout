@@ -67,7 +67,8 @@ class Giftcards extends Component\Form implements EvaluationInterface
 
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
-        if ($this->canSubmit === false) {
+
+        if ($this->canSubmit === false && !$this->isRedirect()) {
             return $resultFactory->createErrorMessageEvent()
                 ->withCustomEvent('payment:method:error')
                 ->withMessage('Cannot complete payment with giftcards');
