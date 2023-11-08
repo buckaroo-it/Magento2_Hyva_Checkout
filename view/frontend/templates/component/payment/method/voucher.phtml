@@ -72,17 +72,11 @@ use Magento\Framework\Escaper;
             }));
         },
         register() {
-            const v = async () => {
+            window.buckarooTask = async () => {
                 if(!this.canSubmit) {
                     await this.submit();
                 }
             };
-            window.dispatchEvent(new CustomEvent('buckaroo-add-task', {
-                detail: {
-                    buckarooTask: v
-                }
-            }));
-
         },
 
     })" x-init="register()" novalidate>
@@ -91,9 +85,19 @@ use Magento\Framework\Escaper;
                 <?= $escaper->escapeHtml(__('Voucher code:')); ?>
                 <span class="text-red">*</span>
             </label>
-            <input type="text" x-model="code" data-validate='{"required": true}' @change="onChange" id="buckaroo_voucher_code" name="buckaroo_voucher_code" placeholder="<?= $escaper->escapeHtml(__('1A2B-3C4D-6E7F-8G9H-1I2J')); ?>" />
+            <input
+                type="text"
+                x-model="code"
+                data-validate='{"required": true}'
+                @change="onChange"
+                id="buckaroo_voucher_code"
+                name="buckaroo_voucher_code"
+                placeholder="<?= $escaper->escapeHtml(__('1A2B-3C4D-6E7F-8G9H-1I2J')); ?>"
+            />
         </div>
-        <button type="button" @click="submit" class="btn btn-primary"><?= $escaper->escapeHtml(__('Apply Voucher')); ?></button>
+        <button type="button" @click="submit" class="btn btn-primary">
+            <?= $escaper->escapeHtml(__('Apply Voucher')); ?>
+        </button>
     </form>
 
 

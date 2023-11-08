@@ -16,8 +16,7 @@ $issuers = $magewire->getIssuers();
                 <?php
                 foreach ($issuers as $issuer) {
                 ?>
-                    <option 
-                    value="<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>">
+                    <option value="<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>">
                         <?= $escaper->escapeHtml($issuer["name"]) ?>
                     </option>
                 <?php
@@ -40,7 +39,7 @@ $issuers = $magewire->getIssuers();
                     <label
                     for="bk_ideal_issuer_<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>"
                     class="flex flex-row grow gap-x-2 items-center">
-                        <img 
+                        <img
                         src="<?= $escaper->escapeUrl($magewire->getImageUrl($issuer["imgName"])) ?>"
                         alt="<?= $issuer["name"] ?>"
                         style="max-height:25px;"

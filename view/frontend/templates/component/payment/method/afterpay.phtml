@@ -21,7 +21,13 @@ use Magento\Framework\Escaper;
                 <?= $escaper->escapeHtml(__('Date of Birth:')); ?>
                 <span class="text-red">*</span>
             </label>
-            <input type="date" x-data value="<?= $magewire->dateOfBirth ?>" @blur="$wire.call('updatedDateOfBirth', $event.target.value)" id="buckaroo_afterpay_dob">
+            <input
+                type="date"
+                x-data
+                value="<?= $magewire->dateOfBirth ?>"
+                @blur="$wire.call('updatedDateOfBirth', $event.target.value)"
+                id="buckaroo_afterpay_dob"
+            >
             <?php if ($magewire->hasError('dateOfBirth')) : ?>
                 <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
             <?php endif; ?>
@@ -47,8 +53,15 @@ use Magento\Framework\Escaper;
     <?php if ($magewire->showBusinessSelector()) {
     ?>
         <div class="flex flex-col gap-y-2 field field-reserved">
-            <label for="buckaroo_magento2_afterpay_selectedBusiness"><?= $escaper->escapeHtml(__('Business Model:')); ?></label>
-            <select name="issuer" id="buckaroo_magento2_afterpay_selectedBusiness" wire:model="selectedBusiness" class="form-select">
+            <label for="buckaroo_magento2_afterpay_selectedBusiness">
+                <?= $escaper->escapeHtml(__('Business Model:')); ?>
+            </label>
+            <select
+                name="issuer"
+                id="buckaroo_magento2_afterpay_selectedBusiness"
+                wire:model="selectedBusiness"
+                class="form-select"
+            >
                 <option value="1"><?= $escaper->escapeHtml(__('B2C - Business to Consumer')) ?></option>
                 <option value="2"><?= $escaper->escapeHtml(__('B2B - Business to Business')) ?></option>
             </select>
@@ -59,7 +72,7 @@ use Magento\Framework\Escaper;
     ?>
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_afterpay_iban">
-                <?= $escaper->escapeHtml(__( 'Bank Account Number:')); ?>
+                <?= $escaper->escapeHtml(__('Bank Account Number:')); ?>
                 <span class="text-red">*</span>
             </label>
             <input type="text" wire:model.lazy="iban" id="buckaroo_afterpay_iban">
@@ -99,7 +112,11 @@ use Magento\Framework\Escaper;
         <label for="buckaroo_afterpay_tos"><?= $escaper->escapeHtml(__('Terms and Conditions:')); ?></label>
         <div class="flex flex-row gap-x-2">
             <input class="mt-1" type="checkbox" wire:model.lazy="tos" id="buckaroo_afterpay_tos">
-            <a class="grow" href="<?= $escaper->escapeUrl($magewire->getTosLink()) ?>"><?= $escaper->escapeHtml(__('Yes, I accept the terms and condition for the use of Riverty | Afterpay.')) ?></a>
+            <a class="grow" href="<?= $escaper->escapeUrl($magewire->getTosLink()) ?>">
+                <?= $escaper->escapeHtml(
+                    __('Yes, I accept the terms and condition for the use of Riverty | Afterpay.')
+                ) ?>
+            </a>
         </div>
         <?php if ($magewire->hasError('tos')) : ?>
             <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('tos')) ?></div>

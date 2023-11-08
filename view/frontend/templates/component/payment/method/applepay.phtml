@@ -86,16 +86,10 @@ use Magento\Framework\Escaper;
         this.config = this.$wire.get('config');
         this.loadSdk().then(async () => {
             this.canDisplay = await BuckarooApplePay.checkPaySupport();
-            const v = async () => {
-                if(this.canDisplay) {
-                    await this.beginPayment(); 
-                } 
+            window.buckarooTask = async () => {
+                if(this.canDisplay)
+                    await this.beginPayment();
             };
-            window.dispatchEvent(new CustomEvent('buckaroo-add-task', {
-                detail: {
-                    buckarooTask: v
-                }
-            }));
         });
     }
 }" x-init="register()" novalidate>

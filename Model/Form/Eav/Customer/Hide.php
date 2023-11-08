@@ -6,7 +6,7 @@ namespace Buckaroo\HyvaCheckout\Model\Form\Eav\Customer;
 
 use Hyva\Checkout\Model\Form\EntityField\EavAttributeField;
 
-class Idin extends EavAttributeField
+class Hide extends EavAttributeField
 {
     public function canRender(): bool
     {

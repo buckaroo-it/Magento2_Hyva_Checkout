@@ -32,7 +32,12 @@ use Magento\Framework\Escaper;
             <?= $escaper->escapeHtml(__('Billing First Name:')); ?>
             <span class="text-red">*</span>
         </label>
-        <input type="text" wire:model.lazy="firstName" id="buckaroo_paypermail_first_name" placeholder="<?= $escaper->escapeHtml(__('John')); ?>">
+        <input
+            type="text"
+            wire:model.lazy="firstName"
+            id="buckaroo_paypermail_first_name"
+            placeholder="<?= $escaper->escapeHtml(__('John')); ?>"
+        >
         <?php if ($magewire->hasError('firstName')) : ?>
             <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('firstName')) ?></div>
         <?php endif; ?>
@@ -42,7 +47,12 @@ use Magento\Framework\Escaper;
         <label for="buckaroo_paypermail_middle_name">
             <?= $escaper->escapeHtml(__('Billing Middle Name:')); ?>
         </label>
-        <input type="text" wire:model.lazy="middleName" id="buckaroo_paypermail_middle_name" placeholder="<?= $escaper->escapeHtml(__('S')); ?>">
+        <input
+            type="text"
+            wire:model.lazy="middleName"
+            id="buckaroo_paypermail_middle_name"
+            placeholder="<?= $escaper->escapeHtml(__('S')); ?>"
+        >
     </div>
 
     <div class="flex flex-col gap-y-2 field field-reserved">
@@ -50,7 +60,12 @@ use Magento\Framework\Escaper;
             <?= $escaper->escapeHtml(__('Billing Last Name:')); ?>
             <span class="text-red">*</span>
         </label>
-        <input type="text" wire:model.lazy="lastName" id="buckaroo_paypermail_last_name" placeholder="<?= $escaper->escapeHtml(__('Doe')); ?>">
+        <input
+            type="text"
+            wire:model.lazy="lastName"
+            id="buckaroo_paypermail_last_name"
+            placeholder="<?= $escaper->escapeHtml(__('Doe')); ?>"
+        >
         <?php if ($magewire->hasError('lastName')) : ?>
             <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('lastName')) ?></div>
         <?php endif; ?>
@@ -61,7 +76,12 @@ use Magento\Framework\Escaper;
             <?= $escaper->escapeHtml(__('Email:')); ?>
             <span class="text-red">*</span>
         </label>
-        <input type="text" wire:model.lazy="email" id="buckaroo_paypermail_email" placeholder="<?= $escaper->escapeHtml(__('email@example.com')); ?>">
+        <input
+            type="text"
+            wire:model.lazy="email"
+            id="buckaroo_paypermail_email"
+            placeholder="<?= $escaper->escapeHtml(__('email@example.com')); ?>"
+        >
         <?php if ($magewire->hasError('email')) : ?>
             <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('email')) ?></div>
         <?php endif; ?>

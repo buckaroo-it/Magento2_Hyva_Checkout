@@ -11,7 +11,7 @@ use Magento\Framework\Escaper;
 
     <form x-data="Object.assign(hyva.formValidation($el), {
                     issuerImages: [],
-                    cseHasLoaded: false,
+                    cseHasLoaded: window.buckarooCseHasLoaded,
                     cardHolder: '',
                     cardNumber: '',
                     cardExpiration: '',
@@ -50,18 +50,16 @@ use Magento\Framework\Escaper;
                             }
                             return true;
                         }
-                        const v = async () => {
+                        window.buckarooTask = async () => {
                             const isValid = await formValid();
                             if (this.cseHasLoaded && isValid) {
                                 const encryptedCardData = await this.saveEncryptedData();
-                                await this.$wire.updatedEncryptedData(encryptedCardData, this.determineIssuer(this.cardNumber));
+                                await this.$wire.updatedEncryptedData(
+                                    encryptedCardData,
+                                    this.determineIssuer(this.cardNumber)
+                                );
                             }
                         };
-                        window.dispatchEvent(new CustomEvent('buckaroo-add-task', {
-                            detail: {
-                                buckarooTask: v
-                            }
-                        }));
 
                     },
                     getIssuerImage: function() {
@@ -117,7 +115,12 @@ use Magento\Framework\Escaper;
                 <?= $escaper->escapeHtml(__('Name on card:')); ?>
                 <span class="text-red">*</span>
             </label>
-            <input type="text" x-model="cardHolder" data-validate='{"bk-validateCardHolderName": true}' @change="onChange" id="buckaroo_creditcards_card_holder" name="buckaroo_creditcards_card_holder" placeholder="<?= $escaper->escapeHtml(__('John Doe')); ?>" />
+            <input type="text"
+            x-model="cardHolder"
+            data-validate='{"bk-validateCardHolderName": true}'
+            @change="onChange" id="buckaroo_creditcards_card_holder"
+            name="buckaroo_creditcards_card_holder"
+            placeholder="<?= $escaper->escapeHtml(__('John Doe')); ?>" />
         </div>
 
         <div class="flex flex-col gap-y-2 field field-reserved">
@@ -126,9 +129,18 @@ use Magento\Framework\Escaper;
                 <span class="text-red">*</span>
             </label>
             <div class="relative w-full">
-                <input type="text" class="w-full" maxlength="23" x-model="cardNumber" data-validate='{"bk-validateCardNumber": true}' @change="onChange" id="buckaroo_creditcards_card_number" name="buckaroo_creditcards_card_number" placeholder="<?= $escaper->escapeHtml(__('0000 0000 0000 0000')); ?>" />
+                <input
+                    type="text"
+                    class="w-full"
+                    maxlength="23"
+                    x-model="cardNumber"
+                    data-validate='{"bk-validateCardNumber": true}'
+                    @change="onChange" id="buckaroo_creditcards_card_number"
+                    name="buckaroo_creditcards_card_number"
+                    placeholder="<?= $escaper->escapeHtml(__('0000 0000 0000 0000')); ?>"
+                />
                 <div class="absolute inset-y-0 right-3 flex items-center pr-3">
-                    <img :src="getIssuerImage()" style="height: 100%;padding: 10px 0;">
+                    <img :src="getIssuerImage()" :alt="cardNumber" style="height: 100%;padding: 10px 0;">
                 </div>
 
             </div>
@@ -140,7 +152,14 @@ use Magento\Framework\Escaper;
                         <?= $escaper->escapeHtml(__('Expiration:')); ?>
                         <span class="text-red">*</span>
                     </label>
-                    <input type="text" maxlength="5" x-model="cardExpiration" data-validate='{"bk-ValidateYear": true, "bk-ValidateMonth": true}' @change="onChange" id="buckaroo_creditcards_card_expiration" name="buckaroo_creditcards_card_expiration" placeholder="<?= $escaper->escapeHtml(__('MM/YY')); ?>" />
+                    <input type="text"
+                        maxlength="5"
+                        x-model="cardExpiration"
+                        data-validate='{"bk-ValidateYear": true, "bk-ValidateMonth": true}'
+                        @change="onChange" id="buckaroo_creditcards_card_expiration"
+                        name="buckaroo_creditcards_card_expiration"
+                        placeholder="<?= $escaper->escapeHtml(__('MM/YY')); ?>"
+                    />
                 </div>
 
                 <div class="flex flex-col w-5/12">
@@ -148,7 +167,15 @@ use Magento\Framework\Escaper;
                         <?= $escaper->escapeHtml(__('CVC / CVV:')); ?>
                         <span class="text-red">*</span>
                     </label>
-                    <input type="text" x-model="cardCvc" maxlength="4" data-validate='{"bk-validateCardCvc": true}' @change="onChange" id="buckaroo_creditcards_card_cvc" name="buckaroo_creditcards_card_cvc" placeholder="<?= $escaper->escapeHtml(__('123')); ?>" />
+                    <input
+                        type="text"
+                        x-model="cardCvc"
+                        maxlength="4"
+                        data-validate='{"bk-validateCardCvc": true}'
+                        @change="onChange" id="buckaroo_creditcards_card_cvc"
+                        name="buckaroo_creditcards_card_cvc"
+                        placeholder="<?= $escaper->escapeHtml(__('123')); ?>"
+                    />
                 </div>
             </div>
         </div>
