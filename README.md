@@ -19,7 +19,7 @@ Buckaroo has developed a cutting-edge Hyvä Checkout module as an extension for 
 <br>
 
 ## Installation
-Install the module by using composer with the following commands:
+**Install the module by using composer with the following commands:**
 
 1. Create the plugin directory:
 ```
