@@ -27,7 +27,7 @@ Install the module by using composer with the following commands:
 mkdir app/code/Buckaroo
 cd app/code/Buckaroo
 git clone https://github.com/buckaroo-it/Magento2_Hyva_Checkout.git
-git checkout 1.0.0-RC1
+git checkout 1.0.0
 mv Magento2_Hyva_Checkout HyvaCheckout
 php bin/magento module:enable Buckaroo_HyvaCheckout
 php bin/magento setup:upgrade
