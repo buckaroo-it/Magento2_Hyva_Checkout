@@ -3,9 +3,6 @@
 </p>
 
 # Buckaroo Magento 2 Hyvä Checkout
-<br>
-
-## Introduction
 Buckaroo has developed a cutting-edge Hyvä Checkout module as an extension for the Buckaroo Magento 2 plugin. By integrating this module, we have seamlessly incorporated support for Hyvä Checkout, enhancing your payment experience with Buckaroo while enjoying quicker loading times, particularly on mobile devices – a remarkable 13 times faster. With Hyvä's outstanding performance, your store will witness improved conversion rates, superior performance, and reduced overall complexity.
 
 #### Please note that there are 2 versions of Hyvä modules:
@@ -24,31 +21,31 @@ Buckaroo has developed a cutting-edge Hyvä Checkout module as an extension for 
 ## Installation
 Install the module by using composer with the following commands:
 
-1. Make the plugin directory
+1. Create the plugin directory:
 ```
 mkdir app/code/Buckaroo
 ```
-2. Navigate to the created directory
+2. Navigate to the created directory:
 ```
 cd app/code/Buckaroo
 ```
-3. Clone this repository
+3. Clone this repository:
 ```
 git clone https://github.com/buckaroo-it/Magento2_Hyva_Checkout.git
 ```
-4. Swich to the latest version
+4. Swich to the latest version:
 ```
 git checkout 1.0.0
 ```
-5. Rename resulting directory
+5. Rename resulting directory:
 ```
 mv Magento2_Hyva_Checkout HyvaCheckout
 ```
-7. Navigate to root director
+7. Navigate to root directory:
 ```
 cd ../../../../
 ```
-7. Enable the magento module, run setup upgrate && deploy static content
+7. Enable the magento module, run setup upgrate & deploy static content:
 ```
 php bin/magento module:enable Buckaroo_HyvaCheckout
 php bin/magento setup:upgrade
