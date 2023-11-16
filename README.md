@@ -45,7 +45,7 @@ mv Magento2_Hyva_Checkout HyvaCheckout
 ```
 cd ../../../../
 ```
-7. Enable the magento module, run setup upgrate & deploy static content:
+8. Enable the magento module, run setup upgrate & deploy static content:
 ```
 php bin/magento module:enable Buckaroo_HyvaCheckout
 php bin/magento setup:upgrade
