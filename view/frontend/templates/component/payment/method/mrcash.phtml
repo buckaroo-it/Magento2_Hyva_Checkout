@@ -10,53 +10,7 @@ use Magento\Framework\Escaper;
 <div class="col-span-6">
     <?php if ($magewire->showClientSideEncryption()) {
     ?>
-        <form x-data="Object.assign(hyva.formValidation($el), {
-                    cseHasLoaded: window.buckarooCseHasLoaded,
-                    cardHolder: '',
-                    cardNumber: '',
-                    cardExpiration: '',
-                    async saveEncryptedData() {
-                        let parts = this.cardExpiration.split('/');
-                        const year = parts[1];
-                        const month = parts[0];
-                        const wire = this.$wire;
-                        const enc = new Promise((resolve) => {
-                            BuckarooClientSideEncryption.V001.encryptCardData(
-                                this.cardNumber,
-                                year,
-                                month,
-                                '',
-                                this.cardHolder,
-                                function(encryptedCardData) {
-                                    resolve(encryptedCardData);
-                                });
-                        })
-                        return await enc;
-                    },
-                    register() {
-                        window.addEventListener('buckaroo-cse-load', () => {
-                            this.cseHasLoaded = true;
-                        }, {
-                            once: true
-                        })
-
-                        const formValid = async () => {
-                            try {
-                                await this.validate();
-                            } catch (error) {
-                                return false;
-                            }
-                            return true;
-                        }
-                        window.buckarooTask = async () => {
-                            const isValid = await formValid();
-                            if (this.cseHasLoaded && isValid) {
-                                const encryptedCardData = await this.saveEncryptedData();
-                                await this.$wire.updatedEncryptedData(encryptedCardData);
-                            }
-                        };
-                    }
-                })" x-init="register()" novalidate>
+        <form x-data="buckaroo.mrCash($el)" x-init="register()" novalidate>
             <div class="flex flex-col gap-y-2 field field-reserved">
                 <label for="buckaroo_mrcash_card_holder">
                     <?= $escaper->escapeHtml(__('Name on card:')); ?>
