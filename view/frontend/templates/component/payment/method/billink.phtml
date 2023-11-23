@@ -29,14 +29,14 @@ use Magento\Framework\Escaper;
             ?>
         </select>
         <?php if ($magewire->hasError('gender')) : ?>
-            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('gender')) ?></div>
+            <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('gender')) ?></div>
         <?php endif; ?>
     </div>
 
     <div class="flex flex-col gap-y-2 field field-reserved">
         <label for="buckaroo_billink_dob">
             <?= $escaper->escapeHtml(__('Date of Birth:')); ?>
-            <span class="text-red">*</span>
+            <span class="text-red-600">*</span>
         </label>
         <input
             type="date"
@@ -45,7 +45,7 @@ use Magento\Framework\Escaper;
             id="buckaroo_billink_dob"
         >
         <?php if ($magewire->hasError('dateOfBirth')) : ?>
-            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
+            <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
         <?php endif; ?>
     </div>
 
@@ -55,11 +55,11 @@ use Magento\Framework\Escaper;
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_billink_phone">
                 <?= $escaper->escapeHtml(__('Telephone:')); ?>
-                <span class="text-red">*</span>
+                <span class="text-red-600">*</span>
             </label>
             <input type="text" wire:model.lazy="phone" id="buckaroo_billink_phone">
             <?php if ($magewire->hasError('phone')) : ?>
-                <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('phone')) ?></div>
+                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('phone')) ?></div>
             <?php endif; ?>
         </div>
     <?php
@@ -70,11 +70,11 @@ use Magento\Framework\Escaper;
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_billink_coc">
                 <?= $escaper->escapeHtml(__('COC Number:')); ?>
-                <span class="text-red">*</span>
+                <span class="text-red-600">*</span>
             </label>
             <input type="text" wire:model.lazy="coc" id="buckaroo_billink_coc">
             <?php if ($magewire->hasError('coc')) : ?>
-                <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('coc')) ?></div>
+                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('coc')) ?></div>
             <?php endif; ?>
         </div>
 
@@ -84,7 +84,7 @@ use Magento\Framework\Escaper;
             </label>
             <input type="text" wire:model.lazy="vatNumber" id="buckaroo_billink_vat_number">
             <?php if ($magewire->hasError('vatNumber')) : ?>
-                <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('vatNumber')) ?></div>
+                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('vatNumber')) ?></div>
             <?php endif; ?>
         </div>
     <?php
@@ -102,7 +102,7 @@ use Magento\Framework\Escaper;
             </a>
         </div>
         <?php if ($magewire->hasError('tos')) : ?>
-            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('tos')) ?></div>
+            <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('tos')) ?></div>
         <?php endif; ?>
     </div>
 </div>

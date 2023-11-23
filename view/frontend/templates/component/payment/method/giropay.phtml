@@ -13,7 +13,7 @@ $genders = $magewire->getGenderList();
     <div class="flex flex-col gap-y-2 field field-reserved">
         <label for="buckaroo_giropay_bic">
             <?= $escaper->escapeHtml(__('BIC Number')); ?>
-            <span class="text-red">*</span>
+            <span class="text-red-600">*</span>
         </label>
         <input
             type="text"
@@ -22,7 +22,7 @@ $genders = $magewire->getGenderList();
             placeholder="<?= $escaper->escapeHtml(__('AAAABBCCDDD')); ?>"
         >
         <?php if ($magewire->hasError('bic')) : ?>
-            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('bic')) ?></div>
+            <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('bic')) ?></div>
         <?php endif; ?>
     </div>
 </div>

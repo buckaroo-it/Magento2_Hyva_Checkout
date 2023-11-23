@@ -23,14 +23,14 @@ use Magento\Framework\Escaper;
             ?>
         </select>
         <?php if ($magewire->hasError('gender')) : ?>
-            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('gender')) ?></div>
+            <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('gender')) ?></div>
         <?php endif; ?>
     </div>
 
     <div class="flex flex-col gap-y-2 field field-reserved">
         <label for="buckaroo_paypermail_first_name">
             <?= $escaper->escapeHtml(__('Billing First Name:')); ?>
-            <span class="text-red">*</span>
+            <span class="text-red-600">*</span>
         </label>
         <input
             type="text"
@@ -39,7 +39,7 @@ use Magento\Framework\Escaper;
             placeholder="<?= $escaper->escapeHtml(__('John')); ?>"
         >
         <?php if ($magewire->hasError('firstName')) : ?>
-            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('firstName')) ?></div>
+            <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('firstName')) ?></div>
         <?php endif; ?>
     </div>
 
@@ -58,7 +58,7 @@ use Magento\Framework\Escaper;
     <div class="flex flex-col gap-y-2 field field-reserved">
         <label for="buckaroo_paypermail_last_name">
             <?= $escaper->escapeHtml(__('Billing Last Name:')); ?>
-            <span class="text-red">*</span>
+            <span class="text-red-600">*</span>
         </label>
         <input
             type="text"
@@ -67,14 +67,14 @@ use Magento\Framework\Escaper;
             placeholder="<?= $escaper->escapeHtml(__('Doe')); ?>"
         >
         <?php if ($magewire->hasError('lastName')) : ?>
-            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('lastName')) ?></div>
+            <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('lastName')) ?></div>
         <?php endif; ?>
     </div>
 
     <div class="flex flex-col gap-y-2 field field-reserved">
         <label for="buckaroo_paypermail_email">
             <?= $escaper->escapeHtml(__('Email:')); ?>
-            <span class="text-red">*</span>
+            <span class="text-red-600">*</span>
         </label>
         <input
             type="text"
@@ -83,7 +83,7 @@ use Magento\Framework\Escaper;
             placeholder="<?= $escaper->escapeHtml(__('email@example.com')); ?>"
         >
         <?php if ($magewire->hasError('email')) : ?>
-            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('email')) ?></div>
+            <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('email')) ?></div>
         <?php endif; ?>
     </div>
 </div>

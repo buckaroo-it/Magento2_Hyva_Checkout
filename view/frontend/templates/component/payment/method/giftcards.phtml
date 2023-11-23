@@ -39,7 +39,7 @@ if (!$magewire->isRedirect()) {
             <div class="flex flex-col gap-y-2 field field-reserved">
                 <label for="buckaroo_giftcard_card_number">
                     <?= $escaper->escapeHtml(__('Card number:')); ?>
-                    <span class="text-red">*</span>
+                    <span class="text-red-600">*</span>
                 </label>
                 <input
                     type="text"
@@ -53,7 +53,7 @@ if (!$magewire->isRedirect()) {
             <div class="flex flex-col gap-y-2 field field-reserved">
                 <label for="buckaroo_giftcard_pin">
                     <?= $escaper->escapeHtml(__('PIN / Security code:')); ?>
-                    <span class="text-red">*</span>
+                    <span class="text-red-600">*</span>
                 </label>
                 <input
                     type="text"
