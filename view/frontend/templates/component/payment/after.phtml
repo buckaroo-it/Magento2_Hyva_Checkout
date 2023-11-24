@@ -1,28 +1,4 @@
-<div class="bk-modal-wrap" x-data="{
-    showModal: false,
-    title: '<?= $escaper->escapeHtml(__('Success')); ?>',
-    content: '',
-    showClose: true,
-    buttons:[],
-    close() {
-        this.showModal = false;
-    },
-    initModal() {
-        buckarooStart();
-        window.addEventListener('buckaroo-modal-show', (event) => {
-            if(event.detail.data) {
-                this.showModal = true;
-                Object.keys(event.detail.data).forEach((key) => {
-                    this[key] = event.detail.data[key];
-                })
-            }
-        })
-
-        window.addEventListener('buckaroo-modal-hide', () => {
-            this.close();
-        })
-    }
-}" x-init="initModal()">
+<div class="bk-modal-wrap" x-data="buckaroo.modal()" x-init="initModal()">
     <div
     id="bk-modal"
     tabindex="-1"
@@ -87,91 +63,507 @@
     </div>
 </div>
 <script>
-    function buckarooStart() {
-        const addTask = function() {
-            hyvaCheckout.navigation.addTask(async () => {
-                if (window.buckarooTask) {
-                    await window.buckarooTask();
+
+    var buckaroo = {
+        modal() {
+            return {
+                showModal: false,
+                title: '<?= $escaper->escapeHtml(__('Success')); ?>',
+                content: '',
+                showClose: true,
+                buttons:[],
+                close() {
+                    this.showModal = false;
+                },
+                initModal() {
+                    buckaroo.start();
+                    window.addEventListener('buckaroo-modal-show', (event) => {
+                        if(event.detail.data) {
+                            this.showModal = true;
+                            Object.keys(event.detail.data).forEach((key) => {
+                                this[key] = event.detail.data[key];
+                            })
+                        }
+                    });
+
+                    window.addEventListener('buckaroo-modal-hide', () => {
+                        this.close();
+                    });
                 }
-            })
-        }
-        addTask();
-        window.addEventListener('checkout:navigation:success', (event) => {
-            if (event.detail.route === 'payment')
-                addTask();
-        });
-
-
-        function buckaroo_load_sdk() {
-            return new Promise(resolve => {
-                const script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.src = '//static.buckaroo.nl/script/ClientSideEncryption001.js';
-                script.async = true;
-                script.onload = resolve;
-                document.head.appendChild(script);
-            })
-        }
-
-        buckaroo_load_sdk().then(() => {
-            window.buckarooCseHasLoaded = true;
-            hyva.formValidation.addRule('bk-validateCardNumber', (value) => {
-                if (!BuckarooClientSideEncryption.V001.validateCardNumber(value.replace(/\s+/g, ''))) {
-                    return '<?= $escaper->escapeJs(__('Please enter a valid creditcard number.')) ?>';
-                };
-                return true;
-            });
-
-            hyva.formValidation.addRule('bk-validateCardCvc', (value, options, field, context) => {
-                if (!BuckarooClientSideEncryption.V001.validateCvc(
-                        value,
-                        context.determineIssuer(context.cardNumber)
-                    )) {
-                    return '<?= $escaper->escapeJs(__('Please enter a valid Cvc number.')) ?>';
-                };
-                return true;
-            });
-
-            hyva.formValidation.addRule('bk-validateCardHolderName', (value) => {
-                if (!BuckarooClientSideEncryption.V001.validateCardholderName(value)) {
-                    return '<?= $escaper->escapeJs(__('Please enter a valid card holder name.')) ?>';
-                };
-                return true;
-            });
-
-            hyva.formValidation.addRule('bk-ValidateYear', (value) => {
-                const message = '<?= $escaper->escapeJs(__('Enter a valid year number.')) ?>';
-
-                if (value.length === 0) {
-                    return message;
-                }
-                const parts = value.split("/");
-                if (!BuckarooClientSideEncryption.V001.validateYear(parts[1])) {
-                    return message;
-                };
-                return true;
-            });
-
-            hyva.formValidation.addRule('bk-ValidateMonth', (value) => {
-                const message = '<?= $escaper->escapeJs(__('Enter a valid month number.')) ?>';
-                if (value.length === 0) {
-                    return message;
-                }
-
-                const parts = value.split("/");
-                if (!BuckarooClientSideEncryption.V001.validateMonth(parts[0])) {
-                    return message;
-                };
-                return true;
-            });
-            window.dispatchEvent(new CustomEvent("buckaroo-cse-load"));
-        })
-
-
-        Magewire.hook('element.removed', (el, component) => {
-            if (el.id !== undefined && el.id.indexOf('payment-method-view-buckaroo_magento2') > -1) {
-                buckarooTask = undefined;
             }
-        })
+        },
+        start() {
+            const addTask = function() {
+                hyvaCheckout.navigation.addTask(async () => {
+                    if (window.buckarooTask) {
+                        await window.buckarooTask();
+                    }
+                })
+            }
+            addTask();
+            window.addEventListener('checkout:navigation:success', (event) => {
+                if (event.detail.route === 'payment')
+                    addTask();
+            });
+
+
+            function buckaroo_load_sdk() {
+                return new Promise(resolve => {
+                    const script = document.createElement('script');
+                    script.type = 'text/javascript';
+                    script.src = '//static.buckaroo.nl/script/ClientSideEncryption001.js';
+                    script.async = true;
+                    script.onload = resolve;
+                    document.head.appendChild(script);
+                })
+            }
+
+            buckaroo_load_sdk().then(() => {
+                window.buckarooCseHasLoaded = true;
+                hyva.formValidation.addRule('bk-validateCardNumber', (value) => {
+                    if (!BuckarooClientSideEncryption.V001.validateCardNumber(value.replace(/\s+/g, ''))) {
+                        return '<?= $escaper->escapeJs(__('Please enter a valid creditcard number.')) ?>';
+                    };
+                    return true;
+                });
+
+                hyva.formValidation.addRule('bk-validateCardCvc', (value, options, field, context) => {
+                    if (!BuckarooClientSideEncryption.V001.validateCvc(
+                            value,
+                            context.determineIssuer(context.cardNumber)
+                        )) {
+                        return '<?= $escaper->escapeJs(__('Please enter a valid Cvc number.')) ?>';
+                    };
+                    return true;
+                });
+
+                hyva.formValidation.addRule('bk-validateCardHolderName', (value) => {
+                    if (!BuckarooClientSideEncryption.V001.validateCardholderName(value)) {
+                        return '<?= $escaper->escapeJs(__('Please enter a valid card holder name.')) ?>';
+                    };
+                    return true;
+                });
+
+                hyva.formValidation.addRule('bk-ValidateYear', (value) => {
+                    const message = '<?= $escaper->escapeJs(__('Enter a valid year number.')) ?>';
+
+                    if (value.length === 0) {
+                        return message;
+                    }
+                    const parts = value.split("/");
+                    if (!BuckarooClientSideEncryption.V001.validateYear(parts[1])) {
+                        return message;
+                    };
+                    return true;
+                });
+
+                hyva.formValidation.addRule('bk-ValidateMonth', (value) => {
+                    const message = '<?= $escaper->escapeJs(__('Enter a valid month number.')) ?>';
+                    if (value.length === 0) {
+                        return message;
+                    }
+
+                    const parts = value.split("/");
+                    if (!BuckarooClientSideEncryption.V001.validateMonth(parts[0])) {
+                        return message;
+                    };
+                    return true;
+                });
+                window.dispatchEvent(new CustomEvent("buckaroo-cse-load"));
+            })
+
+
+            Magewire.hook('element.removed', (el, component) => {
+                if (el.id !== undefined && el.id.indexOf('payment-method-view-buckaroo_magento2') > -1) {
+                    window.buckarooTask = undefined;
+                }
+            })
+        },
+        applePay(jsSdk) {
+            return {
+                config: {},
+                canDisplay: false,
+                loadSdk() {
+                        return new Promise(resolve => {
+                            const script = document.createElement('script');
+                            script.type = 'text/javascript';
+                            script.src = jsSdk;
+                            script.async = true;
+                            script.onload = resolve;
+                            document.head.appendChild(script);
+                        })
+                },
+
+                formatTransactionResponse(response) {
+                    if (response === null || response === 'undefined') {
+                        return null;
+                    }
+
+                        const paymentData = response.token.paymentData;
+
+                        return JSON.stringify({
+                            paymentData: {
+                            version: paymentData.version,
+                            data: paymentData.data,
+                            signature: paymentData.signature,
+                            header: {
+                                ephemeralPublicKey: paymentData.header.ephemeralPublicKey,
+                                publicKeyHash: paymentData.header.publicKeyHash,
+                                transactionId: paymentData.header.transactionId,
+                            },
+                            },
+                        });
+                },
+
+                async captureFunds(payment) {
+                    const billingContact = payment && payment.billingContact ? JSON.stringify(payment.billingContact) : ''
+                    await this.$wire.updateData(this.formatTransactionResponse(payment),billingContact);
+                    this.resolve();
+                    return {
+                        status: window.ApplePaySession.STATUS_SUCCESS,
+                        errors: [],
+                    };
+                },
+
+                async beginPayment() {
+                    const promise = new Promise((resolve) => {
+                        this.resolve = resolve;
+
+                        const config = new BuckarooApplePay.PayOptions(
+                            this.config.storeName,
+                            this.config.country,
+                            this.config.currency,
+                            this.config.cultureCode,
+                            this.config.guid,
+                            this.$wire.get('totals'),
+                            this.$wire.get('grandTotal'),
+                            'shipping',
+                            [],
+                            (payment) => this.captureFunds(payment),
+                            null,
+                            null,
+                            ['email', 'postalAddress'],
+                            ['email']
+                        );
+                        new BuckarooApplePay.PayPayment(config).beginPayment()
+                    })
+                    await promise;
+                },
+
+                async submit() {
+                    await hyvaCheckout.order.place();
+                },
+                getButtonClass() {
+                    return `pay-with-apple ${BuckarooApplePay.getButtonClass(this.config.buttonStyle, 'buy')}`;
+                },
+                async register() {
+                    this.config = this.$wire.get('config');
+                    this.loadSdk().then(async () => {
+                        this.canDisplay = await BuckarooApplePay.checkPaySupport();
+                        window.buckarooTask = async () => {
+                            if(this.canDisplay)
+                                await this.beginPayment();
+                        };
+                    });
+                }
+            }
+        },
+        credicards($el) {
+            return Object.assign(hyva.formValidation($el), {
+                    issuerImages: [],
+                    cseHasLoaded: window.buckarooCseHasLoaded,
+                    cardHolder: '',
+                    cardNumber: '',
+                    cardExpiration: '',
+                    cardCvc:'',
+                    async saveEncryptedData() {
+                        let parts = this.cardExpiration.split('/');
+                        const year = parts[1];
+                        const month = parts[0];
+                        const wire = this.$wire;
+                        const enc = new Promise((resolve) => {
+                            BuckarooClientSideEncryption.V001.encryptCardData(
+                                this.cardNumber,
+                                year,
+                                month,
+                                this.cardCvc,
+                                this.cardHolder,
+                                function(encryptedCardData) {
+                                    resolve(encryptedCardData);
+                                });
+                        })
+                        return await enc;
+                    },
+                    register() {
+                        this.issuerImages = this.$wire.get('issuerImages');
+                        window.addEventListener('buckaroo-cse-load', () => {
+                            this.cseHasLoaded = true;
+                        }, {
+                            once: true
+                        })
+
+                        const formValid = async () => {
+                            try {
+                                await this.validate();
+                            } catch (error) {
+                                return false;
+                            }
+                            return true;
+                        }
+                        window.buckarooTask = async () => {
+                            const isValid = await formValid();
+                            if (this.cseHasLoaded && isValid) {
+                                const encryptedCardData = await this.saveEncryptedData();
+                                await this.$wire.updatedEncryptedData(
+                                    encryptedCardData,
+                                    this.determineIssuer(this.cardNumber)
+                                );
+                            }
+                        };
+
+                    },
+                    getIssuerImage: function() {
+                        const defaultImage = '<?= $this->getViewFileUrl('Buckaroo_Magento2::images/svg/creditcards.svg') ?>';
+                        const issuer = this.determineIssuer(this.cardNumber);
+                        if(
+                            issuer !== null &&
+                            this.issuerImages[issuer] !== undefined
+                        ) {
+                            return this.issuerImages[issuer];
+                        }
+                        return defaultImage;
+                    },
+                    determineIssuer: function (cardNumber) {
+                        var issuers = {
+                            'amex': {
+                                'regex': '^3[47][0-9]{13}$',
+                                'name': 'American Express'
+                            },
+                            'maestro': {
+                                'regex': '^(5018|5020|5038|6304|6759|6761|6763)[0-9]{8,15}$',
+                                'name': 'Maestro'
+                            },
+                            'dankort': {
+                                'regex': '^(5019|4571)[0-9]{12}$',
+                                'name': 'Dankort'
+                            },
+                            'mastercard': {
+                                'regex': '^(5[1-5]|2[2-7])[0-9]{14}$',
+                                'name': 'Mastercard'
+                            },
+                            'visaelectron': {
+                                'regex': '^(4026[0-9]{2}|417500|4508[0-9]{2}|4844[0-9]{2}|4913[0-9]{2}|4917[0-9]{2})[0-9]{10}$',
+                                'name': 'Visa Electron'
+                            },
+                            'visa': {
+                                'regex': '^4[0-9]{12}(?:[0-9]{3})?$',
+                                'name': 'Visa'
+                            }
+                        };
+
+                        for (var key in issuers) {
+                            if (cardNumber !== undefined && cardNumber.match(issuers[key].regex)) {
+                                return key;
+                            }
+                        }
+
+                        return null;
+                    }
+                })
+        },
+        giftcards($el) {
+            return Object.assign(hyva.formValidation($el), {
+                card:'',
+                pin: '',
+                cardNumber: '',
+                canSubmit:false,
+                async formValid() {
+                        try {
+                            await this.validate();
+                        } catch (error) {
+                            return false;
+                        }
+                        return true;
+                },
+                async submit() {
+                    if(!await this.formValid()) {
+                        return;
+                    }
+                    await this.$wire.applyGiftcard(this.card, this.cardNumber, this.pin);
+                },
+                displaySuccess(response) {
+                    window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
+                        detail: {
+                            data: {
+                                title: '<?= $escaper->escapeHtml(__('Success')); ?>',
+                                content: response.message,
+                                showClose: false,
+                                buttons: [{
+                                    label: response.remaining_amount_message
+                                }]
+                            }
+                        }
+                    }));
+                },
+                displayError(message) {
+                    window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
+                        detail: {
+                            data: {
+                                title: '<?= $escaper->escapeHtml(__('Error')); ?>',
+                                content: message,
+                            }
+                        }
+                    }));
+                },
+                listenToSubmit() {
+                    this.$wire.on('giftcard_response', async (response) => {
+                        if (response.error) {
+                            this.displayError(response.error);
+                        } else if(response.remainder_amount === undefined) {
+                            this.displayError(response.message);
+                        } else if (response.remainder_amount == 0) {
+                            this.canSubmit = true;
+                            await hyvaCheckout.order.place();
+                        } else if (response.remainder_amount != 0) {
+                            this.displaySuccess(response);
+                        }
+                    })
+                },
+                register() {
+                    this.listenToSubmit();
+                    window.buckarooTask = async () => {
+                        if(!this.canSubmit) {
+                            await this.submit();
+                        }
+                    };
+                },
+
+            })
+        },
+        mrCash($el) {
+            return Object.assign(hyva.formValidation($el), {
+                cseHasLoaded: window.buckarooCseHasLoaded,
+                cardHolder: '',
+                cardNumber: '',
+                cardExpiration: '',
+                async saveEncryptedData() {
+                    let parts = this.cardExpiration.split('/');
+                    const year = parts[1];
+                    const month = parts[0];
+                    const wire = this.$wire;
+                    const enc = new Promise((resolve) => {
+                        BuckarooClientSideEncryption.V001.encryptCardData(
+                            this.cardNumber,
+                            year,
+                            month,
+                            '',
+                            this.cardHolder,
+                            function(encryptedCardData) {
+                                resolve(encryptedCardData);
+                            });
+                    })
+                    return await enc;
+                },
+                register() {
+                    window.addEventListener('buckaroo-cse-load', () => {
+                        this.cseHasLoaded = true;
+                    }, {
+                        once: true
+                    })
+
+                    const formValid = async () => {
+                        try {
+                            await this.validate();
+                        } catch (error) {
+                            return false;
+                        }
+                        return true;
+                    }
+                    window.buckarooTask = async () => {
+                        const isValid = await formValid();
+                        if (this.cseHasLoaded && isValid) {
+                            const encryptedCardData = await this.saveEncryptedData();
+                            await this.$wire.updatedEncryptedData(encryptedCardData);
+                        }
+                    };
+                }
+            })
+        },
+        voucher($el, ajaxUrl) {
+            return Object.assign(hyva.formValidation($el), {
+                code:'',
+                canSubmit:false,
+                async formValid() {
+                        try {
+                            await this.validate();
+                        } catch (error) {
+                            return false;
+                        }
+                        return true;
+                },
+                async submit() {
+                    if(!await this.formValid()) {
+                        return;
+                    }
+
+                    const params = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({voucherCode: this.code})
+                    };
+
+                    const response = await (
+                        await fetch(ajaxUrl, params)
+                    ).json();
+                    await this.$wire.refreshTotals();
+                    if (response.error) {
+                        this.displayError(response.error);
+                    } else if(response.remainder_amount === undefined) {
+                        this.displayError(response.message);
+                    } else if (response.remainder_amount == 0) {
+                        this.canSubmit = true;
+                        await this.$wire.setCanSubmit(true);
+                        await hyvaCheckout.order.place();
+                    } else if (response.remainder_amount != 0) {
+                        this.displaySuccess(response);
+                    }
+                },
+                displaySuccess(response) {
+                    window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
+                        detail: {
+                            data: {
+                                title: '<?= $escaper->escapeHtml(__('Success')); ?>',
+                                content: response.message,
+                                showClose: false,
+                                buttons: [{
+                                    label: response.remaining_amount_message
+                                }]
+                            }
+                        }
+                    }));
+                },
+                displayError(message) {
+                    window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
+                        detail: {
+                            data: {
+                                title: '<?= $escaper->escapeHtml(__('Error')); ?>',
+                                content: message,
+                            }
+                        }
+                    }));
+                },
+                register() {
+                    window.buckarooTask = async () => {
+                        if(!this.canSubmit) {
+                            await this.submit();
+                        }
+                    };
+                },
+
+            })
+        }
     }
+
 </script>

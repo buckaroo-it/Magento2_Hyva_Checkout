@@ -19,7 +19,7 @@ use Magento\Framework\Escaper;
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_afterpay_dob">
                 <?= $escaper->escapeHtml(__('Date of Birth:')); ?>
-                <span class="text-red">*</span>
+                <span class="text-red-600">*</span>
             </label>
             <input
                 type="date"
@@ -29,7 +29,7 @@ use Magento\Framework\Escaper;
                 id="buckaroo_afterpay_dob"
             >
             <?php if ($magewire->hasError('dateOfBirth')) : ?>
-                <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
+                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
             <?php endif; ?>
         </div>
     <?php
@@ -40,11 +40,11 @@ use Magento\Framework\Escaper;
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_afterpay_phone">
                 <?= $escaper->escapeHtml(__('Telephone:')); ?>
-                <span class="text-red">*</span>
+                <span class="text-red-600">*</span>
             </label>
             <input type="text" wire:model.lazy="phone" id="buckaroo_afterpay_phone">
             <?php if ($magewire->hasError('phone')) : ?>
-                <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('phone')) ?></div>
+                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('phone')) ?></div>
             <?php endif; ?>
         </div>
     <?php
@@ -73,11 +73,11 @@ use Magento\Framework\Escaper;
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_afterpay_iban">
                 <?= $escaper->escapeHtml(__('Bank Account Number:')); ?>
-                <span class="text-red">*</span>
+                <span class="text-red-600">*</span>
             </label>
             <input type="text" wire:model.lazy="iban" id="buckaroo_afterpay_iban">
             <?php if ($magewire->hasError('iban')) : ?>
-                <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('iban')) ?></div>
+                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('iban')) ?></div>
             <?php endif; ?>
         </div>
     <?php
@@ -87,22 +87,22 @@ use Magento\Framework\Escaper;
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_afterpay_coc">
                 <?= $escaper->escapeHtml(__('COC Number:')); ?>
-                <span class="text-red">*</span>
+                <span class="text-red-600">*</span>
             </label>
             <input type="text" wire:model.lazy="coc" id="buckaroo_afterpay_coc">
             <?php if ($magewire->hasError('coc')) : ?>
-                <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('coc')) ?></div>
+                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('coc')) ?></div>
             <?php endif; ?>
         </div>
 
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_afterpay_company_name">
                 <?= $escaper->escapeHtml(__('Company Name:')); ?>
-                <span class="text-red">*</span>
+                <span class="text-red-600">*</span>
             </label>
             <input type="text" wire:model.lazy="companyName" id="buckaroo_afterpay_company_name">
             <?php if ($magewire->hasError('companyName')) : ?>
-                <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('companyName')) ?></div>
+                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('companyName')) ?></div>
             <?php endif; ?>
         </div>
     <?php
@@ -119,7 +119,7 @@ use Magento\Framework\Escaper;
             </a>
         </div>
         <?php if ($magewire->hasError('tos')) : ?>
-            <div class="text-red"><?= $escaper->escapeHtmlAttr($magewire->getError('tos')) ?></div>
+            <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('tos')) ?></div>
         <?php endif; ?>
     </div>
 </div>
