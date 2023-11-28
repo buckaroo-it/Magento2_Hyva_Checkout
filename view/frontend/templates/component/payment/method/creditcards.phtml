@@ -9,111 +9,11 @@ use Magento\Framework\Escaper;
 ?>
 <div class="col-span-6">
 
-    <form x-data="Object.assign(hyva.formValidation($el), {
-                    issuerImages: [],
-                    cseHasLoaded: window.buckarooCseHasLoaded,
-                    cardHolder: '',
-                    cardNumber: '',
-                    cardExpiration: '',
-                    cardCvc:'',
-                    async saveEncryptedData() {
-                        let parts = this.cardExpiration.split('/');
-                        const year = parts[1];
-                        const month = parts[0];
-                        const wire = this.$wire;
-                        const enc = new Promise((resolve) => {
-                            BuckarooClientSideEncryption.V001.encryptCardData(
-                                this.cardNumber,
-                                year,
-                                month,
-                                this.cardCvc,
-                                this.cardHolder,
-                                function(encryptedCardData) {
-                                    resolve(encryptedCardData);
-                                });
-                        })
-                        return await enc;
-                    },
-                    register() {
-                        this.issuerImages = this.$wire.get('issuerImages');
-                        window.addEventListener('buckaroo-cse-load', () => {
-                            this.cseHasLoaded = true;
-                        }, {
-                            once: true
-                        })
-
-                        const formValid = async () => {
-                            try {
-                                await this.validate();
-                            } catch (error) {
-                                return false;
-                            }
-                            return true;
-                        }
-                        window.buckarooTask = async () => {
-                            const isValid = await formValid();
-                            if (this.cseHasLoaded && isValid) {
-                                const encryptedCardData = await this.saveEncryptedData();
-                                await this.$wire.updatedEncryptedData(
-                                    encryptedCardData,
-                                    this.determineIssuer(this.cardNumber)
-                                );
-                            }
-                        };
-
-                    },
-                    getIssuerImage: function() {
-                        const defaultImage = '<?= $this->getViewFileUrl('Buckaroo_Magento2::images/svg/creditcards.svg') ?>';
-                        const issuer = this.determineIssuer(this.cardNumber);
-                        if(
-                            issuer !== null &&
-                            this.issuerImages[issuer] !== undefined
-                        ) {
-                            return this.issuerImages[issuer];
-                        }
-                        return defaultImage;
-                    },
-                    determineIssuer: function (cardNumber) {
-                        var issuers = {
-                            'amex': {
-                                'regex': '^3[47][0-9]{13}$',
-                                'name': 'American Express'
-                            },
-                            'maestro': {
-                                'regex': '^(5018|5020|5038|6304|6759|6761|6763)[0-9]{8,15}$',
-                                'name': 'Maestro'
-                            },
-                            'dankort': {
-                                'regex': '^(5019|4571)[0-9]{12}$',
-                                'name': 'Dankort'
-                            },
-                            'mastercard': {
-                                'regex': '^(5[1-5]|2[2-7])[0-9]{14}$',
-                                'name': 'Mastercard'
-                            },
-                            'visaelectron': {
-                                'regex': '^(4026[0-9]{2}|417500|4508[0-9]{2}|4844[0-9]{2}|4913[0-9]{2}|4917[0-9]{2})[0-9]{10}$',
-                                'name': 'Visa Electron'
-                            },
-                            'visa': {
-                                'regex': '^4[0-9]{12}(?:[0-9]{3})?$',
-                                'name': 'Visa'
-                            }
-                        };
-
-                        for (var key in issuers) {
-                            if (cardNumber !== undefined && cardNumber.match(issuers[key].regex)) {
-                                return key;
-                            }
-                        }
-
-                        return null;
-                    }
-                })" x-init="register()" novalidate>
+    <form x-data="buckaroo.credicards($el)" x-init="register()" novalidate>
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_creditcards_card_holder">
                 <?= $escaper->escapeHtml(__('Name on card:')); ?>
-                <span class="text-red">*</span>
+                <span class="text-red-600">*</span>
             </label>
             <input type="text"
             x-model="cardHolder"
@@ -126,7 +26,7 @@ use Magento\Framework\Escaper;
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_creditcards_card_number">
                 <?= $escaper->escapeHtml(__('Card number:')); ?>
-                <span class="text-red">*</span>
+                <span class="text-red-600">*</span>
             </label>
             <div class="relative w-full">
                 <input
@@ -150,7 +50,7 @@ use Magento\Framework\Escaper;
                 <div class="flex flex-col w-7/12">
                     <label for="buckaroo_creditcards_card_expiration">
                         <?= $escaper->escapeHtml(__('Expiration:')); ?>
-                        <span class="text-red">*</span>
+                        <span class="text-red-600">*</span>
                     </label>
                     <input type="text"
                         maxlength="5"
@@ -165,7 +65,7 @@ use Magento\Framework\Escaper;
                 <div class="flex flex-col w-5/12">
                     <label for="buckaroo_creditcards_card_cvc">
                         <?= $escaper->escapeHtml(__('CVC / CVV:')); ?>
-                        <span class="text-red">*</span>
+                        <span class="text-red-600">*</span>
                     </label>
                     <input
                         type="text"

@@ -9,81 +9,12 @@ use Magento\Framework\Escaper;
 ?>
 <div class="col-span-6">
 
-    <form x-data="Object.assign(hyva.formValidation($el), {
-        code:'',
-        canSubmit:false,
-        async formValid() {
-                try {
-                    await this.validate();
-                } catch (error) {
-                    return false;
-                }
-                return true;
-        },
-        async submit() {
-            if(!await this.formValid()) {
-                return;
-            }
-
-            const params = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({voucherCode: this.code})
-            };
-
-            const response = await (await fetch('<?= $escaper->escapeUrl($magewire->getAjaxUrl()); ?>', params)).json();
-            await this.$wire.refreshTotals();
-            if (response.error) {
-                this.displayError(response.error);
-            } else if(response.remainder_amount === undefined) {
-                this.displayError(response.message);
-            } else if (response.remainder_amount == 0) {
-                this.canSubmit = true;
-                await this.$wire.setCanSubmit(true);
-                await hyvaCheckout.order.place();
-            } else if (response.remainder_amount != 0) {
-                this.displaySuccess(response);
-            }
-        },
-        displaySuccess(response) {
-            window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
-                detail: {
-                    data: {
-                        title: '<?= $escaper->escapeHtml(__('Success')); ?>',
-                        content: response.message,
-                        showClose: false,
-                        buttons: [{
-                            label: response.remaining_amount_message
-                        }]
-                    }
-                }
-            }));
-        },
-        displayError(message) {
-            window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
-                detail: {
-                    data: {
-                        title: '<?= $escaper->escapeHtml(__('Error')); ?>',
-                        content: message,
-                    }
-                }
-            }));
-        },
-        register() {
-            window.buckarooTask = async () => {
-                if(!this.canSubmit) {
-                    await this.submit();
-                }
-            };
-        },
-
-    })" x-init="register()" novalidate>
+    <form x-data="buckaroo.voucher($el, '<?= $escaper->escapeUrl($magewire->getAjaxUrl()); ?>')"
+    x-init="register()" novalidate>
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_voucher_code">
                 <?= $escaper->escapeHtml(__('Voucher code:')); ?>
-                <span class="text-red">*</span>
+                <span class="text-red-600">*</span>
             </label>
             <input
                 type="text"
@@ -99,6 +30,4 @@ use Magento\Framework\Escaper;
             <?= $escaper->escapeHtml(__('Apply Voucher')); ?>
         </button>
     </form>
-
-
 </div>

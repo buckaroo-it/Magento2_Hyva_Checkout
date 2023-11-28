@@ -28,7 +28,7 @@ $issuers = $magewire->getIssuers();
             <?php
             foreach ($issuers as $issuer) {
             ?>
-                <div class="flex flex-row grow gap-x-2 items-center">
+                <div class="flex flex-row flex-grow gap-x-2 items-center">
                     <input
                     type="radio"
                     name="issuer"
@@ -38,7 +38,7 @@ $issuers = $magewire->getIssuers();
                     />
                     <label
                     for="bk_ideal_issuer_<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>"
-                    class="flex flex-row grow gap-x-2 items-center">
+                    class="flex flex-row flex-grow gap-x-2 items-center">
                         <img
                         src="<?= $escaper->escapeUrl($magewire->getImageUrl($issuer["imgName"])) ?>"
                         alt="<?= $issuer["name"] ?>"
