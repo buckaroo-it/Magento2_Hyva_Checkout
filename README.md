@@ -35,7 +35,7 @@ git clone https://github.com/buckaroo-it/Magento2_Hyva_Checkout.git
 ```
 4. Swich to the latest version:
 ```
-git checkout 1.0.0
+git checkout 1.1.0
 ```
 5. Rename resulting directory:
 ```
