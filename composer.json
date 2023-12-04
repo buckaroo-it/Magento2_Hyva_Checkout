@@ -20,7 +20,7 @@
         "docs": "https://support.buckaroo.nl"
     },
     "homepage": "https://www.buckaroo.nl",
-    "version" : "v1.0.0-RC1",
+    "version" : "v1.0.0",
     "minimum-stability": "stable",
     "autoload": {
         "files": [
