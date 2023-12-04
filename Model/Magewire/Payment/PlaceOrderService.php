@@ -47,8 +47,6 @@ class PlaceOrderService extends AbstractPlaceOrderService
     private function hasRedirect(): bool
     {
         $response = $this->getResponse();
-
-        dd($response);
         return !empty($response->RequiredAction->RedirectURL);
     }
 }
