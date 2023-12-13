@@ -3,12 +3,14 @@
 namespace Buckaroo\HyvaCheckout\Model\Magewire\Payment;
 
 use Magento\Quote\Model\Quote;
+use Composer\InstalledVersions;
 use Magento\Framework\Registry;
 use Magento\Quote\Api\CartManagementInterface;
 use Hyva\Checkout\Model\Magewire\Payment\AbstractPlaceOrderService;
 
 class PlaceOrderService extends AbstractPlaceOrderService
 {
+    private const COMPOSER_MODULE_NAME = 'buckaroo/magento2-hyva-checkout';
 
     protected Registry $registry;
 
@@ -19,6 +21,18 @@ class PlaceOrderService extends AbstractPlaceOrderService
         $this->registry = $registry;
         parent::__construct($cartManagement);
     }
+
+
+    
+    /**
+     * @throws CouldNotSaveException
+     */
+    public function placeOrder(Quote $quote): int
+    {
+        $this->setPlatformInfo($quote);
+        return parent::placeOrder($quote);
+    }
+
     /**
      * Redirect to buckaroo payment engine
      *
@@ -48,5 +62,25 @@ class PlaceOrderService extends AbstractPlaceOrderService
     {
         $response = $this->getResponse();
         return !empty($response->RequiredAction->RedirectURL);
+    }
+
+    /**
+     * Set platform info to send over
+     *
+     * @param Quote $quote
+     *
+     * @return void
+     */
+    private function setPlatformInfo(Quote $quote)
+    {
+        $version = 'unknown';
+
+        if (InstalledVersions::isInstalled(self::COMPOSER_MODULE_NAME)) {
+            $version = InstalledVersions::getVersion(self::COMPOSER_MODULE_NAME);
+        }
+        $quote->getPayment()->setAdditionalInformation(
+            'buckaroo_platform_info',
+            " / Hyva Checkout (".$version.")"
+        );
     }
 }
