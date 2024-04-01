@@ -4,7 +4,7 @@ namespace Buckaroo\HyvaCheckout\Plugin;
 
 use Magento\Framework\View\Element\Template;
 use Hyva\Checkout\Model\MethodMetaDataInterface;
-use Buckaroo\Magento2\Model\ConfigProvider\Method\Factory;
+use Buckaroo\Magento2\Model\ConfigProvider\Factory;
 use Magento\Payment\Model\MethodInterface as PaymentMethodInterface;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\ConfigProviderInterface;
 use Hyva\Checkout\ViewModel\Checkout\Payment\MethodList as HyvaMethodList;
