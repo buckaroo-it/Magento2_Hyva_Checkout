@@ -281,6 +281,8 @@ abstract class AfterpayBase extends Component\Form implements EvaluationInterfac
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
         }
+
+        return null;
     }
 
     /**

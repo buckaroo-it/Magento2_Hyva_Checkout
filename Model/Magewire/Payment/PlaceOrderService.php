@@ -22,7 +22,7 @@ class PlaceOrderService extends AbstractPlaceOrderService
     /**
      * @var TransactionResponse|null
      */
-    private ?TransactionResponse $buckarooResponse;
+    private ?TransactionResponse $buckarooResponse = null;
 
     public function __construct(
         CartManagementInterface $cartManagement,

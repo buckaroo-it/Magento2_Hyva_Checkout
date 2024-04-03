@@ -171,7 +171,7 @@ class Ideal extends Component\Form implements EvaluationInterface
     public function displayAsSelect($storeId = null): bool
     {
         return $this->scopeConfig->getValue(
-            MethodIdeal::XPATH_IDEAL_SELECTION_TYPE,
+            MethodIdeal::XPATH_SELECTION_TYPE,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $storeId
         ) === '2';
