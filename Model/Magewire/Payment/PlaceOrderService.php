@@ -3,7 +3,7 @@
 namespace Buckaroo\HyvaCheckout\Model\Magewire\Payment;
 
 use Buckaroo\Magento2\Api\Data\BuckarooResponseDataInterface;
-use Buckaroo\Magento2\Model\Giftcard\Api\TransactionResponse;
+use Buckaroo\Transaction\Response\TransactionResponse;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote;
 use Composer\InstalledVersions;
