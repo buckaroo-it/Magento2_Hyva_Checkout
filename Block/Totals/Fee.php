@@ -50,12 +50,27 @@ class Fee extends \Magento\Framework\View\Element\Template
     public function getTotal(): float
     {
         $totalData = $this->getSegment();
-        if (
-            isset($totalData['extension_attributes']['buckaroo_fee']) &&
-            is_scalar($totalData['extension_attributes']['buckaroo_fee'])
-        ) {
-            return floatval($totalData['extension_attributes']['buckaroo_fee']);
+        if (false === is_array($totalData)) {
+            throw new \UnexpectedValueException('Expecting an array but getting '.gettype($totalData));
         }
+
+        $extensionAttributes = $totalData['extension_attributes'];
+
+        if (
+            is_array($extensionAttributes) &&
+            isset($extensionAttributes['buckaroo_fee']) &&
+            is_scalar($extensionAttributes['buckaroo_fee'])
+        ) {
+            return floatval($extensionAttributes['buckaroo_fee']);
+        }
+
+        if ($extensionAttributes instanceof \Magento\Quote\Api\Data\TotalSegmentExtension) {
+            /** @var \Magento\Quote\Api\Data\TotalSegmentExtension $extensionAttributes */
+            if ($extensionAttributes->getBuckarooFee() !== null) {
+                return $extensionAttributes->getBuckarooFee();
+            }
+        }
+
         return 0;
     }
 }
