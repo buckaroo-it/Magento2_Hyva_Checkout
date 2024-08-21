@@ -14,16 +14,14 @@ use Hyva\Checkout\ViewModel\Checkout\Formatter as FormatterViewModel;
 use Hyva\Theme\Model\ViewModelRegistry;
 
 $formatterViewModel = $viewModels->require(FormatterViewModel::class);
-$total = $block->getSegment();
-
-if ($total['value'] != 0) {
-
+$total = $block->getTotal();
+if ($total != 0) {
 ?>
     <div class="flex gap-4 justify-between md:gap-0">
         <span class="label font-bold">
-            <?= $block->escapeHtml($total['title']) ?>
+            <?= $block->escapeHtml($block->getTitle()) ?>
         </span>
-        <span class="value"><?= /* @noEscape */ $formatterViewModel->currency($total['value'] ?? 0) ?></span>
+        <span class="value"><?= /* @noEscape */ $formatterViewModel->currency($total ?? 0) ?></span>
     </div>
 <?php
 }
