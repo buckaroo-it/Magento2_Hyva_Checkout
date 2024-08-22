@@ -23,7 +23,7 @@ class MethodMetaData extends ModelMethodMetaData
         Repository $assetRepository,
         array $data = []
     ) {
-        parent::__construct($iconRenderer, $subtitleRenderer, $logger, $method, $systemConfigPayment, $data);
+        parent::__construct($iconRenderer, $subtitleRenderer, $method, $systemConfigPayment, $data);
         $this->assetRepository = $assetRepository;
     }
     public function renderIcon(): string

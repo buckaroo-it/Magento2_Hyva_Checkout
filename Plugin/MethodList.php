@@ -66,11 +66,12 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
             "emandate" => "emandate.png",
             "pospayment" => "pos.png",
             "transfer" => "svg/sepa-credittransfer.svg",
-            "voucher" => "svg/vouchers.svg"
+            "voucher" => "svg/vouchers.svg",
+            "paybybank" => "paybybank.gif",
         ];
 
         $name = "svg/{$method}.svg";
-        
+
         if(isset($mappings[$method])) {
             $name = $mappings[$method];
         }
