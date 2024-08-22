@@ -8,7 +8,7 @@ use Buckaroo\Magento2\Model\ConfigProvider\Method\Factory;
 use Magento\Payment\Model\MethodInterface as PaymentMethodInterface;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\ConfigProviderInterface;
 use Hyva\Checkout\ViewModel\Checkout\Payment\MethodList as HyvaMethodList;
-use Buckaroo\HyvaCheckout\Model\MethodMetaDataFactory;
+use Hyva\Checkout\Model\MethodMetaDataFactory;
 
 class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
