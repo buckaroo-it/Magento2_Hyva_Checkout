@@ -41,7 +41,6 @@ class Fee extends \Magento\Framework\View\Element\Template
         } catch (\Throwable $th) {
             return __('Fee');
         }
-        return __('Fee');
     }
 
     /**
