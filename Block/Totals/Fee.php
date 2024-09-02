@@ -39,39 +39,7 @@ class Fee extends \Magento\Framework\View\Element\Template
                 ->getPayment();
             return $this->feeHelper->getBuckarooPaymentFeeLabel($payment->getMethod());
         } catch (\Throwable $th) {
-            return __('Fee');
+            return __('Payment Fee');
         }
-    }
-
-    /**
-     * Get total from array of data
-     *
-     * @return float
-     */
-    public function getTotal(): float
-    {
-        $totalData = $this->getSegment();
-        if (false === is_array($totalData)) {
-            throw new \UnexpectedValueException('Expecting an array but getting '.gettype($totalData));
-        }
-
-        $extensionAttributes = $totalData['extension_attributes'];
-
-        if (
-            is_array($extensionAttributes) &&
-            isset($extensionAttributes['buckaroo_fee']) &&
-            is_scalar($extensionAttributes['buckaroo_fee'])
-        ) {
-            return floatval($extensionAttributes['buckaroo_fee']);
-        }
-
-        if ($extensionAttributes instanceof \Magento\Quote\Api\Data\TotalSegmentExtension) {
-            /** @var \Magento\Quote\Api\Data\TotalSegmentExtension $extensionAttributes */
-            if ($extensionAttributes->getBuckarooFee() !== null) {
-                return $extensionAttributes->getBuckarooFee();
-            }
-        }
-
-        return 0;
     }
 }
