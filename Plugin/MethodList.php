@@ -51,8 +51,8 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
         $mappings = [
             "afterpay2" => "svg/afterpay.svg",
             "afterpay20" => "svg/afterpay.svg",
-            "capayablein3" => "svg/in3.svg",
-            "capayablepostpay" => "svg/in3.svg",
+            "capayablein3" => "svg/ideal-in3.svg",
+            "capayablepostpay" => "svg/ideal-in3.svg",
             "creditcard" => "svg/creditcards.svg",
             "creditcards" => "svg/creditcards.svg",
             "giftcards" => "svg/giftcards.svg",
