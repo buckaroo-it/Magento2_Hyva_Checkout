@@ -14,7 +14,7 @@
                 <item name="buckaroo_magento2_eps" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_transfer" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_payconiq" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
-                
+                <item name="buckaroo_magento2_paybybank" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_ideal" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_idealprocessing" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_klarna" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
