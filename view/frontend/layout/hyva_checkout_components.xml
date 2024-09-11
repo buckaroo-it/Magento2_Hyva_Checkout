@@ -105,16 +105,6 @@
                 </arguments>
             </block>
 
-            <block name="checkout.payment.method.buckaroo_magento2_giropay"
-                    as="buckaroo_magento2_giropay"
-                    template="Buckaroo_HyvaCheckout::component/payment/method/giropay.phtml">
-                <arguments>
-                    <argument name="magewire" xsi:type="object">
-                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Giropay
-                    </argument>
-                </arguments>
-            </block>
-
             <block name="checkout.payment.method.buckaroo_magento2_tinka"
                     as="buckaroo_magento2_tinka"
                     template="Buckaroo_HyvaCheckout::component/payment/method/tinka.phtml">
