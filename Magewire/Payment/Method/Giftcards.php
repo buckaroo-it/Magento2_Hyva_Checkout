@@ -16,6 +16,7 @@ use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
 use Buckaroo\Magento2\Model\Giftcard\Response\Giftcard as GiftcardResponse;
 use Buckaroo\Magento2\Model\Giftcard\Request\GiftcardInterface as GiftcardRequest;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\Giftcards as MethodConfigProvider;
+use Magento\Framework\Pricing\Helper\Data as PricingHelper;
 
 class Giftcards extends Component\Form implements EvaluationInterface
 {
@@ -34,6 +35,7 @@ class Giftcards extends Component\Form implements EvaluationInterface
     protected GiftcardResponse $giftcardResponse;
 
     protected Log $logger;
+    protected $pricingHelper;
 
     public function __construct(
         UrlInterface $urlBuilder,
@@ -42,7 +44,8 @@ class Giftcards extends Component\Form implements EvaluationInterface
         MethodConfigProvider $methodConfigProvider,
         GiftcardRequest $giftcardRequest,
         GiftcardResponse $giftcardResponse,
-        Log $logger
+        Log $logger,
+        PricingHelper $pricingHelper
     ) {
         $this->urlBuilder = $urlBuilder;
         $this->sessionCheckout = $sessionCheckout;
@@ -51,6 +54,7 @@ class Giftcards extends Component\Form implements EvaluationInterface
         $this->giftcardRequest = $giftcardRequest;
         $this->giftcardResponse = $giftcardResponse;
         $this->logger = $logger;
+        $this->pricingHelper = $pricingHelper;
     }
 
     /**
@@ -150,7 +154,32 @@ class Giftcards extends Component\Form implements EvaluationInterface
         }
     }
 
+    /**
+     * Convert and format price value for current store
+     *
+     * @param float $price
+     * @return float|string
+     */
+    public function getFormattedPrice($price)
+    {
+        return $this->pricingHelper->currency($price, true, false);
+    }
 
+    public function getRemainingAmount()
+    {
+        $quote = $this->sessionCheckout->getQuote();
+
+        $grandTotal = round(floatval($quote->getGrandTotal()), 2);
+
+        // Get the amount already paid through group transactions
+        $alreadyPaid = $this->groupTransaction->getAlreadyPaid($quote->getReservedOrderId());
+
+        // Calculate the remaining amount
+        $remainingAmount = $grandTotal - $alreadyPaid;
+
+        // Ensure the remaining amount is never negative
+        $this->emit("remainingAmount", $this->getFormattedPrice($remainingAmount));
+    }
     protected function getGiftcardResponse(Quote $quote, $response)
     {
         $this->giftcardResponse->set($response, $quote);
@@ -183,8 +212,8 @@ class Giftcards extends Component\Form implements EvaluationInterface
                 $this->giftcardResponse->getCurrency()
             );
         }
-
         return [
+            'remainder_amount_currency' => $this->getFormattedPrice($remainingAmount),
             'remainder_amount' => $remainingAmount,
             'already_paid' => $this->giftcardResponse->getAlreadyPaid($quote),
             'remaining_amount_message' => $buttonMessage,
