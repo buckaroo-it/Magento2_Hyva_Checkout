@@ -8,7 +8,7 @@ use Buckaroo\Magento2\Model\ConfigProvider\Method\Factory;
 use Magento\Payment\Model\MethodInterface as PaymentMethodInterface;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\ConfigProviderInterface;
 use Hyva\Checkout\ViewModel\Checkout\Payment\MethodList as HyvaMethodList;
-use Buckaroo\HyvaCheckout\Model\MethodMetaDataFactory;
+use Hyva\Checkout\Model\MethodMetaDataFactory;
 
 class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
@@ -51,8 +51,8 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
         $mappings = [
             "afterpay2" => "svg/afterpay.svg",
             "afterpay20" => "svg/afterpay.svg",
-            "capayablein3" => "svg/in3.svg",
-            "capayablepostpay" => "svg/in3.svg",
+            "capayablein3" => "svg/ideal-in3.svg",
+            "capayablepostpay" => "svg/ideal-in3.svg",
             "creditcard" => "svg/creditcards.svg",
             "creditcards" => "svg/creditcards.svg",
             "giftcards" => "svg/giftcards.svg",
@@ -66,11 +66,12 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
             "emandate" => "emandate.png",
             "pospayment" => "pos.png",
             "transfer" => "svg/sepa-credittransfer.svg",
-            "voucher" => "svg/vouchers.svg"
+            "voucher" => "svg/vouchers.svg",
+            "paybybank" => "paybybank.gif",
         ];
 
         $name = "svg/{$method}.svg";
-        
+
         if(isset($mappings[$method])) {
             $name = $mappings[$method];
         }

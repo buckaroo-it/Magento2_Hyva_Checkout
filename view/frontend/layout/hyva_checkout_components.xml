@@ -105,16 +105,6 @@
                 </arguments>
             </block>
 
-            <block name="checkout.payment.method.buckaroo_magento2_giropay"
-                    as="buckaroo_magento2_giropay"
-                    template="Buckaroo_HyvaCheckout::component/payment/method/giropay.phtml">
-                <arguments>
-                    <argument name="magewire" xsi:type="object">
-                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Giropay
-                    </argument>
-                </arguments>
-            </block>
-
             <block name="checkout.payment.method.buckaroo_magento2_tinka"
                     as="buckaroo_magento2_tinka"
                     template="Buckaroo_HyvaCheckout::component/payment/method/tinka.phtml">
@@ -195,6 +185,16 @@
                 </arguments>
             </block>
 
+            <block name="checkout.payment.method.buckaroo_magento2_paybybank"
+                   as="buckaroo_magento2_paybybank"
+                   template="Buckaroo_HyvaCheckout::component/payment/method/paybybank.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\PayByBank
+                    </argument>
+                </arguments>
+            </block>
+
         </referenceBlock>
 
 
@@ -202,9 +202,9 @@
             <block name="price-summary.total-segment.pretax_buckaroo_fee"
                 as="pretax_buckaroo_fee"
                 template="Buckaroo_HyvaCheckout::total-segments/empty.phtml"/>
-            <block name="price-summary.total-segment.buckaroo_fee"
+            <block name="price-summary.total-segment.buckaroo_fee_hyva"
                 class="Buckaroo\HyvaCheckout\Block\Totals\Fee"
-                as="buckaroo_fee"
+                as="buckaroo_fee_hyva"
                 template="Buckaroo_HyvaCheckout::total-segments/fee.phtml"/>
             <block name="price-summary.total-segment.buckaroo_already_paid"
                 class="Buckaroo\HyvaCheckout\Block\Totals\AlreadyPaid"

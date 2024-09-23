@@ -12,18 +12,20 @@ class Fee extends \Magento\Framework\View\Element\Template
 {
     protected PaymentFee $feeHelper;
 
-    protected  SessionCheckout $sessionCheckout;
+    protected SessionCheckout $sessionCheckout;
 
     public function __construct(
-        Context $context,
-        array $data,
-        PaymentFee $feeHelper,
+        Context         $context,
+        array           $data,
+        PaymentFee      $feeHelper,
         SessionCheckout $sessionCheckout
-    ) {
+    )
+    {
         parent::__construct($context, $data);
         $this->feeHelper = $feeHelper;
         $this->sessionCheckout = $sessionCheckout;
     }
+
     /**
      * Get title based on payment method config
      *
@@ -33,29 +35,11 @@ class Fee extends \Magento\Framework\View\Element\Template
     {
         try {
             $payment = $this->sessionCheckout
-            ->getQuote()
-            ->getPayment();
+                ->getQuote()
+                ->getPayment();
             return $this->feeHelper->getBuckarooPaymentFeeLabel($payment->getMethod());
         } catch (\Throwable $th) {
-            return __('Fee');
+            return __('Payment Fee');
         }
-        return __('Fee');
-    }
-
-    /**
-     * Get total from array of data
-     *
-     * @return float
-     */
-    public function getTotal(): float
-    {
-        $totalData = $this->getSegment();
-        if (
-            isset($totalData['extension_attributes']['buckaroo_fee']) &&
-            is_scalar($totalData['extension_attributes']['buckaroo_fee'])
-        ) {
-            return floatval($totalData['extension_attributes']['buckaroo_fee']);
-        }
-        return 0;
     }
 }
