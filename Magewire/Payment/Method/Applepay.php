@@ -91,6 +91,7 @@ class Applepay extends Component\Form implements EvaluationInterface
 
             var_dump($paymentData);
             var_dump($quote->getPayment());
+            die();
 
             if (empty($paymentData)) {
                 return $resultFactory->createErrorMessageEvent()
