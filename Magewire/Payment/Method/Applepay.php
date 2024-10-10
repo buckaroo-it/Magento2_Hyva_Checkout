@@ -98,26 +98,6 @@ class Applepay extends Component\Form implements EvaluationInterface
 //            $this->dispatchErrorMessage($exception->getMessage());
 //        }
 
-
-    public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
-    {
-        $validation = $this->validator->validate(
-            $this->getFormValues(),
-            $this->getFormRules()
-        );
-
-        if ($validation->fails()) {
-            foreach ($validation->errors()->toArray() as $key => $error) {
-                $this->error($key, current($error));
-            }
-            return $resultFactory->createErrorMessageEvent()
-                ->withCustomEvent('payment:method:error')
-                ->withMessage('Please fill all required payment fields');
-        }
-
-        return $resultFactory->createSuccess();
-    }
-
     public function getJsSdkUrl(): string
     {
         try {
