@@ -82,22 +82,42 @@ class Applepay extends Component\Form implements EvaluationInterface
             $this->dispatchErrorMessage($exception->getMessage());
         }
     }
+//    public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
+//    {
+//
+//        try {
+//            $quote = $this->sessionCheckout->getQuote();
+//            $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
+
+//            if (empty($paymentData)) {
+//                return $resultFactory->createErrorMessageEvent()
+//                    ->withCustomEvent('payment:method:error')
+//                    ->withMessage('Payment data is missing');
+//            }
+//        } catch (LocalizedException $exception) {
+//            $this->dispatchErrorMessage($exception->getMessage());
+//        }
+
+
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
-        try {
-            $quote = $this->sessionCheckout->getQuote();
-            $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
+        $validation = $this->validator->validate(
+            $this->getFormValues(),
+            $this->getFormRules()
+        );
 
-            if (empty($paymentData)) {
-                return $resultFactory->createErrorMessageEvent()
-                    ->withCustomEvent('payment:method:error')
-                    ->withMessage('Payment data is missing');
+        if ($validation->fails()) {
+            foreach ($validation->errors()->toArray() as $key => $error) {
+                $this->error($key, current($error));
             }
-        } catch (LocalizedException $exception) {
-            $this->dispatchErrorMessage($exception->getMessage());
+            return $resultFactory->createErrorMessageEvent()
+                ->withCustomEvent('payment:method:error')
+                ->withMessage('Please fill all required payment fields');
         }
 
-       
+        return $resultFactory->createSuccess();
+    }
+
 
         return $resultFactory->createSuccess();
     }
@@ -149,7 +169,7 @@ class Applepay extends Component\Form implements EvaluationInterface
                 ];
             }
         }
-        
+
         return $totals;
     }
 
