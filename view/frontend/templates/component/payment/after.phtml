@@ -227,6 +227,7 @@
                 },
 
                 async beginPayment() {
+                    console.log("beginPayment");
                     const promise = new Promise((resolve) => {
                         this.resolve = resolve;
 
@@ -258,6 +259,7 @@
                     return `pay-with-apple ${BuckarooApplePay.getButtonClass(this.config.buttonStyle, 'buy')}`;
                 },
                 async register() {
+                    console.log("register");
                     this.config = this.$wire.get('config');
                     this.loadSdk().then(async () => {
                         this.canDisplay = await BuckarooApplePay.checkPaySupport();

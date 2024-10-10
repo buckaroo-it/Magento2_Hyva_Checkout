@@ -89,8 +89,8 @@ class Applepay extends Component\Form implements EvaluationInterface
             $quote = $this->sessionCheckout->getQuote();
             $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
 
-            var_dump($paymentData);
-            die();
+//            var_dump($paymentData);
+//            die();
 
             if (empty($paymentData)) {
                 return $resultFactory->createErrorMessageEvent()
