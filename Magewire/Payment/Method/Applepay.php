@@ -82,21 +82,24 @@ class Applepay extends Component\Form implements EvaluationInterface
             $this->dispatchErrorMessage($exception->getMessage());
         }
     }
-//    public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
-//    {
-//
-//        try {
-//            $quote = $this->sessionCheckout->getQuote();
-//            $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
+    public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
+    {
 
-//            if (empty($paymentData)) {
-//                return $resultFactory->createErrorMessageEvent()
-//                    ->withCustomEvent('payment:method:error')
-//                    ->withMessage('Payment data is missing');
-//            }
-//        } catch (LocalizedException $exception) {
-//            $this->dispatchErrorMessage($exception->getMessage());
-//        }
+        try {
+            $quote = $this->sessionCheckout->getQuote();
+            $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
+
+            var_dump($paymentData);
+            var_dump($quote->getPayment());
+
+            if (empty($paymentData)) {
+                return $resultFactory->createErrorMessageEvent()
+                    ->withCustomEvent('payment:method:error')
+                    ->withMessage('Payment data is missing');
+            }
+        } catch (LocalizedException $exception) {
+            $this->dispatchErrorMessage($exception->getMessage());
+        }
 
     public function getJsSdkUrl(): string
     {
