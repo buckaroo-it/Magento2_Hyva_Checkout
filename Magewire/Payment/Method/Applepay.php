@@ -90,7 +90,6 @@ class Applepay extends Component\Form implements EvaluationInterface
             $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
 
             var_dump($paymentData);
-            var_dump($quote->getPayment());
             die();
 
             if (empty($paymentData)) {
