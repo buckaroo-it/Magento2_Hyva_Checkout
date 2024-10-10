@@ -118,10 +118,6 @@ class Applepay extends Component\Form implements EvaluationInterface
         return $resultFactory->createSuccess();
     }
 
-
-        return $resultFactory->createSuccess();
-    }
-
     public function getJsSdkUrl(): string
     {
         try {
