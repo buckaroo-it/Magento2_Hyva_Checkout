@@ -216,6 +216,7 @@
                 },
 
                 async captureFunds(payment) {
+                    console.log("CAPTURE FUNDS");
                     const billingContact = payment && payment.billingContact ? JSON.stringify(payment.billingContact) : ''
                     await this.$wire.updateData(this.formatTransactionResponse(payment),billingContact);
                     this.resolve();
