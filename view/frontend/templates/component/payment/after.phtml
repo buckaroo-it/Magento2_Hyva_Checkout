@@ -201,6 +201,9 @@
 
                         const paymentData = response.token.paymentData;
 
+                    console.log("formatTransactionResponse");
+                    console.log(paymentData);
+
                         return JSON.stringify({
                             paymentData: {
                             version: paymentData.version,
