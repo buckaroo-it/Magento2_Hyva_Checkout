@@ -182,7 +182,7 @@
         applePay(jsSdk) {
             return {
                 config: {},
-                canDisplay: true,
+                canDisplay: false,
                 loadSdk() {
                         return new Promise(resolve => {
                             const script = document.createElement('script');
@@ -262,9 +262,9 @@
                     console.log("register");
                     this.config = this.$wire.get('config');
                     this.loadSdk().then(async () => {
-                        // this.canDisplay = await BuckarooApplePay.checkPaySupport();
+                        this.canDisplay = await BuckarooApplePay.checkPaySupport();
                         window.buckarooTask = async () => {
-                            // if(this.canDisplay)
+                            if(this.canDisplay)
                                 await this.beginPayment();
                         };
                     });
