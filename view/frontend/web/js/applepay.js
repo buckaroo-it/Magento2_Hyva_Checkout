@@ -13,20 +13,24 @@
  */
 
 const checkPaySupport = async function (merchantIdentifier) {
+    console.log("checkPaySupport");
+    console.log(merchantIdentifier);
     if (!('ApplePaySession' in window)) return false;
     if (ApplePaySession === undefined) return false;
     return await ApplePaySession.canMakePaymentsWithActiveCard(merchantIdentifier);
   };
   const getButtonClass = function (buttonStyle, buttonType) {
-    if (buttonStyle === void 0) {
+      console.log("getButtonClass");
+
+      if (buttonStyle === void 0) {
       buttonStyle = 'black';
     }
     if (buttonType === void 0) {
       buttonType = 'plain';
     }
-  
+
     let classes = ['apple-pay','apple-pay-button'];
-  
+
     switch (buttonType) {
       case 'plain':
         classes.push('apple-pay-button-type-plain');
@@ -64,7 +68,9 @@ const checkPaySupport = async function (merchantIdentifier) {
     return classes.join(" ");
   };
   var PayPayment = function (options) {
-    var _this = this;
+      console.log("PayPayment");
+
+      var _this = this;
     this.applePayVersion = 4;
     this.validationUrl = 'https://applepay.buckaroo.io/v1/request-session';
     /**
@@ -83,7 +89,7 @@ const checkPaySupport = async function (merchantIdentifier) {
         document.head.insertAdjacentHTML("beforeend", "<link id=\"buckaroo-sdk-css\" href=\"https://checkout.buckaroo.nl/api/buckaroosdk/css\" rel=\"stylesheet\">");
       }
     }
-  
+
     this.validate = function () {
       if (!_this.options.processCallback)
         throw 'ApplePay: processCallback must be set';
@@ -94,6 +100,8 @@ const checkPaySupport = async function (merchantIdentifier) {
         throw 'ApplePay: merchantIdentifier is not set';
     };
     this.beginPayment = function () {
+        console.log("beginPayment");
+
 
         // _this.options.processCallback({}).then(function (authorizationResult) {
         //    console.log(authorizationResult);
@@ -135,7 +143,9 @@ const checkPaySupport = async function (merchantIdentifier) {
      * @param event - The ApplePayValidateMerchantEvent object.
      */
     this.onValidateMerchant = function (event) {
-      // Create the payload.
+        console.log("onValidateMerchant");
+
+        // Create the payload.
       var data = {
         validationUrl: event.validationURL,
         displayName: _this.options.storeName,
@@ -157,7 +167,9 @@ const checkPaySupport = async function (merchantIdentifier) {
      * @param event - The ApplePayPaymentAuthorizedEvent object.
      */
     this.onPaymentAuthorized = function (event) {
-      // console.log('auth', event);
+        console.log("onPaymentAuthorized");
+
+        // console.log('auth', event);
       // Get the payment data for use to capture funds from
       // the encrypted Apple Pay token in your server.
       var payment = event.payment;
@@ -172,7 +184,9 @@ const checkPaySupport = async function (merchantIdentifier) {
      * @param event - The ApplePayShippingMethodSelectedEvent object.
      */
     this.onShippingMethodSelected = function (event) {
-      if (!_this.options.shippingMethodSelectedCallback) return;
+        console.log("onShippingMethodSelected");
+
+        if (!_this.options.shippingMethodSelectedCallback) return;
       _this.options
         .shippingMethodSelectedCallback(event.shippingMethod)
         .then(function (result) {
@@ -185,7 +199,9 @@ const checkPaySupport = async function (merchantIdentifier) {
      * @param event - The ApplePayShippingContactSelectedEvent object.
      */
     this.onShippingContactSelected = function (event) {
-      if (!_this.options.shippingContactSelectedCallback) return;
+        console.log("onShippingContactSelected");
+
+        if (!_this.options.shippingContactSelectedCallback) return;
       _this.options
         .shippingContactSelectedCallback(event.shippingContact)
         .then(function (result) {
@@ -198,7 +214,9 @@ const checkPaySupport = async function (merchantIdentifier) {
      * @param event - The Event object.
      */
     this.onCancel = function (event) {
-      if (!_this.options.cancelCallback) return;
+        console.log("onCancel");
+
+        if (!_this.options.cancelCallback) return;
       _this.options.cancelCallback(event);
     };
     this.options = options;
@@ -226,25 +244,37 @@ const checkPaySupport = async function (merchantIdentifier) {
     supportedNetworks
   ) {
     if (shippingMethodSelectedCallback === void 0) {
-      shippingMethodSelectedCallback = null;
+        console.log("shippingMethodSelectedCallback");
+        shippingMethodSelectedCallback = null;
     }
     if (shippingContactSelectedCallback === void 0) {
-      shippingContactSelectedCallback = null;
+        console.log("shippingContactSelectedCallback");
+        shippingContactSelectedCallback = null;
     }
     if (requiredBillingContactFields === void 0) {
-      requiredBillingContactFields = ['email', 'name', 'postalAddress'];
+        console.log("requiredBillingContactFields");
+
+        requiredBillingContactFields = ['email', 'name', 'postalAddress'];
     }
     if (requiredShippingContactFields === void 0) {
-      requiredShippingContactFields = ['email', 'name', 'postalAddress'];
+        console.log("requiredShippingContactFields");
+
+        requiredShippingContactFields = ['email', 'name', 'postalAddress'];
     }
     if (cancelCallback === void 0) {
-      cancelCallback = null;
+        console.log("cancelCallback");
+
+        cancelCallback = null;
     }
     if (merchantCapabilities === void 0) {
-      merchantCapabilities = ['supports3DS', 'supportsCredit', 'supportsDebit'];
+        console.log("merchantCapabilities");
+
+        merchantCapabilities = ['supports3DS', 'supportsCredit', 'supportsDebit'];
     }
     if (supportedNetworks === void 0) {
-      supportedNetworks = [
+        console.log("supportedNetworks");
+
+        supportedNetworks = [
         'masterCard',
         'visa',
         'maestro',
@@ -271,7 +301,7 @@ const checkPaySupport = async function (merchantIdentifier) {
     this.merchantCapabilities = merchantCapabilities;
     this.supportedNetworks = supportedNetworks;
   };
-  
+
   var BuckarooApplePay = {
     PayPayment,
     PayOptions,

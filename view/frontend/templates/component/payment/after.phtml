@@ -250,6 +250,7 @@
                             ['email', 'postalAddress'],
                             ['email']
                         );
+                        console.log(config);
                         new BuckarooApplePay.PayPayment(config).beginPayment()
                     })
                     await promise;
