@@ -72,7 +72,9 @@ class Applepay extends Component\Form implements EvaluationInterface
 
     public function updateData(string $paymentData, string $billingContact)
     {
+        $paymentData = empty($paymentData) ? null : $paymentData;
         try {
+            $this->encriptedData = $paymentData;
             $quote = $this->sessionCheckout->getQuote();
             $quote->getPayment()->setAdditionalInformation('applepayTransaction', $paymentData);
             $quote->getPayment()->setAdditionalInformation('billingContact', $billingContact);
@@ -81,24 +83,31 @@ class Applepay extends Component\Form implements EvaluationInterface
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
         }
+        return $paymentData;
     }
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
 
-        try {
-            $quote = $this->sessionCheckout->getQuote();
-            $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
+//        try {
+//            $quote = $this->sessionCheckout->getQuote();
+//            $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
+//
+////            var_dump($paymentData);
+////            die();
+//
+//            if (empty($paymentData)) {
+//                return $resultFactory->createErrorMessageEvent()
+//                    ->withCustomEvent('payment:method:error')
+//                    ->withMessage('Payment data is missing');
+//            }
+//        } catch (LocalizedException $exception) {
+//            $this->dispatchErrorMessage($exception->getMessage());
+//        }
 
-//            var_dump($paymentData);
-//            die();
-
-            if (empty($paymentData)) {
-                return $resultFactory->createErrorMessageEvent()
-                    ->withCustomEvent('payment:method:error')
-                    ->withMessage('Payment data is missing');
-            }
-        } catch (LocalizedException $exception) {
-            $this->dispatchErrorMessage($exception->getMessage());
+        if ($this->encriptedData === null) {
+            return $resultFactory->createErrorMessageEvent()
+                ->withCustomEvent('payment:method:error')
+                ->withMessage('Please fill all required payment fields');
         }
 
         return $resultFactory->createSuccess();
