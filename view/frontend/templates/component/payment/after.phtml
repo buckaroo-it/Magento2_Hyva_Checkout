@@ -63,6 +63,24 @@
     </div>
 </div>
 <script>
+    // Function to update the position of 'already-paid' after 'grand-total'
+    function updatePosition() {
+        // Select the elements by their class names
+        const alreadyPaidElement = document.querySelector('.remaining_amount');
+        const grandTotalElement = document.querySelector('.grand_total');
+
+        // Ensure both elements exist before trying to move them
+        if (alreadyPaidElement && grandTotalElement) {
+            // Move the 'already-paid' block after the 'grand-total' block
+            grandTotalElement.insertAdjacentElement('afterend', alreadyPaidElement);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Call the function on page load
+        updatePosition();
+    });
+
 
     var buckaroo = {
         modal() {
@@ -373,58 +391,23 @@
         },
         giftcards($el) {
             return Object.assign(hyva.formValidation($el), {
-                card: '',
+                card:'',
                 pin: '',
                 cardNumber: '',
-                canSubmit: false,
-
-                async update() {
-                    await this.$wire.getRemainingAmount();
-                },
-                listenToUpdate(){
-                    this.$wire.on('remainingAmount', async (response) => {
-                        this.updateGrandTotal(response);
-                    })
-                },
+                canSubmit:false,
                 async formValid() {
-                    try {
-                        await this.validate();
-                    } catch (error) {
-                        return false;
-                    }
-                    return true;
+                        try {
+                            await this.validate();
+                        } catch (error) {
+                            return false;
+                        }
+                        return true;
                 },
-
                 async submit() {
-                    if (!await this.formValid()) {
+                    if(!await this.formValid()) {
                         return;
                     }
                     await this.$wire.applyGiftcard(this.card, this.cardNumber, this.pin);
-                },
-
-                listenToSubmit() {
-                    this.$wire.on('giftcard_response', async (response) => {
-                        if (response.error) {
-                            this.displayError(response.error);
-                        } else if (response.remainder_amount === undefined) {
-                            this.displayError(response.message);
-                        } else if (response.remainder_amount == 0) {
-                            this.canSubmit = true;
-                            await hyvaCheckout.order.place();
-                        } else if (response.remainder_amount != 0) {
-                            this.displaySuccess(response);
-                            this.updateGrandTotal(response.remainder_amount_currency);
-                        }
-                    })
-                },
-                updateGrandTotal(remainder_amount_currency) {
-                    const grandTotalElement = document.querySelector('.grand_total .value');
-                    grandTotalElement.textContent = remainder_amount_currency
-
-                    setTimeout(function () {
-                        grandTotalElement.textContent = remainder_amount_currency
-
-                    }, 2000);
                 },
                 displaySuccess(response) {
                     window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
@@ -440,7 +423,6 @@
                         }
                     }));
                 },
-
                 displayError(message) {
                     window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
                         detail: {
@@ -451,18 +433,33 @@
                         }
                     }));
                 },
-
+                listenToSubmit() {
+                    this.$wire.on('giftcard_response', async (response) => {
+                        if (response.error) {
+                            this.displayError(response.error);
+                        } else if(response.remainder_amount === undefined) {
+                            this.displayError(response.message);
+                        } else if (response.remainder_amount == 0) {
+                            this.canSubmit = true;
+                            await hyvaCheckout.order.place();
+                        } else if (response.remainder_amount != 0) {
+                            this.displaySuccess(response);
+                        }
+                        setTimeout(function () {
+                            updatePosition();
+                        }, 2000);
+                    })
+                },
                 register() {
                     this.listenToSubmit();
-                    this.update();
-                    this.listenToUpdate();
                     window.buckarooTask = async () => {
-                        if (!this.canSubmit) {
+                        if(!this.canSubmit) {
                             await this.submit();
                         }
                     };
                 },
-            });
+
+            })
         },
         mrCash($el) {
             return Object.assign(hyva.formValidation($el), {
