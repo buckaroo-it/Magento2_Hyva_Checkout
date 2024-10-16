@@ -41,7 +41,7 @@
             </argument>
         </arguments>
     </type>
-      <type name="Hyva\Checkout\Model\Form\EntityFormFieldFactory">
+    <type name="Hyva\Checkout\Model\Form\EntityFormFieldFactory">
         <arguments>
             <!-- Hide idin customer fields -->
             <argument name="customFields" xsi:type="array">
