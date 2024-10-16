@@ -63,22 +63,28 @@
     </div>
 </div>
 <script>
-    // Function to update the position of 'already-paid' after 'grand-total'
-    function updatePosition() {
-        // Select the elements by their class names
-        const alreadyPaidElement = document.querySelector('.remaining_amount');
-        const grandTotalElement = document.querySelector('.grand_total');
-
-        // Ensure both elements exist before trying to move them
-        if (alreadyPaidElement && grandTotalElement) {
-            // Move the 'already-paid' block after the 'grand-total' block
-            grandTotalElement.insertAdjacentElement('afterend', alreadyPaidElement);
-        }
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
-        // Call the function on page load
+        function updatePosition() {
+            // Select the elements by their class names
+            const alreadyPaidElement = document.querySelector('.remaining_amount');
+            const grandTotalElement = document.querySelector('.grand_total');
+
+            // Ensure both elements exist before trying to move them
+            if (alreadyPaidElement && grandTotalElement) {
+                // Move the 'already-paid' block after the 'grand-total' block
+                grandTotalElement.insertAdjacentElement('afterend', alreadyPaidElement);
+            }
+        }
+
         updatePosition();
+
+        document.querySelectorAll('input[name="payment-method-option"]').forEach((input) => {
+            input.addEventListener('change', function() {
+                setTimeout(function() {
+                    updatePosition();
+                }, 2000);
+            });
+        });
     });
 
 
@@ -89,7 +95,7 @@
                 title: '<?= $escaper->escapeHtml(__('Success')); ?>',
                 content: '',
                 showClose: true,
-                buttons:[],
+                buttons: [],
                 close() {
                     this.showModal = false;
                 },
@@ -100,7 +106,7 @@
                             this.showModal = true;
                             Object.keys(event.detail.data).forEach((key) => {
                                 this[key] = event.detail.data[key];
-                            })
+                            });
                         }
                     });
 
@@ -108,7 +114,7 @@
                         this.close();
                     });
                 }
-            }
+            };
         },
         start() {
             const addTask = function() {
@@ -116,12 +122,13 @@
                     if (window.buckarooTask) {
                         await window.buckarooTask();
                     }
-                })
-            }
+                });
+            };
             addTask();
             window.addEventListener('checkout:navigation:success', (event) => {
-                if (event.detail.route === 'payment')
+                if (event.detail.route === 'payment') {
                     addTask();
+                }
             });
 
 
