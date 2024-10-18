@@ -100,7 +100,7 @@ class Applepay extends Component\Form implements EvaluationInterface
 //                    ->withCustomEvent('payment:method:error')
 //                    ->withMessage('Payment data is missing');
 //            }
-//        } catch (LocalizedException $exception) {
+//        } catch (LocalizedEx ception $exception) {
 //            $this->dispatchErrorMessage($exception->getMessage());
 //        }
 
