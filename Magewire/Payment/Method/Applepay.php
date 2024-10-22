@@ -72,6 +72,7 @@ class Applepay extends Component\Form implements EvaluationInterface
 
     public function updateData(string $paymentData, string $billingContact)
     {
+        var_dump("payment data 1: " . $paymentData);
         $paymentData = empty($paymentData) ? null : $paymentData;
         try {
             $this->encriptedData = $paymentData;
@@ -80,6 +81,7 @@ class Applepay extends Component\Form implements EvaluationInterface
             $quote->getPayment()->setAdditionalInformation('billingContact', $billingContact);
 
             $this->quoteRepository->save($quote);
+            var_dump($paymentData);
             var_dump($quote->getPayment()->getAdditionalInformation('applepayTransaction'));
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
@@ -107,11 +109,11 @@ class Applepay extends Component\Form implements EvaluationInterface
 
         var_dump($quote->getPayment()->getAdditionalInformation('applepayTransaction'));
         var_dump($this->encriptedData);
-        if ($this->encriptedData === null) {
-            return $resultFactory->createErrorMessageEvent()
-                ->withCustomEvent('payment:method:error')
-                ->withMessage('Please fill all required payment fields');
-        }
+//        if ($this->encriptedData === null) {
+//            return $resultFactory->createErrorMessageEvent()
+//                ->withCustomEvent('payment:method:error')
+//                ->withMessage('Please fill all required payment fields');
+//        }
 
         return $resultFactory->createSuccess();
 
