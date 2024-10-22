@@ -8,7 +8,7 @@ use Magento\Framework\Escaper;
 ?>
 <form x-data="buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>')" x-init="register()" novalidate>
     <template x-if="canDisplay">
-        <button type="button" :class="getButtonClass()" @click="submit()">
+        <button type="button" :class="getButtonClass()" @click="submit">
             <?= $escaper->escapeHtml(__('Place Order')) ?>
         </button>
     </template>

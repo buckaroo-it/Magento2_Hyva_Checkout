@@ -204,6 +204,8 @@
                     console.log("formatTransactionResponse");
                     console.log(paymentData);
 
+                        return paymentData.data;
+
                         return JSON.stringify({
                             paymentData: {
                             version: paymentData.version,
@@ -216,6 +218,7 @@
                             },
                             },
                         });
+
                 },
 
                 async captureFunds(payment) {
@@ -264,11 +267,13 @@
                 },
                 async register() {
                     console.log("register");
+                    console.log(this.config.guid);
                     this.config = this.$wire.get('config');
                     this.loadSdk().then(async () => {
-                        // this.canDisplay = await BuckarooApplePay.checkPaySupport();
+                        this.canDisplay = await BuckarooApplePay.checkPaySupport(this.config.guid);
+                        console.log("after checkPaySupport")
                         window.buckarooTask = async () => {
-                            // if(this.canDisplay)
+                            if(this.canDisplay)
                                 await this.beginPayment();
                         };
                     });

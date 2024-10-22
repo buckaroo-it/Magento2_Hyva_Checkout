@@ -17,6 +17,7 @@ const checkPaySupport = async function (merchantIdentifier) {
     console.log(merchantIdentifier);
     if (!('ApplePaySession' in window)) return false;
     if (ApplePaySession === undefined) return false;
+    console.log("before canMakePaymentsWithActiveCard");
     return await ApplePaySession.canMakePaymentsWithActiveCard(merchantIdentifier);
   };
   const getButtonClass = function (buttonStyle, buttonType) {
@@ -121,8 +122,11 @@ const checkPaySupport = async function (merchantIdentifier) {
         shippingType: _this.options.shippingType,
         shippingMethods: _this.options.shippingMethods,
       };
+      console.log("applepaysession");
       // Create the Apple Pay session.
       _this.session = new ApplePaySession(_this.applePayVersion, paymentRequest);
+        console.log("onValidateMerchant...");
+
       // Setup handler for validation the merchant session.
       _this.session.onvalidatemerchant = _this.onValidateMerchant;
       // Setup handler for shipping method selection.
@@ -136,7 +140,8 @@ const checkPaySupport = async function (merchantIdentifier) {
       // Setup handler to receive the token when payment is authorized.
       _this.session.onpaymentauthorized = _this.onPaymentAuthorized;
       // Begin the session to display the Apple Pay sheet.
-      _this.session.begin();
+        console.log("_this.session.begin()");
+        _this.session.begin();
     };
     /**
      * Handles merchant validation for the Apple Pay session.
