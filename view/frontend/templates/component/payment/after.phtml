@@ -274,9 +274,11 @@
                     this.config = this.$wire.get('config');
                     this.loadSdk().then(async () => {
                         this.canDisplay = await BuckarooApplePay.checkPaySupport(this.config.guid);
-                        console.log("after checkPaySupport")
+                        console.log("after checkPaySupport");
+                        console.log(this.canDisplay);
                         window.buckarooTask = async () => {
                             if(this.canDisplay)
+                                console.log("true");
                                 await this.beginPayment();
                         };
                     });
