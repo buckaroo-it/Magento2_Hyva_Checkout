@@ -205,7 +205,7 @@
                     console.log("formatTransactionResponse");
                     console.log(paymentData);
 
-                        return paymentData.data;
+                        // return paymentData.data;
 
                         return JSON.stringify({
                             paymentData: {
@@ -266,9 +266,9 @@
                 async submit() {
                     await hyvaCheckout.order.place();
                 },
-                getButtonClass() {
-                    return `pay-with-apple ${BuckarooApplePay.getButtonClass(this.config.buttonStyle, 'buy')}`;
-                },
+                // getButtonClass() {
+                //     return `pay-with-apple ${BuckarooApplePay.getButtonClass(this.config.buttonStyle, 'buy')}`;
+                // },
                 async register() {
                     console.log("register");
                     this.config = this.$wire.get('config');

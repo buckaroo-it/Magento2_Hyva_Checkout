@@ -125,7 +125,7 @@ const checkPaySupport = async function (merchantIdentifier) {
       console.log("applepaysession");
       // Create the Apple Pay session.
       _this.session = new ApplePaySession(_this.applePayVersion, paymentRequest);
-        console.log("onValidateMerchant...");
+        // console.log("onValidateMerchant...");
 
       // Setup handler for validation the merchant session.
       _this.session.onvalidatemerchant = _this.onValidateMerchant;
@@ -181,6 +181,7 @@ const checkPaySupport = async function (merchantIdentifier) {
       // Process the payment
       _this.options.processCallback(payment).then(function (authorizationResult) {
         // Complete payment
+          console.log("Authorization result: " . authorizationResult);
         _this.session.completePayment(authorizationResult);
       });
     };
