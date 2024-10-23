@@ -195,6 +195,7 @@
                 },
 
                 formatTransactionResponse(response) {
+                    console.log("formatTransactionResponse 1.1");
                     if (response === null || response === 'undefined') {
                         return null;
                     }
@@ -255,6 +256,7 @@
                             ['email', 'postalAddress'],
                             ['email']
                         );
+                        console.log("after promise");
                         console.log(config);
                         new BuckarooApplePay.PayPayment(config).beginPayment()
                     })
