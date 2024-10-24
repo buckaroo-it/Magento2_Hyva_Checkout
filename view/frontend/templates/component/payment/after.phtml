@@ -200,15 +200,13 @@
                         return null;
                     }
 
-                        const paymentData = response.token.paymentData;
+                    const paymentData = response.token.paymentData;
 
                     console.log("formatTransactionResponse");
                     console.log(paymentData);
 
-                        return paymentData.data;
-
-                        return JSON.stringify({
-                            paymentData: {
+                    return JSON.stringify({
+                        paymentData: {
                             version: paymentData.version,
                             data: paymentData.data,
                             signature: paymentData.signature,
@@ -217,14 +215,11 @@
                                 publicKeyHash: paymentData.header.publicKeyHash,
                                 transactionId: paymentData.header.transactionId,
                             },
-                            },
-                        });
-
+                        },
+                    });
                 },
 
                 async captureFunds(payment) {
-                    console.log("CAPTURE FUNDS");
-                    console.log(payment);
 
                     const billingContact = payment && payment.billingContact ? JSON.stringify(payment.billingContact) : ''
 
@@ -262,8 +257,8 @@
                             (payment) => this.captureFunds(payment),
                             null,
                             null,
-                            ['email', 'postalAddress'],
-                            ['email']
+                            ["name", "postalAddress", "phone"],
+                            ["name", "postalAddress", "phone"]
                         );
                         console.log("after promise");
                         console.log(config);

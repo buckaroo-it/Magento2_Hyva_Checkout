@@ -72,17 +72,17 @@ class Applepay extends Component\Form implements EvaluationInterface
 
     public function updateData(string $paymentData, string $billingContact)
     {
-//        var_dump("payment data 1: " . $paymentData);
+        print_r($paymentData);
         $paymentData = empty($paymentData) ? null : $paymentData;
         try {
             $this->encriptedData = $paymentData;
             $quote = $this->sessionCheckout->getQuote();
-            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $paymentData);
+            $applepayEncoded = base64_encode($paymentData);
+            print_r($applepayEncoded);
+            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $applepayEncoded);
             $quote->getPayment()->setAdditionalInformation('billingContact', $billingContact);
 
             $this->quoteRepository->save($quote);
-//            var_dump($paymentData);
-//            var_dump($quote->getPayment()->getAdditionalInformation('applepayTransaction'));
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
         }
@@ -90,42 +90,24 @@ class Applepay extends Component\Form implements EvaluationInterface
     }
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
+        try {
+            $quote = $this->sessionCheckout->getQuote();
+            $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
 
-//        try {
-//            $quote = $this->sessionCheckout->getQuote();
-//            $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
-//
-////            var_dump($paymentData);
-////            die();
-//
-//            if (empty($paymentData)) {
-//                return $resultFactory->createErrorMessageEvent()
-//                    ->withCustomEvent('payment:method:error')
-//                    ->withMessage('Payment data is missing');
-//            }
-//        } catch (LocalizedEx ception $exception) {
-//            $this->dispatchErrorMessage($exception->getMessage());
-//        }
-
-//        var_dump($quote->getPayment()->getAdditionalInformation('applepayTransaction'));
-//        var_dump($this->encriptedData);
-        if ($this->encriptedData === null) {
-            return $resultFactory->createErrorMessageEvent()
-                ->withCustomEvent('payment:method:error')
-                ->withMessage('Please fill all required payment fields');
+            if (empty($paymentData)) {
+                return $resultFactory->createErrorMessageEvent()
+                    ->withCustomEvent('payment:method:error')
+                    ->withMessage('Payment data is missing');
+            }
+        } catch (LocalizedException $exception) {
+            $this->dispatchErrorMessage($exception->getMessage());
         }
-
         return $resultFactory->createSuccess();
-
     }
 
     public function getJsSdkUrl(): string
     {
-        try {
-            return $this->assetRepo->getUrl('Buckaroo_HyvaCheckout::js/applepay.js');
-        } catch (LocalizedException $exception) {
-            $this->dispatchErrorMessage($exception->getMessage());
-        }
+        return $this->assetRepo->getUrl('Buckaroo_HyvaCheckout::js/applepay.js');
     }
 
 
