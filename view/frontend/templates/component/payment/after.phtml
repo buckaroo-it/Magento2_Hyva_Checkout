@@ -195,15 +195,11 @@
                 },
 
                 async formatTransactionResponse(response) {
-                    console.log("formatTransactionResponse 1.1");
                     if (response === null || response === 'undefined') {
                         return null;
                     }
 
                     const paymentData = response.token.paymentData;
-
-                    console.log("formatTransactionResponse");
-                    console.log(paymentData);
 
                     return JSON.stringify({
                         paymentData: {
@@ -224,13 +220,8 @@
                     const billingContact = payment && payment.billingContact ? JSON.stringify(payment.billingContact) : ''
 
                     const formattedData = await this.formatTransactionResponse(payment);
-                    console.log("formatted data:");
-                    console.log(formattedData);
                     await this.$wire.updateData(formattedData,billingContact);
-                    console.log("after updateData");
                     this.resolve();
-                    console.log("after resolve");
-                    console.log(window.ApplePaySession.STATUS_SUCCESS);
                     return {
                         status: window.ApplePaySession.STATUS_SUCCESS,
                         errors: [],
@@ -238,8 +229,6 @@
                 },
 
                 async beginPayment() {
-                    console.log("beginPayment");
-                    console.log("before Promise");
 
                     const promise = new Promise((resolve) => {
                         this.resolve = resolve;
@@ -260,8 +249,6 @@
                             ["name", "postalAddress", "phone"],
                             ["name", "postalAddress", "phone"]
                         );
-                        console.log("after promise");
-                        console.log(config);
                         new BuckarooApplePay.PayPayment(config).beginPayment()
                     })
                     await promise;
@@ -274,15 +261,11 @@
                 //     return `pay-with-apple ${BuckarooApplePay.getButtonClass(this.config.buttonStyle, 'buy')}`;
                 // },
                 async register() {
-                    console.log("register");
                     this.config = this.$wire.get('config');
                     this.loadSdk().then(async () => {
                         this.canDisplay = await BuckarooApplePay.checkPaySupport(this.config.guid);
-                        console.log("after checkPaySupport");
-                        console.log(this.canDisplay);
                         window.buckarooTask = async () => {
                             if(this.canDisplay)
-                                console.log("true");
                                 await this.beginPayment();
                         };
                     });
