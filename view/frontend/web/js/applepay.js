@@ -75,9 +75,13 @@ var PayPayment = function (options) {
         }
     };
     /**
-     * Initializes the ApplePay button
+     * Initializes the Apple Pay button
      */
-    this.init = function () {
+    this.init = async function () {
+        const applePaySupported = await checkPaySupport(_this.options.merchantIdentifier);
+        if (!applePaySupported) {
+            return;
+        }
         if (document.getElementById('buckaroo-sdk-css') === null) {
             document.head.insertAdjacentHTML("beforeend", "<link id=\"buckaroo-sdk-css\" href=\"https://checkout.buckaroo.nl/api/buckaroosdk/css\" rel=\"stylesheet\">");
         }
