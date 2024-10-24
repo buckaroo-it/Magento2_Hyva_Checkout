@@ -225,10 +225,15 @@
                 async captureFunds(payment) {
                     console.log("CAPTURE FUNDS");
                     console.log(payment);
+
                     const billingContact = payment && payment.billingContact ? JSON.stringify(payment.billingContact) : ''
-                    await this.$wire.updateData(this.formatTransactionResponse(payment),billingContact);
+
+                    const formattedData = await this.formatTransactionResponse(payment);
+                    await this.$wire.updateData(formattedData,billingContact);
                     console.log("after updateData");
                     this.resolve();
+                    console.log("after resolve");
+                    console.log(window.ApplePaySession.STATUS_SUCCESS);
                     return {
                         status: window.ApplePaySession.STATUS_SUCCESS,
                         errors: [],
