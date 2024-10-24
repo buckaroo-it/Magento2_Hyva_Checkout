@@ -194,7 +194,7 @@
                         })
                 },
 
-                formatTransactionResponse(response) {
+                async formatTransactionResponse(response) {
                     console.log("formatTransactionResponse 1.1");
                     if (response === null || response === 'undefined') {
                         return null;
@@ -229,6 +229,8 @@
                     const billingContact = payment && payment.billingContact ? JSON.stringify(payment.billingContact) : ''
 
                     const formattedData = await this.formatTransactionResponse(payment);
+                    console.log("formatted data:");
+                    console.log(formattedData);
                     await this.$wire.updateData(formattedData,billingContact);
                     console.log("after updateData");
                     this.resolve();
