@@ -93,8 +93,7 @@ var PayPayment = function (options) {
         if (!_this.options.merchantIdentifier)
             throw 'ApplePay: merchantIdentifier is not set';
     };
-    this.beginPayment = function (e) {
-        e.preventDefault();
+    this.beginPayment = function () {
         var paymentRequest = {
             countryCode: _this.options.countryCode,
             currencyCode: _this.options.currencyCode,
