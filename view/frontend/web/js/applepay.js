@@ -14,7 +14,7 @@
 
 const checkPaySupport = async function (merchantIdentifier) {
     if (!('ApplePaySession' in window)) return false;
-    if (ApplePaySession === undefined) return false;
+    if (typeof ApplePaySession === 'undefined') return false;
     return await ApplePaySession.canMakePaymentsWithActiveCard(merchantIdentifier);
 };
 const getButtonClass = function (buttonStyle, buttonType) {
