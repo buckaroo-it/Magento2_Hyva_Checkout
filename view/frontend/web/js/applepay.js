@@ -85,18 +85,13 @@ var PayPayment = function (options) {
     }
 
     this.validate = function () {
-        if (!_this.button.length)
-            throw "ApplePay: button element does not exist";
         if (!_this.options.processCallback)
-            throw "ApplePay: processCallback must be set";
-        if (!_this.options.storeName)
-            throw "ApplePay: storeName is not set";
-        if (!_this.options.countryCode)
-            throw "ApplePay: countryCode is not set";
-        if (!_this.options.currencyCode)
-            throw "ApplePay: currencyCode is not set";
+            throw 'ApplePay: processCallback must be set';
+        if (!_this.options.storeName) throw 'ApplePay: storeName is not set';
+        if (!_this.options.countryCode) throw 'ApplePay: countryCode is not set';
+        if (!_this.options.currencyCode) throw 'ApplePay: currencyCode is not set';
         if (!_this.options.merchantIdentifier)
-            throw "ApplePay: merchantIdentifier is not set";
+            throw 'ApplePay: merchantIdentifier is not set';
     };
     this.beginPayment = function (e) {
         e.preventDefault();
