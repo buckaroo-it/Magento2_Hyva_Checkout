@@ -72,9 +72,7 @@ class Applepay extends Component\Form implements EvaluationInterface
 
     public function updateData(string $paymentData, string $billingContact)
     {
-        $paymentData = empty($paymentData) ? null : $paymentData;
         try {
-            $this->encriptedData = $paymentData;
             $quote = $this->sessionCheckout->getQuote();
             $applePayEncoded = base64_encode($paymentData);
             $quote->getPayment()->setAdditionalInformation('applepayTransaction', $applePayEncoded);
@@ -146,7 +144,6 @@ class Applepay extends Component\Form implements EvaluationInterface
                 ];
             }
         }
-
         return $totals;
     }
 
