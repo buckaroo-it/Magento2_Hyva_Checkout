@@ -201,7 +201,6 @@ var PayPayment = function (options) {
             return;
         _this.options.cancelCallback(event);
     };
-    this.button = $(buttonSelector);
     this.options = options;
     this.init();
     this.validate();

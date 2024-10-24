@@ -77,9 +77,9 @@ class Applepay extends Component\Form implements EvaluationInterface
         try {
             $this->encriptedData = $paymentData;
             $quote = $this->sessionCheckout->getQuote();
-            $applepayEncoded = base64_encode($paymentData);
-            print_r($applepayEncoded);
-            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $applepayEncoded);
+            $applePayEncoded = base64_encode($paymentData);
+            print_r($applePayEncoded);
+            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $applePayEncoded);
             $quote->getPayment()->setAdditionalInformation('billingContact', $billingContact);
 
             $this->quoteRepository->save($quote);
