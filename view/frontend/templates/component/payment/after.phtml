@@ -89,6 +89,14 @@
 
 
     var buckaroo = {
+        updatePosition() {
+            const alreadyPaidElement = document.querySelector('.remaining_amount');
+            const grandTotalElement = document.querySelector('.grand_total');
+
+            if (alreadyPaidElement && grandTotalElement) {
+                grandTotalElement.insertAdjacentElement('afterend', alreadyPaidElement);
+            }
+        },
         modal() {
             return {
                 showModal: false,
