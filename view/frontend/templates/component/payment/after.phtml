@@ -100,6 +100,8 @@
             };
         },
         start() {
+            this.updatePosition();
+
             const addTask = function() {
                 hyvaCheckout.navigation.addTask(async () => {
                     if (window.buckarooTask) {
@@ -111,6 +113,7 @@
             window.addEventListener('checkout:navigation:success', (event) => {
                 if (event.detail.route === 'payment') {
                     addTask();
+                    buckaroo.updatePosition();  // Ensure position update on navigation success
                 }
             });
 
