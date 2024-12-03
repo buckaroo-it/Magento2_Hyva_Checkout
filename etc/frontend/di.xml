@@ -4,7 +4,6 @@
         <arguments>
             <argument name="placeOrderServiceList" xsi:type="array">
                 <item name="buckaroo_magento2_belfius" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
-                <item name="buckaroo_magento2_sofortbanking" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_alipay" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_wechatpay" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_trustly" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
@@ -20,7 +19,6 @@
                 <item name="buckaroo_magento2_klarna" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_klarnain" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_klarnakp" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
-                <item name="buckaroo_magento2_creditcard" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_creditcards" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_afterpay" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_afterpay2" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
@@ -41,7 +39,7 @@
             </argument>
         </arguments>
     </type>
-      <type name="Hyva\Checkout\Model\Form\EntityFormFieldFactory">
+    <type name="Hyva\Checkout\Model\Form\EntityFormFieldFactory">
         <arguments>
             <!-- Hide idin customer fields -->
             <argument name="customFields" xsi:type="array">

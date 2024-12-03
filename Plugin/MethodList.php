@@ -62,7 +62,6 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
             "mrcash" => "svg/bancontact.svg",
             "p24" => "svg/przelewy24.svg",
             "sepadirectdebit" => "svg/sepa-directdebit.svg",
-            "sofortbanking" => "svg/sofort.svg",
             "emandate" => "emandate.png",
             "pospayment" => "pos.png",
             "transfer" => "svg/sepa-credittransfer.svg",

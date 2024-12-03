@@ -4,6 +4,7 @@
     tabindex="-1"
     aria-hidden="true"
     class="fixed top-0 left-0 right-0 z-50 justify-center w-full p-4 items-center overflow-x-hidden overflow-y-auto md:inset-0 max-h-full h-full"
+    x-cloak
     x-bind:class="showModal ? 'flex': 'hidden'">
         <div class="relative w-full max-w-md max-h-full"  @click.outside="close()">
             <!-- Modal content -->
@@ -63,6 +64,30 @@
     </div>
 </div>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function updatePosition() {
+            // Select the elements by their class names
+            const alreadyPaidElement = document.querySelector('.remaining_amount');
+            const grandTotalElement = document.querySelector('.grand_total');
+
+            // Ensure both elements exist before trying to move them
+            if (alreadyPaidElement && grandTotalElement) {
+                // Move the 'already-paid' block after the 'grand-total' block
+                grandTotalElement.insertAdjacentElement('afterend', alreadyPaidElement);
+            }
+        }
+
+        updatePosition();
+
+        document.querySelectorAll('input[name="payment-method-option"]').forEach((input) => {
+            input.addEventListener('change', function() {
+                setTimeout(function() {
+                    updatePosition();
+                }, 2000);
+            });
+        });
+    });
+
 
     var buckaroo = {
         modal() {
@@ -71,7 +96,7 @@
                 title: '<?= $escaper->escapeHtml(__('Success')); ?>',
                 content: '',
                 showClose: true,
-                buttons:[],
+                buttons: [],
                 close() {
                     this.showModal = false;
                 },
@@ -82,7 +107,7 @@
                             this.showModal = true;
                             Object.keys(event.detail.data).forEach((key) => {
                                 this[key] = event.detail.data[key];
-                            })
+                            });
                         }
                     });
 
@@ -90,7 +115,7 @@
                         this.close();
                     });
                 }
-            }
+            };
         },
         start() {
             const addTask = function() {
@@ -98,12 +123,13 @@
                     if (window.buckarooTask) {
                         await window.buckarooTask();
                     }
-                })
-            }
+                });
+            };
             addTask();
             window.addEventListener('checkout:navigation:success', (event) => {
-                if (event.detail.route === 'payment')
+                if (event.detail.route === 'payment') {
                     addTask();
+                }
             });
 
 
@@ -377,58 +403,23 @@
         },
         giftcards($el) {
             return Object.assign(hyva.formValidation($el), {
-                card: '',
+                card:'',
                 pin: '',
                 cardNumber: '',
-                canSubmit: false,
-
-                async update() {
-                    await this.$wire.getRemainingAmount();
-                },
-                listenToUpdate(){
-                    this.$wire.on('remainingAmount', async (response) => {
-                        this.updateGrandTotal(response);
-                    })
-                },
+                canSubmit:false,
                 async formValid() {
-                    try {
-                        await this.validate();
-                    } catch (error) {
-                        return false;
-                    }
-                    return true;
+                        try {
+                            await this.validate();
+                        } catch (error) {
+                            return false;
+                        }
+                        return true;
                 },
-
                 async submit() {
-                    if (!await this.formValid()) {
+                    if(!await this.formValid()) {
                         return;
                     }
                     await this.$wire.applyGiftcard(this.card, this.cardNumber, this.pin);
-                },
-
-                listenToSubmit() {
-                    this.$wire.on('giftcard_response', async (response) => {
-                        if (response.error) {
-                            this.displayError(response.error);
-                        } else if (response.remainder_amount === undefined) {
-                            this.displayError(response.message);
-                        } else if (response.remainder_amount == 0) {
-                            this.canSubmit = true;
-                            await hyvaCheckout.order.place();
-                        } else if (response.remainder_amount != 0) {
-                            this.displaySuccess(response);
-                            this.updateGrandTotal(response.remainder_amount_currency);
-                        }
-                    })
-                },
-                updateGrandTotal(remainder_amount_currency) {
-                    const grandTotalElement = document.querySelector('.grand_total .value');
-                    grandTotalElement.textContent = remainder_amount_currency
-
-                    setTimeout(function () {
-                        grandTotalElement.textContent = remainder_amount_currency
-
-                    }, 2000);
                 },
                 displaySuccess(response) {
                     window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
@@ -444,7 +435,6 @@
                         }
                     }));
                 },
-
                 displayError(message) {
                     window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
                         detail: {
@@ -455,18 +445,33 @@
                         }
                     }));
                 },
-
+                listenToSubmit() {
+                    this.$wire.on('giftcard_response', async (response) => {
+                        if (response.error) {
+                            this.displayError(response.error);
+                        } else if(response.remainder_amount === undefined) {
+                            this.displayError(response.message);
+                        } else if (response.remainder_amount == 0) {
+                            this.canSubmit = true;
+                            await hyvaCheckout.order.place();
+                        } else if (response.remainder_amount != 0) {
+                            this.displaySuccess(response);
+                        }
+                        setTimeout(function () {
+                            updatePosition();
+                        }, 2000);
+                    })
+                },
                 register() {
                     this.listenToSubmit();
-                    this.update();
-                    this.listenToUpdate();
                     window.buckarooTask = async () => {
-                        if (!this.canSubmit) {
+                        if(!this.canSubmit) {
                             await this.submit();
                         }
                     };
                 },
-            });
+
+            })
         },
         mrCash($el) {
             return Object.assign(hyva.formValidation($el), {

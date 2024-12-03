@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+
+/** @var Template $block */
+/** @var FormatterViewModel $formatterViewModel */
+/** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\Checkout\ViewModel\Checkout\Formatter as FormatterViewModel;
+use Hyva\Theme\Model\ViewModelRegistry;
+
+$formatterViewModel = $viewModels->require(FormatterViewModel::class);
+$segment = $block->getSegment();
+if ($segment['value'] != 0) {
+    ?>
+    <div class="flex gap-4 justify-between border-t border-gray-400 pt-4 mt-4 md:gap-0">
+        <span class="label font-bold text-xl">
+            <?= $block->escapeHtml($segment['title']) ?>
+        </span>
+        <span class="value text-right font-bold">
+            <?= /* @noEscape */ $formatterViewModel->currency($segment['value'] ?? 0) ?>
+        </span>
+    </div>
+    <?php
+}

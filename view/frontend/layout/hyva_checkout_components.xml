@@ -45,16 +45,6 @@
                 </arguments>
             </block>
 
-            <block name="checkout.payment.method.buckaroo_magento2_creditcard"
-                    as="buckaroo_magento2_creditcard"
-                    template="Buckaroo_HyvaCheckout::component/payment/method/creditcard.phtml">
-                <arguments>
-                    <argument name="magewire" xsi:type="object">
-                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Creditcard
-                    </argument>
-                </arguments>
-            </block>
-
              <block name="checkout.payment.method.buckaroo_magento2_afterpay20"
                     as="buckaroo_magento2_afterpay20"
                     template="Buckaroo_HyvaCheckout::component/payment/method/afterpay20.phtml">
@@ -210,6 +200,9 @@
                 class="Buckaroo\HyvaCheckout\Block\Totals\AlreadyPaid"
                 as="buckaroo_already_paid"
                 template="Buckaroo_HyvaCheckout::total-segments/already-paid.phtml"/>
+            <block name="price-summary.total-segment.remaining_amount"
+                as="remaining_amount"
+                template="Buckaroo_HyvaCheckout::checkout/summary/remaining-amount.phtml"/>
         </referenceBlock>
     </body>
 </page>
