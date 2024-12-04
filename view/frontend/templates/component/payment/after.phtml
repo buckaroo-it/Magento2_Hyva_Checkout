@@ -220,15 +220,15 @@
                         })
                 },
 
-                formatTransactionResponse(response) {
+                async formatTransactionResponse(response) {
                     if (response === null || response === 'undefined') {
                         return null;
                     }
 
-                        const paymentData = response.token.paymentData;
+                    const paymentData = response.token.paymentData;
 
-                        return JSON.stringify({
-                            paymentData: {
+                    return JSON.stringify({
+                        paymentData: {
                             version: paymentData.version,
                             data: paymentData.data,
                             signature: paymentData.signature,
@@ -237,13 +237,16 @@
                                 publicKeyHash: paymentData.header.publicKeyHash,
                                 transactionId: paymentData.header.transactionId,
                             },
-                            },
-                        });
+                        },
+                    });
                 },
 
                 async captureFunds(payment) {
+
                     const billingContact = payment && payment.billingContact ? JSON.stringify(payment.billingContact) : ''
-                    await this.$wire.updateData(this.formatTransactionResponse(payment),billingContact);
+
+                    const formattedData = await this.formatTransactionResponse(payment);
+                    await this.$wire.updateData(formattedData,billingContact);
                     this.resolve();
                     return {
                         status: window.ApplePaySession.STATUS_SUCCESS,
@@ -252,6 +255,7 @@
                 },
 
                 async beginPayment() {
+
                     const promise = new Promise((resolve) => {
                         this.resolve = resolve;
 
@@ -268,8 +272,8 @@
                             (payment) => this.captureFunds(payment),
                             null,
                             null,
-                            ['email', 'postalAddress'],
-                            ['email']
+                            ["name", "postalAddress", "phone"],
+                            ["name", "postalAddress", "phone"]
                         );
                         new BuckarooApplePay.PayPayment(config).beginPayment()
                     })
@@ -279,13 +283,14 @@
                 async submit() {
                     await hyvaCheckout.order.place();
                 },
-                getButtonClass() {
-                    return `pay-with-apple ${BuckarooApplePay.getButtonClass(this.config.buttonStyle, 'buy')}`;
-                },
+                // getButtonClass() {
+                //     return `pay-with-apple ${BuckarooApplePay.getButtonClass(this.config.buttonStyle, 'buy')}`;
+                // },
                 async register() {
                     this.config = this.$wire.get('config');
+                    window.merchantIdentifier = this.config.guid;
                     this.loadSdk().then(async () => {
-                        this.canDisplay = await BuckarooApplePay.checkPaySupport();
+                        this.canDisplay = await BuckarooApplePay.checkPaySupport(this.config.guid);
                         window.buckarooTask = async () => {
                             if(this.canDisplay)
                                 await this.beginPayment();
