@@ -101,9 +101,13 @@ class Applepay extends Component\Form implements EvaluationInterface
         return $resultFactory->createSuccess();
     }
 
-    public function getJsSdkUrl(): string
+    public function getJsSdkUrl()
     {
-        return $this->assetRepo->getUrl('Buckaroo_HyvaCheckout::js/applepay.js');
+        try {
+            return $this->assetRepo->getUrl('Buckaroo_HyvaCheckout::js/applepay.js');
+        } catch (LocalizedException $exception) {
+            $this->dispatchErrorMessage($exception->getMessage());
+        }
     }
 
 
