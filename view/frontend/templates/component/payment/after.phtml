@@ -288,6 +288,7 @@
                 // },
                 async register() {
                     this.config = this.$wire.get('config');
+                    window.merchantIdentifier = this.config.guid;
                     this.loadSdk().then(async () => {
                         this.canDisplay = await BuckarooApplePay.checkPaySupport(this.config.guid);
                         window.buckarooTask = async () => {

@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const checkApplePaySupport = function () {
             if (!('ApplePaySession' in window)) return false;
             if (typeof ApplePaySession === 'undefined') return false;
-            return true;
+            return ApplePaySession.canMakePaymentsWithActiveCard(window.merchantIdentifier);
         };
 
         const applePaySupported = checkApplePaySupport();
