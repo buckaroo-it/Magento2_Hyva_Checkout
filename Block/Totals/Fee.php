@@ -12,18 +12,14 @@ class Fee extends \Magento\Framework\View\Element\Template
 {
     protected PaymentFee $feeHelper;
 
-    protected SessionCheckout $sessionCheckout;
-
     public function __construct(
         Context         $context,
         array           $data,
         PaymentFee      $feeHelper,
-        SessionCheckout $sessionCheckout
     )
     {
         parent::__construct($context, $data);
         $this->feeHelper = $feeHelper;
-        $this->sessionCheckout = $sessionCheckout;
     }
 
     /**
@@ -34,12 +30,9 @@ class Fee extends \Magento\Framework\View\Element\Template
     public function getTitle(): string
     {
         try {
-            $payment = $this->sessionCheckout
-                ->getQuote()
-                ->getPayment();
-            return $this->feeHelper->getBuckarooPaymentFeeLabel($payment->getMethod());
+            return $this->feeHelper->getBuckarooPaymentFeeLabel();
         } catch (\Throwable $th) {
-            return __('Payment Fee');
+            return 'Payment Fee';
         }
     }
 }
