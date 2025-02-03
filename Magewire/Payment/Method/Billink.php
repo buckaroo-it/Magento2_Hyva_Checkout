@@ -65,7 +65,7 @@ class Billink extends Component\Form implements EvaluationInterface
         if($validator->getValidator("nlBeDePhone") === null) {
             $validator->addValidator("nlBeDePhone", new NlBeDePhone());
         }
-      
+
         parent::__construct($validator);
 
         $this->sessionCheckout = $sessionCheckout;
@@ -295,23 +295,26 @@ class Billink extends Component\Form implements EvaluationInterface
     private function getFormValues(): array
     {
         $values = [
-            'tos' => $this->tos,
-            'dateOfBirth' => $this->dateOfBirth,
-            'gender' => $this->gender
+            'tos' => $this->tos
         ];
 
         if ($this->showPhone()) {
             $values = array_merge($values, ['phone' => $this->phone]);
         }
-
+        if(!$this->showB2b()) {
+            $values = array_merge($values, [
+                'dateOfBirth' => $this->dateOfBirth,
+                'gender' => $this->gender
+            ]);
+        }
         if($this->showB2b()) {
             $values = array_merge($values, [
                 'coc' => $this->coc
             ]);
         }
 
-   
-    
+
+
         return $values;
     }
 
@@ -323,12 +326,16 @@ class Billink extends Component\Form implements EvaluationInterface
     private function getFormRules(): array
     {
         $rules = [
-            'tos' => self::RULES_TOS,
-            'dateOfBirth' => self::RULES_DATE_OF_BIRTH,
-            'gender' => $this->getGenderRules()
+            'tos' => self::RULES_TOS
         ];
 
+        if(!$this->showB2b()) {
+            $rules = array_merge($rules, [
+                'dateOfBirth' => self::RULES_DATE_OF_BIRTH,
+                'gender' => $this->getGenderRules()
+            ]);
 
+        }
         if ($this->showPhone()) {
             $rules = array_merge($rules, ['phone' => $this->getPhoneRules()]);
         }
@@ -344,7 +351,20 @@ class Billink extends Component\Form implements EvaluationInterface
 
     public function showB2b()
     {
-        return $this->helper->checkCustomerGroup('buckaroo_magento2_billink');
+        $quote =  $this->getQuote();
+        if ($quote === null) {
+            return false;
+        }
+
+        $shippingCountry = $quote->getShippingAddress()->getCountryId();
+        $billingCompany = $quote->getBillingAddress()->getCompany();
+        $shippingCompany = $quote->getShippingAddress()->getCompany();
+
+        return
+            (
+                ($this->getCountryId() === 'NL' && !empty(trim((string)$billingCompany))) ||
+                ($shippingCountry === 'NL' && !empty(trim((string)$shippingCompany)))
+            );
     }
 
 
