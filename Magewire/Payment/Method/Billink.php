@@ -36,8 +36,6 @@ class Billink extends Component\Form implements EvaluationInterface
 
     public ?string $coc = null;
 
-//    public ?string $companyName = null;
-
     public ?string $vatNumber = null;
 
     public ?string $phone = null;
@@ -49,8 +47,6 @@ class Billink extends Component\Form implements EvaluationInterface
     public const RULES_TOS = ['required', 'boolean', 'accepted'];
 
     public const RULES_DATE_OF_BIRTH = ['required', 'date', 'before:-18 years'];
-
-//    public const RULES_COMPANY_NAME = ['required'];
 
     protected SessionCheckout $sessionCheckout;
 
@@ -96,7 +92,6 @@ class Billink extends Component\Form implements EvaluationInterface
 
         $this->tos = $tos === true;
         $this->coc = $payment->getAdditionalInformation('customer_chamberOfCommerce');
-//        $this->companyName = $payment->getAdditionalInformation('companyName');
         $this->phone = $payment->getAdditionalInformation('customer_telephone');
         $this->vatNumber = $payment->getAdditionalInformation('customer_VATNumber');
         $this->dateOfBirth = $payment->getAdditionalInformation('customer_DoB');
@@ -172,13 +167,6 @@ class Billink extends Component\Form implements EvaluationInterface
         $this->updatePaymentField('customer_gender', $value);
         return $value;
     }
-
-//    public function updatedCompanyName(string $value): ?string
-//    {
-//        $this->validateField('companyName', self::RULES_COMPANY_NAME, $value);
-//        $this->updatePaymentField('companyName', $value);
-//        return $value;
-//    }
 
     public function updatedDateOfBirth(string $value): ?string
     {
@@ -321,7 +309,6 @@ class Billink extends Component\Form implements EvaluationInterface
         }
         if($this->showB2b()) {
             $values = array_merge($values, [
-//                'companyName' => $this->companyName,
                 'coc' => $this->coc
             ]);
         }
@@ -355,7 +342,6 @@ class Billink extends Component\Form implements EvaluationInterface
 
         if($this->showB2b()) {
             $rules = array_merge($rules, [
-//                'companyName' => self::RULES_COMPANY_NAME,
                 'coc' => self::RULES_COC
             ]);
         }
