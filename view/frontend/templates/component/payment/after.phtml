@@ -1,12 +1,16 @@
 <div class="bk-modal-wrap" x-data="buckaroo.modal()" x-init="initModal()">
     <div
-    id="bk-modal"
-    tabindex="-1"
-    aria-hidden="true"
-    class="fixed top-0 left-0 right-0 z-50 justify-center w-full p-4 items-center overflow-x-hidden overflow-y-auto md:inset-0 max-h-full h-full"
-    x-cloak
-    x-bind:class="showModal ? 'flex': 'hidden'">
-        <div class="relative w-full max-w-md max-h-full"  @click.outside="close()">
+            id="bk-modal"
+            tabindex="-1"
+            x-ref="modal"
+            aria-hidden="!showModal"
+            inert="!showModal"
+            x-cloak
+            class="fixed top-0 left-0 right-0 z-50 justify-center w-full p-4 items-center overflow-x-hidden overflow-y-auto md:inset-0 max-h-full h-full"
+            x-bind:class="showModal ? 'flex' : 'hidden'"
+            @keydown.window.escape="close()"
+    >
+        <div class="relative w-full max-w-md max-h-full" @click.outside="close()">
             <!-- Modal content -->
             <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                 <!-- Modal header -->
@@ -41,7 +45,6 @@
                     </p>
                 </div>
                 <!-- Modal footer -->
-
                 <div class="flex items-center p-2 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
                     <template x-if="Array.isArray(buttons)">
                         <template x-for="(button, index) in buttons" :key="index">
@@ -64,31 +67,6 @@
     </div>
 </div>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        function updatePosition() {
-            // Select the elements by their class names
-            const alreadyPaidElement = document.querySelector('.remaining_amount');
-            const grandTotalElement = document.querySelector('.grand_total');
-
-            // Ensure both elements exist before trying to move them
-            if (alreadyPaidElement && grandTotalElement) {
-                // Move the 'already-paid' block after the 'grand-total' block
-                grandTotalElement.insertAdjacentElement('afterend', alreadyPaidElement);
-            }
-        }
-
-        updatePosition();
-
-        document.querySelectorAll('input[name="payment-method-option"]').forEach((input) => {
-            input.addEventListener('change', function() {
-                setTimeout(function() {
-                    updatePosition();
-                }, 2000);
-            });
-        });
-    });
-
-
     var buckaroo = {
         modal() {
             return {
@@ -103,7 +81,7 @@
                 initModal() {
                     buckaroo.start();
                     window.addEventListener('buckaroo-modal-show', (event) => {
-                        if(event.detail.data) {
+                        if (event.detail.data) {
                             this.showModal = true;
                             Object.keys(event.detail.data).forEach((key) => {
                                 this[key] = event.detail.data[key];

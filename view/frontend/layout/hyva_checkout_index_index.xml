@@ -4,12 +4,13 @@
 >
     <head>
         <script src="Buckaroo_HyvaCheckout::js/hide-applepay.js" />
+        <script src="Buckaroo_HyvaCheckout::js/update-position.js"/>
     </head>
     <body>
         <referenceContainer name="hyva.checkout.api-v1.after">
-             <block name="checkout.buckaroo_after_api-v1"
-                    as="buckaroo_after_api-v1"
-                    template="Buckaroo_HyvaCheckout::component/payment/after.phtml">
+            <block name="checkout.buckaroo_after_api-v1"
+                   as="buckaroo_after_api-v1"
+                   template="Buckaroo_HyvaCheckout::component/payment/after.phtml">
             </block>
         </referenceContainer>
     </body>
