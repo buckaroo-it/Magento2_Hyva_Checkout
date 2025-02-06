@@ -1,11 +1,16 @@
 <div class="bk-modal-wrap" x-data="buckaroo.modal()" x-init="initModal()">
     <div
-    id="bk-modal"
-    tabindex="-1"
-    aria-hidden="true"
-    class="fixed top-0 left-0 right-0 z-50 justify-center w-full p-4 items-center overflow-x-hidden overflow-y-auto md:inset-0 max-h-full h-full"
-    x-bind:class="showModal ? 'flex': 'hidden'">
-        <div class="relative w-full max-w-md max-h-full"  @click.outside="close()">
+            id="bk-modal"
+            tabindex="-1"
+            x-ref="modal"
+            aria-hidden="!showModal"
+            inert="!showModal"
+            x-cloak
+            class="fixed top-0 left-0 right-0 z-50 justify-center w-full p-4 items-center overflow-x-hidden overflow-y-auto md:inset-0 max-h-full h-full"
+            x-bind:class="showModal ? 'flex' : 'hidden'"
+            @keydown.window.escape="close()"
+    >
+        <div class="relative w-full max-w-md max-h-full" @click.outside="close()">
             <!-- Modal content -->
             <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                 <!-- Modal header -->
@@ -40,7 +45,6 @@
                     </p>
                 </div>
                 <!-- Modal footer -->
-
                 <div class="flex items-center p-2 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
                     <template x-if="Array.isArray(buttons)">
                         <template x-for="(button, index) in buttons" :key="index">
@@ -63,7 +67,6 @@
     </div>
 </div>
 <script>
-
     var buckaroo = {
         modal() {
             return {
@@ -71,18 +74,18 @@
                 title: '<?= $escaper->escapeHtml(__('Success')); ?>',
                 content: '',
                 showClose: true,
-                buttons:[],
+                buttons: [],
                 close() {
                     this.showModal = false;
                 },
                 initModal() {
                     buckaroo.start();
                     window.addEventListener('buckaroo-modal-show', (event) => {
-                        if(event.detail.data) {
+                        if (event.detail.data) {
                             this.showModal = true;
                             Object.keys(event.detail.data).forEach((key) => {
                                 this[key] = event.detail.data[key];
-                            })
+                            });
                         }
                     });
 
@@ -90,7 +93,7 @@
                         this.close();
                     });
                 }
-            }
+            };
         },
         start() {
             const addTask = function() {
@@ -98,12 +101,13 @@
                     if (window.buckarooTask) {
                         await window.buckarooTask();
                     }
-                })
-            }
+                });
+            };
             addTask();
             window.addEventListener('checkout:navigation:success', (event) => {
-                if (event.detail.route === 'payment')
+                if (event.detail.route === 'payment') {
                     addTask();
+                }
             });
 
 
@@ -194,15 +198,15 @@
                         })
                 },
 
-                formatTransactionResponse(response) {
+                async formatTransactionResponse(response) {
                     if (response === null || response === 'undefined') {
                         return null;
                     }
 
-                        const paymentData = response.token.paymentData;
+                    const paymentData = response.token.paymentData;
 
-                        return JSON.stringify({
-                            paymentData: {
+                    return JSON.stringify({
+                        paymentData: {
                             version: paymentData.version,
                             data: paymentData.data,
                             signature: paymentData.signature,
@@ -211,13 +215,16 @@
                                 publicKeyHash: paymentData.header.publicKeyHash,
                                 transactionId: paymentData.header.transactionId,
                             },
-                            },
-                        });
+                        },
+                    });
                 },
 
                 async captureFunds(payment) {
+
                     const billingContact = payment && payment.billingContact ? JSON.stringify(payment.billingContact) : ''
-                    await this.$wire.updateData(this.formatTransactionResponse(payment),billingContact);
+
+                    const formattedData = await this.formatTransactionResponse(payment);
+                    await this.$wire.updateData(formattedData,billingContact);
                     this.resolve();
                     return {
                         status: window.ApplePaySession.STATUS_SUCCESS,
@@ -226,6 +233,7 @@
                 },
 
                 async beginPayment() {
+
                     const promise = new Promise((resolve) => {
                         this.resolve = resolve;
 
@@ -242,8 +250,8 @@
                             (payment) => this.captureFunds(payment),
                             null,
                             null,
-                            ['email', 'postalAddress'],
-                            ['email']
+                            ["name", "postalAddress", "phone"],
+                            ["name", "postalAddress", "phone"]
                         );
                         new BuckarooApplePay.PayPayment(config).beginPayment()
                     })
@@ -253,13 +261,14 @@
                 async submit() {
                     await hyvaCheckout.order.place();
                 },
-                getButtonClass() {
-                    return `pay-with-apple ${BuckarooApplePay.getButtonClass(this.config.buttonStyle, 'buy')}`;
-                },
+                // getButtonClass() {
+                //     return `pay-with-apple ${BuckarooApplePay.getButtonClass(this.config.buttonStyle, 'buy')}`;
+                // },
                 async register() {
                     this.config = this.$wire.get('config');
+                    window.merchantIdentifier = this.config.guid;
                     this.loadSdk().then(async () => {
-                        this.canDisplay = await BuckarooApplePay.checkPaySupport();
+                        this.canDisplay = await BuckarooApplePay.checkPaySupport(this.config.guid);
                         window.buckarooTask = async () => {
                             if(this.canDisplay)
                                 await this.beginPayment();
@@ -373,58 +382,23 @@
         },
         giftcards($el) {
             return Object.assign(hyva.formValidation($el), {
-                card: '',
+                card:'',
                 pin: '',
                 cardNumber: '',
-                canSubmit: false,
-
-                async update() {
-                    await this.$wire.getRemainingAmount();
-                },
-                listenToUpdate(){
-                    this.$wire.on('remainingAmount', async (response) => {
-                        this.updateGrandTotal(response);
-                    })
-                },
+                canSubmit:false,
                 async formValid() {
-                    try {
-                        await this.validate();
-                    } catch (error) {
-                        return false;
-                    }
-                    return true;
+                        try {
+                            await this.validate();
+                        } catch (error) {
+                            return false;
+                        }
+                        return true;
                 },
-
                 async submit() {
-                    if (!await this.formValid()) {
+                    if(!await this.formValid()) {
                         return;
                     }
                     await this.$wire.applyGiftcard(this.card, this.cardNumber, this.pin);
-                },
-
-                listenToSubmit() {
-                    this.$wire.on('giftcard_response', async (response) => {
-                        if (response.error) {
-                            this.displayError(response.error);
-                        } else if (response.remainder_amount === undefined) {
-                            this.displayError(response.message);
-                        } else if (response.remainder_amount == 0) {
-                            this.canSubmit = true;
-                            await hyvaCheckout.order.place();
-                        } else if (response.remainder_amount != 0) {
-                            this.displaySuccess(response);
-                            this.updateGrandTotal(response.remainder_amount_currency);
-                        }
-                    })
-                },
-                updateGrandTotal(remainder_amount_currency) {
-                    const grandTotalElement = document.querySelector('.grand_total .value');
-                    grandTotalElement.textContent = remainder_amount_currency
-
-                    setTimeout(function () {
-                        grandTotalElement.textContent = remainder_amount_currency
-
-                    }, 2000);
                 },
                 displaySuccess(response) {
                     window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
@@ -440,7 +414,6 @@
                         }
                     }));
                 },
-
                 displayError(message) {
                     window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
                         detail: {
@@ -451,18 +424,33 @@
                         }
                     }));
                 },
-
+                listenToSubmit() {
+                    this.$wire.on('giftcard_response', async (response) => {
+                        if (response.error) {
+                            this.displayError(response.error);
+                        } else if(response.remainder_amount === undefined) {
+                            this.displayError(response.message);
+                        } else if (response.remainder_amount == 0) {
+                            this.canSubmit = true;
+                            await hyvaCheckout.order.place();
+                        } else if (response.remainder_amount != 0) {
+                            this.displaySuccess(response);
+                        }
+                        setTimeout(function () {
+                            updatePosition();
+                        }, 2000);
+                    })
+                },
                 register() {
                     this.listenToSubmit();
-                    this.update();
-                    this.listenToUpdate();
                     window.buckarooTask = async () => {
-                        if (!this.canSubmit) {
+                        if(!this.canSubmit) {
                             await this.submit();
                         }
                     };
                 },
-            });
+
+            })
         },
         mrCash($el) {
             return Object.assign(hyva.formValidation($el), {

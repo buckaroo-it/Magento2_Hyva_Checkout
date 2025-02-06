@@ -1,15 +1,15 @@
 <?php
 
-declare(strict_types=1);
-/** @var Escaper $escaper */
-/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Applepay $magewire */
+    declare(strict_types=1);
+    /** @var Escaper $escaper */
+    /** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Applepay $magewire */
 
-use Magento\Framework\Escaper;
+    use Magento\Framework\Escaper;
 ?>
 <form x-data="buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>')" x-init="register()" novalidate>
-    <template x-if="canDisplay">
-        <button type="button" :class="getButtonClass()" @click="submit()">
-            <?= $escaper->escapeHtml(__('Place Order')) ?>
-        </button>
-    </template>
+    <!--    <template x-if="canDisplay">-->
+    <!--        <button type="button" :class="getButtonClass()" @click="submit">-->
+    <!--            --><?php //= $escaper->escapeHtml(__('Place Order')) ?>
+    <!--        </button>-->
+    <!--    </template>-->
 </form>

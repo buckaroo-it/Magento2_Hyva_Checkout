@@ -74,13 +74,15 @@ class Applepay extends Component\Form implements EvaluationInterface
     {
         try {
             $quote = $this->sessionCheckout->getQuote();
-            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $paymentData);
+            $applePayEncoded = base64_encode($paymentData);
+            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $applePayEncoded);
             $quote->getPayment()->setAdditionalInformation('billingContact', $billingContact);
 
             $this->quoteRepository->save($quote);
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
         }
+        return $paymentData;
     }
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
@@ -96,13 +98,10 @@ class Applepay extends Component\Form implements EvaluationInterface
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
         }
-
-       
-
         return $resultFactory->createSuccess();
     }
 
-    public function getJsSdkUrl(): string
+    public function getJsSdkUrl()
     {
         try {
             return $this->assetRepo->getUrl('Buckaroo_HyvaCheckout::js/applepay.js');
@@ -149,7 +148,6 @@ class Applepay extends Component\Form implements EvaluationInterface
                 ];
             }
         }
-        
         return $totals;
     }
 
