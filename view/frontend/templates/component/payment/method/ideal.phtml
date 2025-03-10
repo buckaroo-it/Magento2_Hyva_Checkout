@@ -10,46 +10,48 @@ $issuers = $magewire->getIssuers();
 ?>
 <div class="col-span-6">
     <div class="flex flex-col gap-y-2">
-        <?php if ($magewire->displayAsSelect()) { ?>
-            <label for="buckaroo_magento2_ideal_issuer"><?= $escaper->escapeHtml(__('Select a bank:')); ?></label>
-            <select name="issuer" id="buckaroo_magento2_ideal_issuer" wire:model="issuer" class="form-select">
+        <?php if ($magewire->canShowIssuers()) { ?>
+            <?php if ($magewire->displayAsSelect()) { ?>
+                <label for="buckaroo_magento2_ideal_issuer"><?= $escaper->escapeHtml(__('Select a bank:')); ?></label>
+                <select name="issuer" id="buckaroo_magento2_ideal_issuer" wire:model="issuer" class="form-select">
+                    <?php
+                    foreach ($issuers as $issuer) {
+                        ?>
+                        <option value="<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>">
+                            <?= $escaper->escapeHtml($issuer["name"]) ?>
+                        </option>
+                        <?php
+                    }
+                    ?>
+                </select>
+            <?php } else { ?>
+                <p><?=  $escaper->escapeHtml(__('Select a bank:')); ?></p>
                 <?php
                 foreach ($issuers as $issuer) {
-                ?>
-                    <option value="<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>">
-                        <?= $escaper->escapeHtml($issuer["name"]) ?>
-                    </option>
-                <?php
+                    ?>
+                    <div class="flex flex-row flex-grow gap-x-2 items-center">
+                        <input
+                            type="radio"
+                            name="issuer"
+                            wire:model="issuer"
+                            id="bk_ideal_issuer_<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>"
+                            value="<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>"
+                        />
+                        <label
+                            for="bk_ideal_issuer_<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>"
+                            class="flex flex-row flex-grow gap-x-2 items-center">
+                            <img
+                                src="<?= $escaper->escapeUrl($magewire->getImageUrl($issuer["imgName"])) ?>"
+                                alt="<?= $issuer["name"] ?>"
+                                style="max-height:25px;"
+                            />
+                            <?=  $escaper->escapeHtml($issuer["name"]) ?>
+                        </label>
+                    </div>
+                    <?php
                 }
                 ?>
-            </select>
-        <?php } else { ?>
-            <p><?=  $escaper->escapeHtml(__('Select a bank:')); ?></p>
-            <?php
-            foreach ($issuers as $issuer) {
-            ?>
-                <div class="flex flex-row flex-grow gap-x-2 items-center">
-                    <input
-                    type="radio"
-                    name="issuer"
-                    wire:model="issuer"
-                    id="bk_ideal_issuer_<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>"
-                    value="<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>"
-                    />
-                    <label
-                    for="bk_ideal_issuer_<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>"
-                    class="flex flex-row flex-grow gap-x-2 items-center">
-                        <img
-                        src="<?= $escaper->escapeUrl($magewire->getImageUrl($issuer["imgName"])) ?>"
-                        alt="<?= $issuer["name"] ?>"
-                        style="max-height:25px;"
-                        />
-                        <?=  $escaper->escapeHtml($issuer["name"]) ?>
-                    </label>
-                </div>
-            <?php
-            }
-            ?>
+            <?php } ?>
         <?php } ?>
     </div>
 </div>
