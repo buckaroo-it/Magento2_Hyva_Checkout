@@ -89,7 +89,7 @@ class Ideal extends Component\Form implements EvaluationInterface
     }
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
-        if ($this->issuer === null) {
+        if ($this->canShowIssuers() && $this->issuer === null) {
             return $resultFactory->createErrorMessageEvent()
                 ->withCustomEvent('payment:method:error')
                 ->withMessage('The bank issuer is required');
@@ -175,5 +175,13 @@ class Ideal extends Component\Form implements EvaluationInterface
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $storeId
         ) === '2';
+    }
+
+    public function canShowIssuers(string $storeId = null): bool {
+        return $this->scopeConfig->getValue(
+                MethodIdeal::XPATH_SHOW_ISSUERS,
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                $storeId
+            ) == 1;
     }
 }
