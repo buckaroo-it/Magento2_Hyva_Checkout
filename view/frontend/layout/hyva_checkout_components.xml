@@ -4,26 +4,6 @@
 >
     <body>
         <referenceBlock name="checkout.payment.methods">
-            <!-- Payment Renderer: iDEAL -->
-            <block name="checkout.payment.method.buckaroo_magento2_ideal"
-                   as="buckaroo_magento2_ideal"
-                   template="Buckaroo_HyvaCheckout::component/payment/method/ideal.phtml">
-                <arguments>
-                    <argument name="magewire" xsi:type="object">
-                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Ideal
-                    </argument>
-                </arguments>
-            </block>
-
-            <block name="checkout.payment.method.buckaroo_magento2_idealprocessing"
-                   as="buckaroo_magento2_idealprocessing"
-                   template="Buckaroo_HyvaCheckout::component/payment/method/ideal.phtml">
-                <arguments>
-                    <argument name="magewire" xsi:type="object">
-                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Ideal
-                    </argument>
-                </arguments>
-            </block>
 
             <block name="checkout.payment.method.buckaroo_magento2_klarna"
                    as="buckaroo_magento2_klarna"
