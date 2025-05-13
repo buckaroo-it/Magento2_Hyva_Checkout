@@ -268,33 +268,48 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
     }
 
     /**
-     * Get tos link based on country
+     * Get tos link based on country and b2b
      *
      * @return void
      */
     public function getTosLink()
     {
         $countryId = $this->getCountryId();
-        $tosUrl = 'https://documents.myafterpay.com/consumer-terms-conditions/';
+        $isB2B = $this->showCOC();
+
+        if ($isB2B){
+            $tosUrl = 'https://documents.riverty.com/terms_conditions/payment_methods/b2b_invoice/';
+        } else {
+            $tosUrl = 'https://documents.riverty.com/terms_conditions/payment_methods/invoice/';
+        }
 
         switch ($countryId) {
             case 'DE':
                 $tosCountry = 'de_de';
                 break;
             case 'AT':
-                $tosCountry = 'de_at';
+                $tosCountry = 'at_de';
                 break;
             case 'NL':
                 $tosCountry = 'nl_nl';
                 break;
             case 'BE':
-                $tosCountry = 'nl_be';
+                $tosCountry = 'be_nl';
                 break;
             case 'FI':
-                $tosCountry = 'fi_fi';
+                $tosCountry = 'fi_en';
+                break;
+            case 'SE':
+                $tosCountry = 'se_en';
+                break;
+            case 'NO':
+                $tosCountry = 'no_en';
+                break;
+            case 'DK':
+                $tosCountry = 'dk_en';
                 break;
             default:
-                $tosCountry = 'en_nl';
+                $tosCountry = 'nl_en';
                 break;
         }
         return $tosUrl . $tosCountry . '/';
