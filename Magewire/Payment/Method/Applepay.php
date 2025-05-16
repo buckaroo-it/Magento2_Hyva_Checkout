@@ -106,6 +106,16 @@ class Applepay extends Component\Form implements EvaluationInterface
         return $resultFactory->createSuccess();
     }
 
+    public function getIntegrationMode()
+    {
+        try {
+            $quote = $this->sessionCheckout->getQuote();
+            return $this->methodConfigProvider->getIntegrationMode($quote->getStoreId());
+        } catch (LocalizedException $exception) {
+            $this->dispatchErrorMessage($exception->getMessage());
+        }
+        return false;
+    }
 
     public function getJsSdkUrl()
     {

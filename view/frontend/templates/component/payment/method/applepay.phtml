@@ -1,6 +1,8 @@
 <?php
 /** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Applepay $magewire */
 /** @var Magento\Framework\Escaper $escaper */
+
+$isClientSide = $magewire->getIntegrationMode();
 ?>
 <form
     wire:id="checkout.payment.method.buckaroo_magento2_applepay"
@@ -8,10 +10,10 @@
         config: $wire.get('config'),
         $wire: $wire,
         register() {
-            if (this.config.integrationMode) {
-                Object.assign(this, buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
-                this.register(); // call inner applePay register
-            }
+            <?php if ($isClientSide): ?>
+            Object.assign(this, buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
+            this.register(); // call inner applePay register
+            <?php endif; ?>
         }
     }"
     x-init="register()"
