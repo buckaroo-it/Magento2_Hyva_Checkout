@@ -1,15 +1,27 @@
 <?php
-
-    declare(strict_types=1);
-    /** @var Escaper $escaper */
-    /** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Applepay $magewire */
-
-    use Magento\Framework\Escaper;
+/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Applepay $magewire */
+/** @var Magento\Framework\Escaper $escaper */
 ?>
-<form x-data="buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>')" x-init="register()" novalidate>
-    <!--    <template x-if="canDisplay">-->
-    <!--        <button type="button" :class="getButtonClass()" @click="submit">-->
-    <!--            --><?php //= $escaper->escapeHtml(__('Place Order')) ?>
-    <!--        </button>-->
-    <!--    </template>-->
+<form
+    wire:id="checkout.payment.method.buckaroo_magento2_applepay"
+    x-data="{
+        ...buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'),
+        $wire: $wire
+    }"
+    x-init="register()"
+    novalidate
+>
+    <template x-if="config.integrationMode">
+        <div>
+            <button type="button" class="apple-pay-button" @click="submit">
+                <?= $escaper->escapeHtml(__('Place Order')) ?>
+            </button>
+        </div>
+    </template>
+
+    <template x-if="!config.integrationMode">
+        <button type="submit" class="btn btn-primary">
+            <?= $escaper->escapeHtml(__('Place Order (Redirect)')) ?>
+        </button>
+    </template>
 </form>
