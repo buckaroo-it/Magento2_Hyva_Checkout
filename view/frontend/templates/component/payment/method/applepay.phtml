@@ -5,8 +5,14 @@
 <form
     wire:id="checkout.payment.method.buckaroo_magento2_applepay"
     x-data="{
-        ...buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'),
-        $wire: $wire
+        config: $wire.get('config'),
+        $wire: $wire,
+        register() {
+            if (this.config.integrationMode) {
+                Object.assign(this, buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
+                this.register(); // call inner applePay register
+            }
+        }
     }"
     x-init="register()"
     novalidate
