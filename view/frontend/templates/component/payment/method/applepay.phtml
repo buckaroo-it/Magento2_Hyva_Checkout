@@ -12,24 +12,22 @@ $isClientSide = $magewire->getIntegrationMode();
         register() {
             <?php if ($isClientSide): ?>
             Object.assign(this, buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
-            this.register(); // call inner applePay register
+            this.register();
             <?php endif; ?>
         }
     }"
     x-init="register()"
     novalidate
 >
-    <template x-if="config.integrationMode">
+    <?php if ($isClientSide): ?>
         <div>
             <button type="button" class="apple-pay-button" @click="submit">
                 <?= $escaper->escapeHtml(__('Place Order')) ?>
             </button>
         </div>
-    </template>
-
-    <template x-if="!config.integrationMode">
+    <?php else: ?>
         <button type="submit" class="btn btn-primary">
             <?= $escaper->escapeHtml(__('Place Order (Redirect)')) ?>
         </button>
-    </template>
+    <?php endif; ?>
 </form>
