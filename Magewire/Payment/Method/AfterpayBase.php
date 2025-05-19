@@ -320,6 +320,9 @@ abstract class AfterpayBase extends Component\Form implements EvaluationInterfac
             case 'AT':
                 $tosCountry = 'at_de';
                 break;
+            case 'CH':
+                $tosCountry = 'ch_de';
+                break;
             case 'NL':
                 $tosCountry = 'nl_nl';
                 break;
