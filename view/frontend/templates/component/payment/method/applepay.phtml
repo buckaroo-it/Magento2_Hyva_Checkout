@@ -10,7 +10,9 @@ $isClientSide = $magewire->getIntegrationMode();
         config: $wire.get('config'),
         $wire: $wire,
         register() {
+            console.log(ísClientSide ? 'Registering Apple Pay' : 'Registering Apple Pay (Redirect)');
             <?php if ($isClientSide): ?>
+            console.log('Registering Apple Pay');
             Object.assign(this, buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
             this.register();
             <?php endif; ?>

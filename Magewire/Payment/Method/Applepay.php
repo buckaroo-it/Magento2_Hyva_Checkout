@@ -15,6 +15,7 @@ use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\Applepay as MethodConfigProvider;
 use Magento\Quote\Model\Quote;
+use Buckaroo\Magento2\Logging\Log;
 
 class Applepay extends Component\Form implements EvaluationInterface
 {
@@ -41,12 +42,16 @@ class Applepay extends Component\Form implements EvaluationInterface
 
     protected Repository $assetRepo;
 
+    protected Log $logger;
+
+
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
         CartRepositoryInterface $quoteRepository,
         MethodConfigProvider $methodConfigProvider,
-        Repository $assetRepo
+        Repository $assetRepo,
+        Log $logger,
     ) {
         parent::__construct($validator);
 
@@ -54,6 +59,7 @@ class Applepay extends Component\Form implements EvaluationInterface
         $this->quoteRepository = $quoteRepository;
         $this->methodConfigProvider = $methodConfigProvider;
         $this->assetRepo = $assetRepo;
+        $this->logger = $logger;
     }
 
     public function mount(): void
@@ -110,6 +116,8 @@ class Applepay extends Component\Form implements EvaluationInterface
     {
         try {
             $quote = $this->sessionCheckout->getQuote();
+            $this->logger->debug('Applepay integration mode: ' . $quote->getStoreId());
+            $this->logger->debug('Applepay integration mode: ' . $this->methodConfigProvider->getIntegrationMode($quote->getStoreId()));
             return $this->methodConfigProvider->getIntegrationMode($quote->getStoreId());
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
@@ -129,7 +137,6 @@ class Applepay extends Component\Form implements EvaluationInterface
 
     private function getJsonConfig(): array
     {
-
         $config = $this->methodConfigProvider->getConfig();
         if(!isset($config['payment']['buckaroo']['applepay'])) {
             $this->dispatchErrorMessage('Cannot retrieved config');
