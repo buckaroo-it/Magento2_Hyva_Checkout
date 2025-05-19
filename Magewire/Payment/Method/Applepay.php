@@ -15,7 +15,6 @@ use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\Applepay as MethodConfigProvider;
 use Magento\Quote\Model\Quote;
-use Buckaroo\Magento2\Logging\Log;
 
 class Applepay extends Component\Form implements EvaluationInterface
 {
@@ -42,16 +41,12 @@ class Applepay extends Component\Form implements EvaluationInterface
 
     protected Repository $assetRepo;
 
-    protected Log $logger;
-
-
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
         CartRepositoryInterface $quoteRepository,
         MethodConfigProvider $methodConfigProvider,
         Repository $assetRepo,
-        Log $logger,
     ) {
         parent::__construct($validator);
 
@@ -59,7 +54,6 @@ class Applepay extends Component\Form implements EvaluationInterface
         $this->quoteRepository = $quoteRepository;
         $this->methodConfigProvider = $methodConfigProvider;
         $this->assetRepo = $assetRepo;
-        $this->logger = $logger;
     }
 
     public function mount(): void
