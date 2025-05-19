@@ -115,7 +115,7 @@ class Applepay extends Component\Form implements EvaluationInterface
     public function getIntegrationMode()
     {
         try {
-            $this->logger->debug('Applepay integration mode: ' . $this->methodConfigProvider->getConfig());
+            $this->logger->debug('Applepay integration mode: ' . print_r($this->methodConfigProvider->getConfig()));
             return $this->methodConfigProvider->getIntegrationMode();
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
