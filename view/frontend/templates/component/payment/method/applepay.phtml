@@ -1,32 +1,35 @@
 <?php
-/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Applepay $magewire */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Applepay $magewire */
 /** @var Magento\Framework\Escaper $escaper */
 
-$isClientSide = $magewire->getIntegrationMode();
+$isClientSide = (bool) $magewire->getIntegrationMode();
 ?>
 <form
     wire:id="checkout.payment.method.buckaroo_magento2_applepay"
     x-data="{
         config: $wire.get('config'),
         $wire: $wire,
-        register() {
-            console.log(ísClientSide ? 'Registering Apple Pay' : 'Registering Apple Pay (Redirect)');
-            <?php if ($isClientSide): ?>
-            console.log('Registering Apple Pay');
-            Object.assign(this, buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
-            this.register();
-            <?php endif; ?>
+        // expose your PHP flag here:
+        isClientSide: <?= $isClientSide ? 'true' : 'false' ?>,
+        initApplePay() {
+            console.log(this.isClientSide
+              ? 'Registering Apple Pay (Client-Side)'
+              : 'Registering Apple Pay (Redirect)'
+            );
+            if (this.isClientSide) {
+              Object.assign(this, buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
+              // now call the real register() from buckaroo.applePay
+              this.register();
+            }
         }
     }"
-    x-init="register()"
+    x-init="initApplePay()"
     novalidate
 >
     <?php if ($isClientSide): ?>
-        <div>
-            <button type="button" class="apple-pay-button" @click="submit">
-                <?= $escaper->escapeHtml(__('Place Order')) ?>
-            </button>
-        </div>
+        <button type="button" class="apple-pay-button" @click="submit">
+            <?= $escaper->escapeHtml(__('Place Order')) ?>
+        </button>
     <?php else: ?>
         <button type="submit" class="btn btn-primary">
             <?= $escaper->escapeHtml(__('Place Order (Redirect)')) ?>
