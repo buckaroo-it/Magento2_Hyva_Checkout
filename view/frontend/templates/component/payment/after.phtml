@@ -220,12 +220,14 @@
                 },
 
                 async captureFunds(payment) {
-
-                    const billingContact = payment && payment.billingContact ? JSON.stringify(payment.billingContact) : ''
+                    const billingContact = payment && payment.billingContact
+                        ? JSON.stringify(payment.billingContact)
+                        : '';
 
                     const formattedData = await this.formatTransactionResponse(payment);
-                    await this.$wire.updateData(formattedData,billingContact);
+                    await this.$wire.updateData(formattedData, billingContact);
                     this.resolve();
+
                     return {
                         status: window.ApplePaySession.STATUS_SUCCESS,
                         errors: [],
