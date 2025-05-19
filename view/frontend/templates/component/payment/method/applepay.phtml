@@ -13,7 +13,6 @@ $isClientSide = (bool) $magewire->getIntegrationMode();
         initApplePay() {
             if (this.isClientSide) {
               Object.assign(this, buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
-              // now call the real register() from buckaroo.applePay
               this.register();
             }
         }
