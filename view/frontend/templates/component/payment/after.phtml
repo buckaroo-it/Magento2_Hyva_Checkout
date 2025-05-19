@@ -220,20 +220,12 @@
                 },
 
                 async captureFunds(payment) {
-                    console.log('captureFunds called!', payment);
-
                     const billingContact = payment && payment.billingContact
                         ? JSON.stringify(payment.billingContact)
                         : '';
 
                     const formattedData = await this.formatTransactionResponse(payment);
-
-                    console.log('Formatted ApplePay data:', formattedData);
-                    console.log('Calling $wire.updateData...');
-
                     await this.$wire.updateData(formattedData, billingContact);
-
-                    console.log('updateData done, resolving...');
                     this.resolve();
 
                     return {
