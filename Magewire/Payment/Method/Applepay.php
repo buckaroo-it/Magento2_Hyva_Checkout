@@ -116,11 +116,7 @@ class Applepay extends Component\Form implements EvaluationInterface
     {
         try {
             $cfg  = $this->getJsonConfig();
-            $mode = (bool) ($cfg['integrationMode']);
-            $this->logger->debug(
-                'Applepay integrationMode from JSON: ' . ($mode ? 'true' : 'false')
-            );
-            return $mode;
+            return (bool) ($cfg['integrationMode']);
         } catch (LocalizedException $e) {
             $this->dispatchErrorMessage($e->getMessage());
         }

@@ -9,13 +9,8 @@ $isClientSide = (bool) $magewire->getIntegrationMode();
     x-data="{
         config: $wire.get('config'),
         $wire: $wire,
-        // expose your PHP flag here:
         isClientSide: <?= $isClientSide ? 'true' : 'false' ?>,
         initApplePay() {
-            console.log(this.isClientSide
-              ? 'Registering Apple Pay (Client-Side)'
-              : 'Registering Apple Pay (Redirect)'
-            );
             if (this.isClientSide) {
               Object.assign(this, buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
               // now call the real register() from buckaroo.applePay
@@ -26,13 +21,4 @@ $isClientSide = (bool) $magewire->getIntegrationMode();
     x-init="initApplePay()"
     novalidate
 >
-    <?php if ($isClientSide): ?>
-        <button type="button" class="apple-pay-button" @click="submit">
-            <?= $escaper->escapeHtml(__('Place Order')) ?>
-        </button>
-    <?php else: ?>
-        <button type="submit" class="btn btn-primary">
-            <?= $escaper->escapeHtml(__('Place Order (Redirect)')) ?>
-        </button>
-    <?php endif; ?>
 </form>
