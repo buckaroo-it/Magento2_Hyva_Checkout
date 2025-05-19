@@ -290,6 +290,9 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
             case 'AT':
                 $tosCountry = 'at_de';
                 break;
+            case 'CH':
+                $tosCountry = 'ch_de';
+                break;
             case 'NL':
                 $tosCountry = 'nl_nl';
                 break;
