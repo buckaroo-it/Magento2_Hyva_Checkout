@@ -224,7 +224,7 @@ window.buckarooHostedFields = {
             }
 
             const script = document.createElement('script');
-            script.src = 'https://static.buckaroo.nl/script/HostedFieldsSDK.js';
+            script.src = 'https://hostedfields-externalapi.prod-pci.buckaroo.io/v1/sdk';
             script.onload = resolve;
             script.onerror = reject;
             document.head.appendChild(script);

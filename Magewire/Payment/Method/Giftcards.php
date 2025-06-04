@@ -142,15 +142,33 @@ class Giftcards extends Component\Form implements EvaluationInterface
     ): void {
         try {
             $quote = $this->sessionCheckout->getQuote();
-            $this->emit('payment_method_selected');
+
+            // Try to emit payment_method_selected, but don't fail if it errors
+            try {
+                $this->emit('payment_method_selected');
+            } catch (\Throwable $emitError) {
+                $this->logger->addDebug('Error emitting payment_method_selected: ' . $emitError->getMessage());
+            }
+
             $response = $this->getGiftcardResponse(
                 $quote,
                 $this->buildGiftcardRequest($quote, $card, $cardNumber, $pin)->send()
             );
-            $this->emit("giftcard_response", $response);
+
+            // Try to emit giftcard_response, but also dispatch a JavaScript event as fallback
+            try {
+                $this->emit("giftcard_response", $response);
+            } catch (\Throwable $emitError) {
+                $this->logger->addDebug('Error emitting giftcard_response: ' . $emitError->getMessage());
+            }
+
         } catch (\Throwable $th) {
-            $this->logger->addDebug((string)$th);
-            $this->emit("giftcard_response", ["error" => __('Cannot apply giftcard')]);
+            $this->logger->addDebug('Error in applyGiftcard: ' . (string)$th);
+            try {
+                $this->emit("giftcard_response", ["error" => __('Cannot apply giftcard')]);
+            } catch (\Throwable $emitError) {
+                $this->logger->addDebug('Error emitting error response: ' . $emitError->getMessage());
+            }
         }
     }
 

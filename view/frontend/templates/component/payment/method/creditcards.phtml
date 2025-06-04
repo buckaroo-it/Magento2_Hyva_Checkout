@@ -9,7 +9,7 @@ use Magento\Framework\Escaper;
 ?>
 <div class="col-span-6">
 
-    <form x-data="buckaroo.credicards($el)" x-init="register(); initCreditCardFields()" novalidate>
+    <form x-data="buckarooCreditcards" novalidate>
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label id="cc-name-label" for="cc-name-wrapper">
                 <?= $escaper->escapeHtml(__('Cardholder Name:')); ?>

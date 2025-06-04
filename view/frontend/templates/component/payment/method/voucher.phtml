@@ -9,8 +9,7 @@ use Magento\Framework\Escaper;
 ?>
 <div class="col-span-6">
 
-    <form x-data="buckaroo.voucher($el, '<?= $escaper->escapeUrl($magewire->getAjaxUrl()); ?>')"
-    x-init="register()" novalidate>
+    <form x-data="buckarooVoucher" data-ajax-url="<?= $escaper->escapeUrl($magewire->getAjaxUrl()); ?>" novalidate>
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_voucher_code">
                 <?= $escaper->escapeHtml(__('Voucher code:')); ?>
@@ -18,9 +17,9 @@ use Magento\Framework\Escaper;
             </label>
             <input
                 type="text"
-                x-model="code"
+                x-bind:value="code"
+                @input="updateCode"
                 data-validate='{"required": true}'
-                @change="onChange"
                 id="buckaroo_voucher_code"
                 name="buckaroo_voucher_code"
                 placeholder="<?= $escaper->escapeHtml(__('1A2B-3C4D-6E7F-8G9H-1I2J')); ?>"
