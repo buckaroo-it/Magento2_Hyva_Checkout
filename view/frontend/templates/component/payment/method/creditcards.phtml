@@ -9,75 +9,62 @@ use Magento\Framework\Escaper;
 ?>
 <div class="col-span-6">
 
-    <form x-data="buckaroo.credicards($el)" x-init="register()" novalidate>
+    <form x-data="buckaroo.credicards($el)" x-init="register(); initCreditCardFields()" novalidate>
         <div class="flex flex-col gap-y-2 field field-reserved">
-            <label for="buckaroo_creditcards_card_holder">
-                <?= $escaper->escapeHtml(__('Name on card:')); ?>
+            <label id="cc-name-label" for="cc-name-wrapper">
+                <?= $escaper->escapeHtml(__('Cardholder Name:')); ?>
                 <span class="text-red-600">*</span>
             </label>
-            <input type="text"
-            x-model="cardHolder"
-            data-validate='{"bk-validateCardHolderName": true}'
-            @change="onChange" id="buckaroo_creditcards_card_holder"
-            name="buckaroo_creditcards_card_holder"
-            placeholder="<?= $escaper->escapeHtml(__('John Doe')); ?>" />
-        </div>
-
-        <div class="flex flex-col gap-y-2 field field-reserved">
-            <label for="buckaroo_creditcards_card_number">
-                <?= $escaper->escapeHtml(__('Card number:')); ?>
-                <span class="text-red-600">*</span>
-            </label>
-            <div class="relative w-full">
-                <input
-                    type="text"
-                    class="w-full"
-                    maxlength="23"
-                    x-model="cardNumber"
-                    data-validate='{"bk-validateCardNumber": true}'
-                    @change="onChange" id="buckaroo_creditcards_card_number"
-                    name="buckaroo_creditcards_card_number"
-                    placeholder="<?= $escaper->escapeHtml(__('0000 0000 0000 0000')); ?>"
-                />
-                <div class="absolute inset-y-0 right-3 flex items-center pr-3">
-                    <img :src="getIssuerImage()" :alt="cardNumber" style="height: 100%;padding: 10px 0;">
-                </div>
-
+            <div id="cc-name-wrapper"
+                 class="shadow h-12 appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             </div>
+            <div id="cc-name-error" class="text-red-600 text-sm"></div>
         </div>
+
+        <div class="flex flex-col gap-y-2 field field-reserved">
+            <label id="cc-number-label" for="cc-number-wrapper">
+                <?= $escaper->escapeHtml(__('Card Number:')); ?>
+                <span class="text-red-600">*</span>
+            </label>
+            <div id="cc-number-wrapper"
+                 class="shadow h-12 appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div id="cc-number-error" class="text-red-600 text-sm"></div>
+        </div>
+
         <div class="field field-reserved">
             <div class="flex gap-x-2 gap-y-2">
                 <div class="flex flex-col w-7/12">
-                    <label for="buckaroo_creditcards_card_expiration">
-                        <?= $escaper->escapeHtml(__('Expiration:')); ?>
+                    <label id="cc-expiry-label" for="cc-expiry-wrapper">
+                        <?= $escaper->escapeHtml(__('Expiry Date:')); ?>
                         <span class="text-red-600">*</span>
                     </label>
-                    <input type="text"
-                        maxlength="5"
-                        x-model="cardExpiration"
-                        data-validate='{"bk-ValidateYear": true, "bk-ValidateMonth": true}'
-                        @change="onChange" id="buckaroo_creditcards_card_expiration"
-                        name="buckaroo_creditcards_card_expiration"
-                        placeholder="<?= $escaper->escapeHtml(__('MM/YY')); ?>"
-                    />
+                    <div id="cc-expiry-wrapper"
+                         class="shadow h-12 appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div id="cc-expiry-error" class="text-red-600 text-sm"></div>
                 </div>
 
                 <div class="flex flex-col w-5/12">
-                    <label for="buckaroo_creditcards_card_cvc">
+                    <label id="cc-cvc-label" for="cc-cvc-wrapper">
                         <?= $escaper->escapeHtml(__('CVC / CVV:')); ?>
                         <span class="text-red-600">*</span>
                     </label>
-                    <input
-                        type="text"
-                        x-model="cardCvc"
-                        maxlength="4"
-                        data-validate='{"bk-validateCardCvc": true}'
-                        @change="onChange" id="buckaroo_creditcards_card_cvc"
-                        name="buckaroo_creditcards_card_cvc"
-                        placeholder="<?= $escaper->escapeHtml(__('123')); ?>"
-                    />
+                    <div id="cc-cvc-wrapper"
+                         class="shadow h-12 appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div id="cc-cvc-error" class="text-red-600 text-sm"></div>
                 </div>
             </div>
         </div>
+
+        <div class="field">
+            <span><?= $escaper->escapeHtml(__('Please make sure all fields are filled in correctly before proceeding.')); ?></span>
+            <a class="text-gray-500 hover:text-gray-800 float-right ml-2" href="#" @click.prevent="resetHostedFields"><?= $escaper->escapeHtml(__('Clear')); ?></a>
+        </div>
+
+        <div x-show="oauthTokenError" class="field text-red-600 text-sm" x-text="oauthTokenError"></div>
+        <div x-show="paymentError" class="field text-red-600 text-sm" x-text="paymentError"></div>
     </form>
 </div>
+

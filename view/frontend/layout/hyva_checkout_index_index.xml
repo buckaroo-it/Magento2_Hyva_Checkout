@@ -3,6 +3,8 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
 >
     <head>
+        <script src="Buckaroo_HyvaCheckout::js/buckaroo-components.js" defer="false" />
+        <script src="Buckaroo_HyvaCheckout::js/creditcards.js" defer="false" />
         <script src="Buckaroo_HyvaCheckout::js/hide-applepay.js" />
         <script src="Buckaroo_HyvaCheckout::js/update-position.js"/>
     </head>
