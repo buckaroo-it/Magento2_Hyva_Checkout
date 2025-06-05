@@ -376,4 +376,88 @@
         bottom: 0px;
         left: 0px;
     }
+}
+
+/**
+ * Buckaroo Components CSS for Hyva Checkout
+ * CSP-compliant styles for notifications and components
+ */
+
+/* Notification Banner Styles */
+.buckaroo-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 9999;
+    max-width: 400px;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    opacity: 0;
+    transition: all 0.3s ease-out;
+}
+
+.buckaroo-notification[data-type="success"] {
+    background-color: #10b981;
+}
+
+.buckaroo-notification[data-type="error"] {
+    background-color: #ef4444;
+}
+
+.buckaroo-notification-show {
+    opacity: 1 !important;
+    transform: translateX(-50%) translateY(0) !important;
+}
+
+.buckaroo-notification-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.buckaroo-notification-message {
+    display: flex;
+    align-items: center;
+}
+
+.buckaroo-notification-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    fill: currentColor;
+}
+
+.buckaroo-notification-close {
+    margin-left: 16px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.buckaroo-notification-close:hover {
+    opacity: 0.8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .buckaroo-notification {
+        left: 10px;
+        right: 10px;
+        transform: translateY(-20px);
+        max-width: none;
+    }
+    
+    .buckaroo-notification-show {
+        transform: translateY(0) !important;
+    }
 } 

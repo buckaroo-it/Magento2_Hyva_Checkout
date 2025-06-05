@@ -17,38 +17,11 @@
  * @license   https://tldrlegal.com/license/mit-license
  */
 
-// Buckaroo Alpine.js Components for Hyva Checkout - Production Ready
+// Buckaroo Alpine.js Components for Hyva Checkout
 window.buckaroo = window.buckaroo || {};
 
 function initializeBuckarooComponents() {
     window.buckaroo = {
-        modal() {
-            return {
-                showModal: false,
-                title: 'Success',
-                content: '',
-                showClose: true,
-                buttons: [],
-                close() {
-                    this.showModal = false;
-                },
-                initModal() {
-                    buckaroo.start();
-                    window.addEventListener('buckaroo-modal-show', (event) => {
-                        if (event.detail.data) {
-                            this.showModal = true;
-                            Object.keys(event.detail.data).forEach((key) => {
-                                this[key] = event.detail.data[key];
-                            });
-                        }
-                    });
-
-                    window.addEventListener('buckaroo-modal-hide', () => {
-                        this.close();
-                    });
-                }
-            };
-        },
         start() {
             if (typeof hyvaCheckout === 'undefined' || typeof hyva === 'undefined') {
                 setTimeout(() => this.start(), 100);
@@ -142,6 +115,46 @@ function initializeBuckarooComponents() {
                 })
             }
         },
+
+        // Shared notification system
+        showTemporaryBanner(message, type = 'success') {
+            const banner = document.createElement('div');
+            const isSuccess = type === 'success';
+            
+            banner.className = 'buckaroo-notification';
+            banner.setAttribute('data-type', type);
+            
+            banner.innerHTML = `
+                <div class="buckaroo-notification-content">
+                    <div class="buckaroo-notification-message">
+                        <svg class="buckaroo-notification-icon" viewBox="0 0 20 20">
+                            ${isSuccess 
+                                ? '<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>'
+                                : '<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>'
+                            }
+                        </svg>
+                        <span>${message}</span>
+                    </div>
+                    <button class="buckaroo-notification-close" onclick="this.closest('.buckaroo-notification').remove()">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(banner);
+            
+            // Animate in
+            setTimeout(() => {
+                banner.classList.add('buckaroo-notification-show');
+            }, 10);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (banner.parentElement) {
+                    banner.classList.remove('buckaroo-notification-show');
+                    setTimeout(() => banner.remove(), 300);
+                }
+            }, 5000);
+        },
+
         applePay(jsSdk) {
             return {
                 config: {},
@@ -235,6 +248,7 @@ function initializeBuckarooComponents() {
                 }
             }
         },
+
         credicards($el) {
             return Object.assign((typeof hyva !== 'undefined' ? hyva.formValidation($el) : {}), {
                 oauthTokenError: '',
@@ -243,7 +257,6 @@ function initializeBuckarooComponents() {
                 hostedFieldsReady: false,
 
                 async initCreditCardFields() {
-                    // Initialize hosted fields when the template is ready
                     if (window.buckarooHostedFields) {
                         await window.buckarooHostedFields.getOAuthToken();
                     }
@@ -256,7 +269,6 @@ function initializeBuckarooComponents() {
                 },
 
                 register() {
-                    // Listen for hosted fields events
                     window.addEventListener('buckaroo-hosted-fields-ready', () => {
                         this.hostedFieldsReady = true;
                         this.oauthTokenError = '';
@@ -273,7 +285,6 @@ function initializeBuckarooComponents() {
                         this.isPayButtonDisabled = window.buckarooHostedFields.isPayButtonDisabled;
                     });
 
-                    // Set up the payment task for Hyva checkout
                     window.buckarooTask = async () => {
                         if (this.hostedFieldsReady && !this.isPayButtonDisabled) {
                             const paymentData = await window.buckarooHostedFields.processPayment();
@@ -283,7 +294,6 @@ function initializeBuckarooComponents() {
                                     paymentData.service
                                 );
                             } else {
-                                // Update error states from the hosted fields
                                 this.oauthTokenError = window.buckarooHostedFields.oauthTokenError;
                                 this.paymentError = window.buckarooHostedFields.paymentError;
                                 this.isPayButtonDisabled = window.buckarooHostedFields.isPayButtonDisabled;
@@ -293,6 +303,7 @@ function initializeBuckarooComponents() {
                 }
             })
         },
+
         giftcards($el) {
             return Object.assign((typeof hyva !== 'undefined' ? hyva.formValidation($el) : {}), {
                 card:'',
@@ -300,7 +311,6 @@ function initializeBuckarooComponents() {
                 cardNumber: '',
                 canSubmit:false,
                 
-                // CSP-compatible update methods
                 updateCard(event) {
                     this.card = event.target.value;
                     this.onChange();
@@ -317,16 +327,16 @@ function initializeBuckarooComponents() {
                 },
                 
                 onChange() {
-                    // Method called by template on @change events
+                    // Called by template on change events
                 },
                 
                 async formValid() {
                     try {
                         await this.validate();
+                        return true;
                     } catch (error) {
                         return false;
                     }
-                    return true;
                 },
                 
                 async submit() {
@@ -338,7 +348,6 @@ function initializeBuckarooComponents() {
                     const responsePromise = this.waitForGiftcardResponse(5000);
                     
                     try {
-                        // Primary approach: Use $wire.applyGiftcard with timeout
                         if (this.$wire && typeof this.$wire.applyGiftcard === 'function') {
                             const wireCallPromise = Promise.race([
                                 this.$wire.applyGiftcard(this.card, this.cardNumber, this.pin),
@@ -354,13 +363,12 @@ function initializeBuckarooComponents() {
                                     responseHandled = true;
                                     return;
                                 } catch (eventError) {
-                                    // Backend succeeded but no response event - show generic success
                                     this.displayGenericSuccess();
                                     responseHandled = true;
                                     return;
                                 }
                             } catch (wireError) {
-                                // Try waiting for response event even if wire call failed
+                                console.warn('Giftcard wire call error:', wireError);
                                 try {
                                     await Promise.race([
                                         responsePromise,
@@ -369,12 +377,11 @@ function initializeBuckarooComponents() {
                                     responseHandled = true;
                                     return;
                                 } catch (eventError) {
-                                    // Continue to fallback approaches
+                                    // Continue to fallback
                                 }
                             }
                         }
                         
-                        // Fallback approaches if primary method fails
                         if (!responseHandled) {
                             if (this.$wire && typeof this.$wire.call === 'function') {
                                 try {
@@ -383,11 +390,10 @@ function initializeBuckarooComponents() {
                                     responseHandled = true;
                                     return;
                                 } catch (callError) {
-                                    // Continue to AJAX fallback
+                                    console.warn('Giftcard call error:', callError);
                                 }
                             }
                             
-                            // Final fallback: Direct AJAX
                             if (!responseHandled) {
                                 await this.submitViaAjax();
                                 responseHandled = true;
@@ -395,18 +401,18 @@ function initializeBuckarooComponents() {
                         }
                         
                     } catch (error) {
+                        console.warn('Giftcard submission error:', error);
                         if (!responseHandled) {
                             try {
                                 await this.submitViaAjax();
                             } catch (ajaxError) {
-                                this.displayError('Unable to process giftcard. Please try again.');
+                                window.buckaroo.showTemporaryBanner('Unable to process giftcard. Please try again.', 'error');
                             }
                         }
                     }
                 },
                 
                 displayGenericSuccess() {
-                    // Try to refresh totals if possible
                     if (typeof hyvaCheckout !== 'undefined' && hyvaCheckout.order && hyvaCheckout.order.refreshTotals) {
                         try {
                             hyvaCheckout.order.refreshTotals();
@@ -416,80 +422,11 @@ function initializeBuckarooComponents() {
                     }
                     
                     const message = 'Giftcard has been applied successfully! The order total will be updated.';
+                    window.buckaroo.showTemporaryBanner(message, 'success');
                     
-                    // Show success notification
-                    try {
-                        this.displaySuccess({
-                            message: message,
-                            remaining_amount_message: 'Order total updating...'
-                        });
-                    } catch (modalError) {
-                        // Fallback to banner
-                    }
-                    
-                    // Show banner notification
-                    this.showTemporaryBanner(message);
-                    
-                    // Refresh page to show updated totals
                     setTimeout(() => {
                         window.location.reload();
                     }, 3000);
-                },
-                
-                showTemporaryBanner(message) {
-                    const banner = document.createElement('div');
-                    banner.style.cssText = `
-                        position: fixed;
-                        top: 20px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        background-color: #10b981;
-                        color: white;
-                        padding: 16px 24px;
-                        border-radius: 8px;
-                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                        z-index: 9999;
-                        max-width: 400px;
-                        text-align: center;
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        font-size: 14px;
-                        line-height: 1.4;
-                        opacity: 0;
-                        transition: all 0.3s ease-out;
-                    `;
-                    
-                    banner.innerHTML = `
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <div style="display: flex; align-items: center;">
-                                <svg style="width: 20px; height: 20px; margin-right: 8px; fill: currentColor;" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span>${message}</span>
-                            </div>
-                            <button onclick="this.parentElement.parentElement.remove()" style="margin-left: 16px; background: none; border: none; color: white; cursor: pointer; font-size: 18px; line-height: 1;">
-                                ×
-                            </button>
-                        </div>
-                    `;
-                    
-                    document.body.appendChild(banner);
-                    
-                    // Animate in
-                    setTimeout(() => {
-                        banner.style.opacity = '1';
-                        banner.style.transform = 'translateX(-50%) translateY(0)';
-                    }, 10);
-                    
-                    // Auto-remove after 5 seconds
-                    setTimeout(() => {
-                        if (banner.parentElement) {
-                            banner.style.opacity = '0';
-                            banner.style.transform = 'translateX(-50%) translateY(-20px)';
-                            setTimeout(() => {
-                                banner.remove();
-                            }, 300);
-                        }
-                    }, 5000);
                 },
                 
                 async waitForGiftcardResponse(timeout = 3000) {
@@ -571,49 +508,16 @@ function initializeBuckarooComponents() {
                 },
                 
                 displaySuccess(response) {
-                    try {
-                        const eventData = {
-                            title: 'Success',
-                            content: response.message,
-                            showClose: false,
-                            buttons: [{
-                                label: response.remaining_amount_message
-                            }]
-                        };
-                        
-                        window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
-                            detail: {
-                                data: eventData
-                            }
-                        }));
-                        
-                        // Try direct modal trigger as fallback
-                        if (window.buckaroo && window.buckaroo.modal) {
-                            const modalComponent = window.buckaroo.modal();
-                            modalComponent.showModal = true;
-                            modalComponent.title = 'Success';
-                            modalComponent.content = response.message;
-                            modalComponent.showClose = false;
-                            modalComponent.buttons = [{
-                                label: response.remaining_amount_message
-                            }];
-                        }
-                        
-                    } catch (error) {
-                        // Fallback to simple alert
-                        alert(response.message);
-                    }
+                    window.buckaroo.showTemporaryBanner(response.message, 'success');
+                    
+                    // Refresh page to show updated totals after successful giftcard application
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
                 },
                 
                 displayError(message) {
-                    window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
-                        detail: {
-                            data: {
-                                title: 'Error',
-                                content: message,
-                            }
-                        }
-                    }));
+                    window.buckaroo.showTemporaryBanner(message, 'error');
                 },
                 
                 listenToSubmit() {
@@ -636,9 +540,9 @@ function initializeBuckarooComponents() {
                         }
                     };
                 },
-
             })
         },
+
         mrCash($el) {
             return Object.assign((typeof hyva !== 'undefined' ? hyva.formValidation($el) : {}), {
                 cseHasLoaded: window.buckarooCseHasLoaded,
@@ -646,7 +550,6 @@ function initializeBuckarooComponents() {
                 cardNumber: '',
                 cardExpiration: '',
                 
-                // CSP-compatible update methods
                 updateCardHolder(event) {
                     this.cardHolder = event.target.value;
                     this.onChange();
@@ -663,14 +566,13 @@ function initializeBuckarooComponents() {
                 },
                 
                 onChange() {
-                    // Method called by template on change events
+                    // Called by template on change events
                 },
                 
                 async saveEncryptedData() {
                     let parts = this.cardExpiration.split('/');
                     const year = parts[1];
                     const month = parts[0];
-                    const wire = this.$wire;
                     const enc = new Promise((resolve) => {
                         BuckarooClientSideEncryption.V001.encryptCardData(
                             this.cardNumber,
@@ -684,6 +586,7 @@ function initializeBuckarooComponents() {
                     })
                     return await enc;
                 },
+                
                 register() {
                     window.addEventListener('buckaroo-cse-load', () => {
                         this.cseHasLoaded = true;
@@ -694,11 +597,12 @@ function initializeBuckarooComponents() {
                     const formValid = async () => {
                         try {
                             await this.validate();
+                            return true;
                         } catch (error) {
                             return false;
                         }
-                        return true;
                     }
+                    
                     window.buckarooTask = async () => {
                         const isValid = await formValid();
                         if (this.cseHasLoaded && isValid) {
@@ -709,29 +613,30 @@ function initializeBuckarooComponents() {
                 }
             })
         },
+
         voucher($el, ajaxUrl) {
             return Object.assign((typeof hyva !== 'undefined' ? hyva.formValidation($el) : {}), {
                 code:'',
                 canSubmit:false,
                 
-                // CSP-compatible update method
                 updateCode(event) {
                     this.code = event.target.value;
                     this.onChange();
                 },
                 
                 onChange() {
-                    // Method called by template on change events
+                    // Called by template on change events
                 },
                 
                 async formValid() {
                     try {
                         await this.validate();
+                        return true;
                     } catch (error) {
                         return false;
                     }
-                    return true;
                 },
+
                 async submit() {
                     if(!await this.formValid()) {
                         return;
@@ -749,6 +654,7 @@ function initializeBuckarooComponents() {
                         await fetch(ajaxUrl, params)
                     ).json();
                     await this.$wire.refreshTotals();
+                    
                     if (response.error) {
                         this.displayError(response.error);
                     } else if(response.remainder_amount === undefined) {
@@ -761,30 +667,15 @@ function initializeBuckarooComponents() {
                         this.displaySuccess(response);
                     }
                 },
+
                 displaySuccess(response) {
-                    window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
-                        detail: {
-                            data: {
-                                title: 'Success',
-                                content: response.message,
-                                showClose: false,
-                                buttons: [{
-                                    label: response.remaining_amount_message
-                                }]
-                            }
-                        }
-                    }));
+                    window.buckaroo.showTemporaryBanner(response.message, 'success');
                 },
+
                 displayError(message) {
-                    window.dispatchEvent(new CustomEvent('buckaroo-modal-show', {
-                        detail: {
-                            data: {
-                                title: 'Error',
-                                content: message,
-                            }
-                        }
-                    }));
+                    window.buckaroo.showTemporaryBanner(message, 'error');
                 },
+
                 register() {
                     window.buckarooTask = async () => {
                         if(!this.canSubmit) {
@@ -792,34 +683,18 @@ function initializeBuckarooComponents() {
                         }
                     };
                 },
-
             })
         }
     };
 
-    // Initialize start function immediately
+    // Initialize
     if (window.buckaroo.start) {
         window.buckaroo.start();
     }
 
-    // Register Alpine.data components for CSP compatibility
+    // Register Alpine.data components
     if (typeof Alpine !== 'undefined' && Alpine.data) {
-        Alpine.data('buckarooModal', () => {
-            const modalData = window.buckaroo.modal();
-            // Add computed properties for CSP compatibility
-            modalData.isHidden = function() { return !this.showModal; };
-            modalData.modalClasses = function() { return this.showModal ? 'flex' : 'hidden'; };
-            modalData.hasButtons = function() { return this.buttons && this.buttons.length > 0; };
-            modalData.handleButtonClick = function(button) {
-                if (button.action) {
-                    button.action();
-                } else {
-                    this.close();
-                }
-            };
-            return modalData;
-        });
-
+        
         Alpine.data('buckarooCreditcards', () => {
             return {
                 oauthTokenError: '',
@@ -851,7 +726,6 @@ function initializeBuckarooComponents() {
                         }
                     }
                 },
-                // Ensure CSP-compatible methods are available
                 updateCard(event) {
                     this.card = event.target.value;
                     if (this.onChange) this.onChange();
@@ -873,14 +747,12 @@ function initializeBuckarooComponents() {
                 canSubmit: false,
                 init() {
                     if (window.buckaroo && window.buckaroo.voucher) {
-                        // Get the Ajax URL from the data attribute
                         const ajaxUrl = this.$el.dataset.ajaxUrl || '';
                         Object.assign(this, window.buckaroo.voucher(this.$el, ajaxUrl));
                         this.$wire = this.$wire;
                         if (this.register) this.register();
                     }
                 },
-                // Ensure CSP-compatible method is available
                 updateCode(event) {
                     this.code = event.target.value;
                     if (this.onChange) this.onChange();
@@ -901,7 +773,6 @@ function initializeBuckarooComponents() {
                         if (this.register) this.register();
                     }
                 },
-                // Ensure CSP-compatible methods are available
                 updateCardHolder(event) {
                     this.cardHolder = event.target.value;
                     if (this.onChange) this.onChange();
@@ -931,7 +802,6 @@ if (typeof Alpine !== 'undefined' && Alpine.version) {
 
 // Performance optimization: Preload critical resources
 if (typeof window !== 'undefined') {
-    // Preload SDK if not already loaded
     const preloadBuckarooSDK = () => {
         if (!window.buckarooCseHasLoaded) {
             const link = document.createElement('link');
@@ -942,7 +812,6 @@ if (typeof window !== 'undefined') {
         }
     };
 
-    // Preload when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', preloadBuckarooSDK);
     } else {

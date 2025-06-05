@@ -3,10 +3,8 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
 >
     <head>
-        <!-- Load Buckaroo compiled Tailwind CSS -->
         <css src="Buckaroo_HyvaCheckout::css/buckaroo-components.css" />
-        
-        <!-- Load Buckaroo components -->
+
         <script src="Buckaroo_HyvaCheckout::js/buckaroo-components.js" />
         <script src="Buckaroo_HyvaCheckout::js/creditcards.js" />
         <script src="Buckaroo_HyvaCheckout::js/hide-applepay.js" />
