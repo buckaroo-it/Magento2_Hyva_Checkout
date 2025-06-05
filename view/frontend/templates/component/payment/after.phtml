@@ -9,14 +9,14 @@ use Magento\Framework\Escaper;
             id="bk-modal"
             tabindex="-1"
             x-ref="modal"
-            x-bind:aria-hidden="isHidden"
-            x-bind:inert="isHidden"
+            :aria-hidden="isHidden"
+            :inert="isHidden"
             x-cloak
             class="fixed top-0 left-0 right-0 z-50 justify-center w-full p-4 items-center overflow-x-hidden overflow-y-auto md:inset-0 max-h-full h-full backdrop-blur-sm bg-black/50"
-            x-bind:class="modalClasses"
-            @keydown.window.escape="close"
+            :class="modalClasses"
+            x-on:keydown.window.escape="close"
     >
-        <div class="relative w-full max-w-md max-h-full" @click.outside="close">
+        <div class="relative w-full max-w-md max-h-full" x-on:click.outside="close">
             <!-- Modal content -->
             <div class="relative bg-white rounded-lg shadow-xl">
                 <!-- Modal header -->
@@ -25,7 +25,7 @@ use Magento\Framework\Escaper;
                     </h3>
                     <button
                         type="button"
-                        @click="close"
+                        x-on:click="close"
                         class="text-gray-400 bg-transparent hover:bg-gray-100 hover:text-gray-600 rounded text-sm p-1.5 ml-auto inline-flex items-center transition-colors"
                         aria-label="Close modal"
                     >
@@ -55,7 +55,7 @@ use Magento\Framework\Escaper;
                     <template x-if="hasButtons">
                         <template x-for="(button, index) in buttons" :key="index">
                             <button
-                                @click="handleButtonClick(button)"
+                                x-on:click="handleButtonClick(button)"
                                 type="button"
                                 class="btn btn-primary"
                                 x-text="button.label"
@@ -63,7 +63,7 @@ use Magento\Framework\Escaper;
                         </template>
                     </template>
                     <template x-if="showClose">
-                        <button @click="close" type="button" class="btn btn-secondary">
+                        <button x-on:click="close" type="button" class="btn btn-secondary">
                             <?= $escaper->escapeHtml(__('Close')); ?>
                         </button>
                     </template>
