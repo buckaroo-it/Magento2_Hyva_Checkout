@@ -11,9 +11,9 @@ $isClientSide = (bool) $magewire->getIntegrationMode();
         $wire: $wire,
         isClientSide: <?= $isClientSide ? 'true' : 'false' ?>,
         initApplePay() {
-            if (this.isClientSide) {
-              Object.assign(this, buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
-              this.register();
+            if (this.isClientSide && window.buckaroo && window.buckaroo.applePay) {
+              Object.assign(this, window.buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
+              if (this.register) this.register();
             }
         }
     }"
