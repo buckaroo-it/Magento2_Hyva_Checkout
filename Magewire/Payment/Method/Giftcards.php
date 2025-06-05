@@ -125,8 +125,7 @@ class Giftcards extends Component\Form implements EvaluationInterface
     }
 
     /**
-     * Do a partial payment request, update canSubmit if remanding amount 0,
-     * emit `payment_method_selected` to update the totals
+     * Do a partial payment request, update canSubmit if remainder amount is 0,
      * emit `giftcard_response` with the response
      *
      * @param string $card
@@ -143,19 +142,24 @@ class Giftcards extends Component\Form implements EvaluationInterface
         try {
             $quote = $this->sessionCheckout->getQuote();
 
-            // Try to emit payment_method_selected, but don't fail if it errors
-            try {
-                $this->emit('payment_method_selected');
-            } catch (\Throwable $emitError) {
-                $this->logger->addDebug('Error emitting payment_method_selected: ' . $emitError->getMessage());
+            $buckarooResponse = $this->buildGiftcardRequest($quote, $card, $cardNumber, $pin)->send();
+            
+            // Debug logging to track Buckaroo API response
+            $this->logger->addDebug('Buckaroo Giftcard API Response: ' . json_encode($buckarooResponse));
+            $this->logger->addDebug('Quote Grand Total: ' . $quote->getGrandTotal());
+            $this->logger->addDebug('Giftcard Details - Card: ' . $card . ', Number: ' . $cardNumber);
+
+            $response = $this->getGiftcardResponse($quote, $buckarooResponse);
+            
+            // Log processed response
+            $this->logger->addDebug('Processed Giftcard Response: ' . json_encode($response));
+
+            // Update canSubmit status if payment is complete
+            if (isset($response['remainder_amount']) && $response['remainder_amount'] == 0) {
+                $this->canSubmit = true;
             }
 
-            $response = $this->getGiftcardResponse(
-                $quote,
-                $this->buildGiftcardRequest($quote, $card, $cardNumber, $pin)->send()
-            );
-
-            // Try to emit giftcard_response, but also dispatch a JavaScript event as fallback
+            // Emit giftcard_response with the response
             try {
                 $this->emit("giftcard_response", $response);
             } catch (\Throwable $emitError) {
