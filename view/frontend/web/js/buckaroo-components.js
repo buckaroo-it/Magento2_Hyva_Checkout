@@ -695,6 +695,27 @@ function initializeBuckarooComponents() {
     // Register Alpine.data components
     if (typeof Alpine !== 'undefined' && Alpine.data) {
         
+        // CSP-friendly date handler for date of birth fields
+        Alpine.data('buckarooDateHandler', () => ({
+            value: '',
+            
+            init() {
+                // Get initial value from data attribute
+                const initialValue = this.$el.getAttribute('data-initial-value');
+                this.value = initialValue || '';
+            },
+            
+            handleDateChange(event) {
+                if (event && event.target) {
+                    this.value = event.target.value;
+                    // Use $wire directly instead of storing it
+                    if (this.$wire && typeof this.$wire.call === 'function') {
+                        this.$wire.call('updatedDateOfBirth', this.value);
+                    }
+                }
+            }
+        }));
+        
         Alpine.data('buckarooCreditcards', () => {
             return {
                 oauthTokenError: '',

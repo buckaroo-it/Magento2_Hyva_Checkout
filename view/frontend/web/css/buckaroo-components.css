@@ -1,6 +1,6 @@
 /**
  * Buckaroo Hyva Checkout Components - Compiled Tailwind CSS
- * 
+ *
  * This file contains compiled Tailwind CSS classes to avoid loading
  * the full Tailwind library in production. Classes are extracted and
  * scoped to .buckaroo-hyva-components.
@@ -22,8 +22,7 @@
 #payment-method-option-buckaroo_magento2_sepadirectdebit.bg-primary,
 #payment-method-option-buckaroo_magento2_payperemail.bg-primary,
 #payment-method-option-buckaroo_magento2_paybybank.bg-primary,
-#payment-method-option-buckaroo_magento2_capayablein3.bg-primary,
-#payment-method-option-buckaroo_magento2_tinka.bg-primary {
+#payment-method-option-buckaroo_magento2_capayablein3.bg-primary {
     background-color: #f8fafc !important; /* Light gray instead of blue */
 }
 
@@ -42,8 +41,7 @@
 #payment-method-option-buckaroo_magento2_sepadirectdebit.border-primary,
 #payment-method-option-buckaroo_magento2_payperemail.border-primary,
 #payment-method-option-buckaroo_magento2_paybybank.border-primary,
-#payment-method-option-buckaroo_magento2_capayablein3.border-primary,
-#payment-method-option-buckaroo_magento2_tinka.border-primary {
+#payment-method-option-buckaroo_magento2_capayablein3.border-primary {
     border-color: #374151 !important; /* Dark gray border instead of blue */
 }
 
@@ -456,8 +454,8 @@
         transform: translateY(-20px);
         max-width: none;
     }
-    
+
     .buckaroo-notification-show {
         transform: translateY(0) !important;
     }
-} 
+}

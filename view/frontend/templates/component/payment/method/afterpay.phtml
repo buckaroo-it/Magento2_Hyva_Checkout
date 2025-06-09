@@ -23,9 +23,10 @@ use Magento\Framework\Escaper;
             </label>
             <input
                 type="date"
-                x-data
-                value="<?= $magewire->dateOfBirth ?>"
-                @blur="$wire.call('updatedDateOfBirth', $event.target.value)"
+                x-data="buckarooDateHandler"
+                x-bind:value="value"
+                @blur="handleDateChange"
+                data-initial-value="<?= $escaper->escapeHtmlAttr($magewire->dateOfBirth ?? '') ?>"
                 id="buckaroo_afterpay_dob"
             >
             <?php if ($magewire->hasError('dateOfBirth')) : ?>
