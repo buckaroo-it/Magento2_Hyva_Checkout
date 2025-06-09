@@ -10,7 +10,7 @@ use Magento\Framework\Escaper;
 <div class="col-span-6">
     <?php if ($magewire->showClientSideEncryption()) {
     ?>
-        <form x-data="buckaroo.mrCash($el)" x-init="register()" novalidate>
+        <form x-data="buckarooMrCash" novalidate>
             <div class="flex flex-col gap-y-2 field field-reserved">
                 <label for="buckaroo_mrcash_card_holder">
                     <?= $escaper->escapeHtml(__('Name on card:')); ?>
@@ -18,9 +18,9 @@ use Magento\Framework\Escaper;
                 </label>
                 <input
                     type="text"
-                    x-model="cardHolder"
+                    x-bind:value="cardHolder"
+                    @input="updateCardHolder"
                     data-validate='{"bk-validateCardHolderName": true}'
-                    @change="onChange"
                     id="buckaroo_mrcash_card_holder"
                     name="buckaroo_mrcash_card_holder"
                     placeholder="<?= $escaper->escapeHtml(__('John Doe')); ?>"
@@ -36,9 +36,9 @@ use Magento\Framework\Escaper;
                         </label>
                         <input
                             type="text"
-                            x-model="cardNumber"
+                            x-bind:value="cardNumber"
+                            @input="updateCardNumber"
                             data-validate='{"bk-validateCardNumber": true}'
-                            @change="onChange"
                             id="buckaroo_mrcash_card_number"
                             name="buckaroo_mrcash_card_number"
                             placeholder="<?= $escaper->escapeHtml(__('0000 0000 0000 0000')); ?>"
@@ -53,9 +53,9 @@ use Magento\Framework\Escaper;
                         <input
                             type="text"
                             maxlength="5"
-                            x-model="cardExpiration"
+                            x-bind:value="cardExpiration"
+                            @input="updateCardExpiration"
                             data-validate='{"bk-ValidateYear": true, "bk-ValidateMonth": true}'
-                            @change="onChange"
                             id="buckaroo_mrcash_card_expiration"
                             name="buckaroo_mrcash_card_expiration"
                             placeholder="<?= $escaper->escapeHtml(__('MM/YY')); ?>"

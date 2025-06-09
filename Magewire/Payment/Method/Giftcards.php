@@ -125,8 +125,7 @@ class Giftcards extends Component\Form implements EvaluationInterface
     }
 
     /**
-     * Do a partial payment request, update canSubmit if remanding amount 0,
-     * emit `payment_method_selected` to update the totals
+     * Do a partial payment request, update canSubmit if remainder amount is 0,
      * emit `giftcard_response` with the response
      *
      * @param string $card
@@ -142,15 +141,38 @@ class Giftcards extends Component\Form implements EvaluationInterface
     ): void {
         try {
             $quote = $this->sessionCheckout->getQuote();
-            $this->emit('payment_method_selected');
-            $response = $this->getGiftcardResponse(
-                $quote,
-                $this->buildGiftcardRequest($quote, $card, $cardNumber, $pin)->send()
-            );
-            $this->emit("giftcard_response", $response);
+
+            $buckarooResponse = $this->buildGiftcardRequest($quote, $card, $cardNumber, $pin)->send();
+            
+            // Debug logging to track Buckaroo API response
+            $this->logger->addDebug('Buckaroo Giftcard API Response: ' . json_encode($buckarooResponse));
+            $this->logger->addDebug('Quote Grand Total: ' . $quote->getGrandTotal());
+            $this->logger->addDebug('Giftcard Details - Card: ' . $card . ', Number: ' . $cardNumber);
+
+            $response = $this->getGiftcardResponse($quote, $buckarooResponse);
+            
+            // Log processed response
+            $this->logger->addDebug('Processed Giftcard Response: ' . json_encode($response));
+
+            // Update canSubmit status if payment is complete
+            if (isset($response['remainder_amount']) && $response['remainder_amount'] == 0) {
+                $this->canSubmit = true;
+            }
+
+            // Emit giftcard_response with the response
+            try {
+                $this->emit("giftcard_response", $response);
+            } catch (\Throwable $emitError) {
+                $this->logger->addDebug('Error emitting giftcard_response: ' . $emitError->getMessage());
+            }
+
         } catch (\Throwable $th) {
-            $this->logger->addDebug((string)$th);
-            $this->emit("giftcard_response", ["error" => __('Cannot apply giftcard')]);
+            $this->logger->addDebug('Error in applyGiftcard: ' . (string)$th);
+            try {
+                $this->emit("giftcard_response", ["error" => __('Cannot apply giftcard')]);
+            } catch (\Throwable $emitError) {
+                $this->logger->addDebug('Error emitting error response: ' . $emitError->getMessage());
+            }
         }
     }
 

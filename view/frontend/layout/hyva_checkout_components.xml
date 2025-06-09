@@ -2,28 +2,16 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
 >
+    <head>
+        <css src="Buckaroo_HyvaCheckout::css/buckaroo-components.css" />
+
+        <script src="Buckaroo_HyvaCheckout::js/buckaroo-components.js" />
+        <script src="Buckaroo_HyvaCheckout::js/creditcards.js" />
+        <script src="Buckaroo_HyvaCheckout::js/hide-applepay.js" />
+        <script src="Buckaroo_HyvaCheckout::js/update-position.js"/>
+    </head>
     <body>
         <referenceBlock name="checkout.payment.methods">
-            <!-- Payment Renderer: iDEAL -->
-            <block name="checkout.payment.method.buckaroo_magento2_ideal"
-                   as="buckaroo_magento2_ideal"
-                   template="Buckaroo_HyvaCheckout::component/payment/method/ideal.phtml">
-                <arguments>
-                    <argument name="magewire" xsi:type="object">
-                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Ideal
-                    </argument>
-                </arguments>
-            </block>
-
-            <block name="checkout.payment.method.buckaroo_magento2_idealprocessing"
-                   as="buckaroo_magento2_idealprocessing"
-                   template="Buckaroo_HyvaCheckout::component/payment/method/ideal.phtml">
-                <arguments>
-                    <argument name="magewire" xsi:type="object">
-                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Ideal
-                    </argument>
-                </arguments>
-            </block>
 
             <block name="checkout.payment.method.buckaroo_magento2_klarna"
                    as="buckaroo_magento2_klarna"
@@ -101,16 +89,6 @@
                 <arguments>
                     <argument name="magewire" xsi:type="object">
                         \Buckaroo\HyvaCheckout\Magewire\Payment\Method\In3
-                    </argument>
-                </arguments>
-            </block>
-
-            <block name="checkout.payment.method.buckaroo_magento2_tinka"
-                   as="buckaroo_magento2_tinka"
-                   template="Buckaroo_HyvaCheckout::component/payment/method/tinka.phtml">
-                <arguments>
-                    <argument name="magewire" xsi:type="object">
-                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Tinka
                     </argument>
                 </arguments>
             </block>

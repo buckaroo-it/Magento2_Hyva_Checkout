@@ -99,7 +99,7 @@ abstract class AfterpayBase extends Component\Form implements EvaluationInterfac
             $tos = true;
             $payment->setAdditionalInformation('termsCondition', $tos);
         }
- 
+
 
         $this->tos = $tos === true;
         $this->coc = $payment->getAdditionalInformation('cOCNumber');
@@ -298,32 +298,54 @@ abstract class AfterpayBase extends Component\Form implements EvaluationInterfac
     }
 
     /**
-     * Get tos link based on country
+     * Get tos link based on country and b2b
      *
      * @return void
      */
     public function getTosLink()
     {
         $countryId = $this->getCountryId();
+        $isB2B = $this->showB2b();
 
-
-       $tosUrl = 'https://www.afterpay.nl/nl/algemeen/betalen-met-afterpay/betalingsvoorwaarden';
-
-        if ($countryId === 'BE' && !$this->showB2b()) {
-            $tosUrl = 'https://www.afterpay.be/be/footer/betalen-met-afterpay/betalingsvoorwaarden';
+        if ($isB2B){
+            $tosUrl = 'https://documents.riverty.com/terms_conditions/payment_methods/b2b_invoice/';
+        } else {
+            $tosUrl = 'https://documents.riverty.com/terms_conditions/payment_methods/invoice/';
         }
 
-        if ($countryId === 'NL' && !$this->showB2b()) {
-            $tosUrl = 'https://www.afterpay.nl/nl/algemeen/betalen-met-afterpay/betalingsvoorwaarden';
+        switch ($countryId) {
+            case 'DE':
+                $tosCountry = 'de_de';
+                break;
+            case 'AT':
+                $tosCountry = 'at_de';
+                break;
+            case 'CH':
+                $tosCountry = 'ch_de';
+                break;
+            case 'NL':
+                $tosCountry = 'nl_nl';
+                break;
+            case 'BE':
+                $tosCountry = 'be_nl';
+                break;
+            case 'FI':
+                $tosCountry = 'fi_en';
+                break;
+            case 'SE':
+                $tosCountry = 'se_en';
+                break;
+            case 'NO':
+                $tosCountry = 'no_en';
+                break;
+            case 'DK':
+                $tosCountry = 'dk_en';
+                break;
+            default:
+                $tosCountry = 'nl_en';
+                break;
         }
-
-        if ($countryId === 'NL' && $this->showB2b()) {
-            $tosUrl = 'https://www.afterpay.nl/nl/algemeen/zakelijke-partners/betalingsvoorwaarden-zakelijk';
-        }
-
-        return $tosUrl;
-
-   
+        return $tosUrl . $tosCountry . '/';
     }
 
     /**
@@ -371,7 +393,7 @@ abstract class AfterpayBase extends Component\Form implements EvaluationInterfac
         if($this->showIban()) {
             $values = array_merge($values, ['iban' => $this->iban]);
         }
-    
+
         return $values;
     }
 
