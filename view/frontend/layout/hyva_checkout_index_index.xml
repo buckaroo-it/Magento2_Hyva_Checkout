@@ -1,14 +1,13 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      layout="checkout"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
 >
-    <body>
-        <referenceContainer name="hyva.checkout.api-v1.after">
-             <block name="checkout.buckaroo_after_api-v1"
-                    as="buckaroo_after_api-v1"
-                    template="Buckaroo_HyvaCheckout::component/payment/after.phtml">
-            </block>
-        </referenceContainer>
-    </body>
+    <head>
+        <css src="Buckaroo_HyvaCheckout::css/buckaroo-components.css" />
+
+        <script src="Buckaroo_HyvaCheckout::js/buckaroo-components.js" />
+        <script src="Buckaroo_HyvaCheckout::js/creditcards.js" />
+        <script src="Buckaroo_HyvaCheckout::js/hide-applepay.js" />
+        <script src="Buckaroo_HyvaCheckout::js/update-position.js"/>
+    </head>
 </page>

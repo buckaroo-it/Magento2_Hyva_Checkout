@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+/** @var Escaper $escaper */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\PayByBank $magewire */
+use Magento\Framework\Escaper;
+
+$issuers = $magewire->getIssuers();
+
+?>
+<div class="col-span-6">
+    <div class="flex flex-col gap-y-2">
+        <?php if ($magewire->displayAsSelect()) { ?>
+            <label for="buckaroo_magento2_paybybank_issuer"><?= $escaper->escapeHtml(__('Select a bank:')); ?></label>
+            <select name="issuer" id="buckaroo_magento2_paybybank_issuer" wire:model="issuer" class="form-select">
+                <?php foreach ($issuers as $issuerOption): ?>
+                    <option value="<?= $escaper->escapeHtmlAttr($issuerOption['code']) ?>" <?= $issuerOption['code'] === $magewire->issuer ? 'selected' : '' ?>>
+                        <?= $escaper->escapeHtml($issuerOption['name']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+        <?php } else { ?>
+            <p><?=  $escaper->escapeHtml(__('Select a bank:')); ?></p>
+            <?php foreach ($issuers as $issuerOption): ?>
+                <div class="flex flex-row flex-grow gap-x-2 items-center">
+                    <input
+                        type="radio"
+                        name="issuer"
+                        wire:model="issuer"
+                        id="bk_paybybank_issuer_<?= $escaper->escapeHtmlAttr($issuerOption['code']) ?>"
+                        value="<?= $escaper->escapeHtmlAttr($issuerOption['code']) ?>"
+                        <?= $issuerOption['code'] === $magewire->issuer ? 'checked' : '' ?>
+                    />
+                    <label for="bk_paybybank_issuer_<?= $escaper->escapeHtmlAttr($issuerOption['code']) ?>" class="flex flex-row flex-grow gap-x-2 items-center">
+                        <img
+                            src="<?= $escaper->escapeUrl($magewire->getImageUrl($issuerOption['imgName'])) ?>"
+                            alt="<?= $escaper->escapeHtmlAttr($issuerOption['name']) ?>"
+                            style="max-height:25px;"
+                        />
+                        <?= $escaper->escapeHtml($issuerOption['name']) ?>
+                    </label>
+                </div>
+            <?php endforeach; ?>
+        <?php } ?>
+    </div>
+</div>

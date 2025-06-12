@@ -15,9 +15,9 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationInterface;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
-use Buckaroo\Magento2\Model\ConfigProvider\Method\Ideal as MethodIdeal;
+use Buckaroo\Magento2\Model\ConfigProvider\Method\PayByBank as MethodPayByBank;
 
-class Ideal extends Component\Form implements EvaluationInterface
+class PayByBank extends Component\Form implements EvaluationInterface
 {
     public ?string $issuer = null;
 
@@ -41,12 +41,14 @@ class Ideal extends Component\Form implements EvaluationInterface
 
     protected ScopeConfigInterface $scopeConfig;
 
+
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
         CartRepositoryInterface $quoteRepository,
         Repository $assetRepo,
-        ScopeConfigInterface $scopeConfig
+        ScopeConfigInterface $scopeConfig,
+
     ) {
         parent::__construct($validator);
 
@@ -54,6 +56,7 @@ class Ideal extends Component\Form implements EvaluationInterface
         $this->quoteRepository = $quoteRepository;
         $this->assetRepo = $assetRepo;
         $this->scopeConfig = $scopeConfig;
+
     }
 
     /**
@@ -62,10 +65,7 @@ class Ideal extends Component\Form implements EvaluationInterface
      */
     public function mount(): void
     {
-        $this->issuer  = $this->sessionCheckout
-            ->getQuote()
-            ->getPayment()
-            ->getAdditionalInformation('issuer');
+        $this->issuer = $this->getLastIssuer();
     }
 
     /**
@@ -87,6 +87,7 @@ class Ideal extends Component\Form implements EvaluationInterface
 
         return $value;
     }
+
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
         if ($this->issuer === null) {
@@ -110,11 +111,6 @@ class Ideal extends Component\Form implements EvaluationInterface
                 'name' => 'ASN Bank',
                 'code' => 'ASNBNL21',
                 'imgName' => 'asnbank'
-            ],
-            [
-                'name' => 'Bunq Bank',
-                'code' => 'BUNQNL2A',
-                'imgName' => 'bunq'
             ],
             [
                 'name' => 'ING',
@@ -142,27 +138,36 @@ class Ideal extends Component\Form implements EvaluationInterface
                 'imgName' => 'sns'
             ],
             [
-                'name' => 'Triodos Bank',
-                'code' => 'TRIONL2U',
-                'imgName' => 'triodos'
-            ],
-            [
-                'name' => 'Van Lanschot',
-                'code' => 'FVLBNL22',
-                'imgName' => 'vanlanschot'
-            ],
-            [
-                'name' => 'Revolut',
-                'code' => 'REVOLT21',
-                'imgName' => 'revolut'
-            ],
-            [
-                'name' => 'Yoursafe',
-                'code' => 'BITSNL2A',
-                'imgName' => 'yoursafe'
-            ],
+                'name' => 'N26',
+                'code' => 'NTSBDEB1',
+                'imgName' => 'n26'
+            ]
         ];
     }
+
+    public function getLastIssuer()
+    {
+
+        $quote = $this->sessionCheckout->getQuote();
+
+        $customerId = $quote->getCustomerId();
+
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $customerRepository = $objectManager->get(\Magento\Customer\Api\CustomerRepositoryInterface::class);
+
+        $customer = $customerRepository->getById($customerId);
+
+        $customAttributes = $customer->getCustomAttributes();
+        $issuerAttribute = $customAttributes['buckaroo_last_paybybank_issuer'] ?? null;
+
+        if ($issuerAttribute) {
+            return $issuerAttribute->getValue();
+        } else {
+            return $issuerAttribute;
+        }
+
+    }
+
     public function getImageUrl(string $issuerImage): string
     {
         return  $this->assetRepo->getUrl("Buckaroo_Magento2::images/ideal/{$issuerImage}.svg");
@@ -171,7 +176,7 @@ class Ideal extends Component\Form implements EvaluationInterface
     public function displayAsSelect($storeId = null): bool
     {
         return $this->scopeConfig->getValue(
-            MethodIdeal::XPATH_SELECTION_TYPE,
+            MethodPayByBank::XPATH_PAYBYBANK_SELECTION_TYPE,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $storeId
         ) === '2';

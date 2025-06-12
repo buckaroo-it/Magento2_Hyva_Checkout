@@ -46,7 +46,7 @@ class Applepay extends Component\Form implements EvaluationInterface
         SessionCheckout $sessionCheckout,
         CartRepositoryInterface $quoteRepository,
         MethodConfigProvider $methodConfigProvider,
-        Repository $assetRepo
+        Repository $assetRepo,
     ) {
         parent::__construct($validator);
 
@@ -74,35 +74,50 @@ class Applepay extends Component\Form implements EvaluationInterface
     {
         try {
             $quote = $this->sessionCheckout->getQuote();
-            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $paymentData);
+            $applePayEncoded = base64_encode($paymentData);
+            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $applePayEncoded);
             $quote->getPayment()->setAdditionalInformation('billingContact', $billingContact);
 
             $this->quoteRepository->save($quote);
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
         }
+        return $paymentData;
     }
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
         try {
             $quote = $this->sessionCheckout->getQuote();
-            $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
+            $integrationMode = $this->methodConfigProvider->getIntegrationMode();
 
-            if (empty($paymentData)) {
-                return $resultFactory->createErrorMessageEvent()
-                    ->withCustomEvent('payment:method:error')
-                    ->withMessage('Payment data is missing');
+            if ($integrationMode) {
+                $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
+
+                if (empty($paymentData)) {
+                    return $resultFactory->createErrorMessageEvent()
+                        ->withCustomEvent('payment:method:error')
+                        ->withMessage('Payment data is missing');
+                }
             }
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
         }
 
-       
-
         return $resultFactory->createSuccess();
     }
 
-    public function getJsSdkUrl(): string
+    public function getIntegrationMode(): bool
+    {
+        try {
+            $cfg  = $this->getJsonConfig();
+            return (bool) ($cfg['integrationMode']);
+        } catch (LocalizedException $e) {
+            $this->dispatchErrorMessage($e->getMessage());
+        }
+        return false;
+    }
+
+    public function getJsSdkUrl()
     {
         try {
             return $this->assetRepo->getUrl('Buckaroo_HyvaCheckout::js/applepay.js');
@@ -116,7 +131,6 @@ class Applepay extends Component\Form implements EvaluationInterface
 
     private function getJsonConfig(): array
     {
-
         $config = $this->methodConfigProvider->getConfig();
         if(!isset($config['payment']['buckaroo']['applepay'])) {
             $this->dispatchErrorMessage('Cannot retrieved config');
@@ -151,7 +165,6 @@ class Applepay extends Component\Form implements EvaluationInterface
                 ];
             }
         }
-        
         return $totals;
     }
 

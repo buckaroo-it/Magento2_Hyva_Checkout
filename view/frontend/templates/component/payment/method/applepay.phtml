@@ -1,15 +1,23 @@
 <?php
+/** @var \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Applepay $magewire */
+/** @var Magento\Framework\Escaper $escaper */
 
-declare(strict_types=1);
-/** @var Escaper $escaper */
-/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Applepay $magewire */
-
-use Magento\Framework\Escaper;
+$isClientSide = (bool) $magewire->getIntegrationMode();
 ?>
-<form x-data="buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>')" x-init="register()" novalidate>
-    <template x-if="canDisplay">
-        <button type="button" :class="getButtonClass()" @click="submit()">
-            <?= $escaper->escapeHtml(__('Place Order')) ?>
-        </button>
-    </template>
+<form
+    wire:id="checkout.payment.method.buckaroo_magento2_applepay"
+    x-data="{
+        config: $wire.get('config'),
+        $wire: $wire,
+        isClientSide: <?= $isClientSide ? 'true' : 'false' ?>,
+        initApplePay() {
+            if (this.isClientSide && window.buckaroo && window.buckaroo.applePay) {
+              Object.assign(this, window.buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
+              if (this.register) this.register();
+            }
+        }
+    }"
+    x-init="initApplePay()"
+    novalidate
+>
 </form>

@@ -56,6 +56,12 @@ class PlaceOrderService extends AbstractPlaceOrderService
         if($this->getResponse()->hasRedirect()) {
             return $this->getResponse()->getRedirectUrl();
         }
+        
+        // If payment was successful but no redirect is required (e.g., Riverty, direct payments)
+        if($this->isSuccessfulPayment()) {
+            return 'checkout/onepage/success';
+        }
+        
         return parent::getRedirectUrl($quote, $orderId);
     }
 
@@ -68,6 +74,17 @@ class PlaceOrderService extends AbstractPlaceOrderService
             $this->buckarooResponse = $this->buckarooResponseData->getResponse();
         }
         return $this->buckarooResponse;
+    }
+
+    private function isSuccessfulPayment(): bool
+    {
+        $response = $this->getResponse();
+        if (!$response) {
+            return false;
+        }
+        
+        // Check if payment was successful (status code 190)
+        return !empty($response->Status->Code->Code) && $response->Status->Code->Code == 190;
     }
 
     /**

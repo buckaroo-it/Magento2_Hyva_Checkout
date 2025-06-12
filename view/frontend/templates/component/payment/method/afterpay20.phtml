@@ -27,9 +27,10 @@ use Magento\Framework\Escaper;
                 <span class="text-red-600">*</span>
             </label>
             <input type="date"
-                x-data
-                value="<?=$magewire->dateOfBirth ?>"
-                @blur="$wire.call('updatedDateOfBirth', $event.target.value)"
+                x-data="buckarooDateHandler"
+                x-bind:value="value"
+                @blur="handleDateChange"
+                data-initial-value="<?= $escaper->escapeHtmlAttr($magewire->dateOfBirth ?? '') ?>"
                 id="buckaroo_afterpay20_dob"
             >
             <?php if ($magewire->hasError('dateOfBirth')): ?>
@@ -68,7 +69,7 @@ use Magento\Framework\Escaper;
         </div>
     <?php
     } ?>
-    
+
     <?php if ($magewire->showCOC()) {
     ?>
         <div class="flex flex-col gap-y-2 field field-reserved">
@@ -84,7 +85,7 @@ use Magento\Framework\Escaper;
     <?php
     } ?>
 
-    
+
 
     <div class="flex flex-col gap-y-2 ">
         <label for="buckaroo_afterpay20_tos"><?= $escaper->escapeHtml(__('Terms and Conditions:')); ?></label>
@@ -92,7 +93,7 @@ use Magento\Framework\Escaper;
             <input class="mt-1" type="checkbox" wire:model.lazy="tos" id="buckaroo_afterpay20_tos">
             <a class="grow" href="<?= $escaper->escapeUrl($magewire->getTosLink()) ?>">
                 <?= $escaper->escapeHtml(
-                    __('Yes, I accept the terms and condition for the use of Riverty | Afterpay.')
+                    __('The general Terms and Conditions for the Riverty payment method apply. The privacy policy of Riverty can be found here.')
                 ) ?>
             </a>
         </div>

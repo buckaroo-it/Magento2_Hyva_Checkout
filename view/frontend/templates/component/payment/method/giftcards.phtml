@@ -8,8 +8,8 @@ use Magento\Framework\Escaper;
 
 if (!$magewire->isRedirect()) {
 ?>
-    <div class="col-span-6">
-        <form x-data="buckaroo.giftcards($el)" x-init="register()" novalidate>
+    <div class="col-span-6" wire:key="buckaroo-giftcards">
+        <form x-data="buckarooGiftcards" novalidate>
 
             <div class="flex flex-col gap-y-2 field field-reserved">
                 <label for="buckaroo_giftcard_issuer">
@@ -18,9 +18,11 @@ if (!$magewire->isRedirect()) {
                 <select
                     name="issuer"
                     id="buckaroo_giftcard_issuer"
-                    x-model="card"
+                    x-bind:value="card"
+                    @input="updateCard"
                     data-validate='{"required": true}'
                     class="form-select"
+                    required
                 >
                     <option value=""><?= $escaper->escapeHtml(__('Please select issuer')); ?></option>
                     <?php
@@ -43,11 +45,12 @@ if (!$magewire->isRedirect()) {
                 </label>
                 <input
                     type="text"
-                    x-model="cardNumber"
+                    x-bind:value="cardNumber"
+                    @input="updateCardNumber"
                     data-validate='{"required": true}'
-                    @change="onChange"
                     id="buckaroo_giftcard_card_number"
                     name="buckaroo_giftcard_number"
+                    required
                 />
             </div>
             <div class="flex flex-col gap-y-2 field field-reserved">
@@ -57,16 +60,17 @@ if (!$magewire->isRedirect()) {
                 </label>
                 <input
                     type="text"
-                    x-model="pin"
+                    x-bind:value="pin"
+                    @input="updatePin"
                     data-validate='{"required": true}'
-                    @change="onChange"
                     id="buckaroo_giftcard_pin"
                     name="buckaroo_giftcard_pin"
+                    required
                 />
             </div>
             <button type="button" @click="submit" class="btn btn-primary">
-            <?= $escaper->escapeHtml(__('Apply Gift Card')); ?>
-        </button>
+                <?= $escaper->escapeHtml(__('Apply Gift Card')); ?>
+            </button>
         </form>
     </div>
 <?php

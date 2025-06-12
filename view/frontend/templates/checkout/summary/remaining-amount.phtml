@@ -16,14 +16,14 @@ use Hyva\Theme\Model\ViewModelRegistry;
 $formatterViewModel = $viewModels->require(FormatterViewModel::class);
 $segment = $block->getSegment();
 if ($segment['value'] != 0) {
-?>
-    <div class="flex gap-4 justify-between md:gap-0">
-        <span class="label">
-            <?= $block->escapeHtml($block->getTitle()) ?>
+    ?>
+    <div class="flex gap-4 justify-between border-t border-gray-400 pt-4 mt-4 md:gap-0">
+        <span class="label font-bold text-xl">
+            <?= $block->escapeHtml($segment['title']) ?>
         </span>
-        <span class="value">
+        <span class="value text-right font-bold">
             <?= /* @noEscape */ $formatterViewModel->currency($segment['value'] ?? 0) ?>
         </span>
     </div>
-<?php
+    <?php
 }

@@ -4,4 +4,8 @@
      <type name="Hyva\Checkout\ViewModel\Checkout\Payment\MethodList">
         <plugin name="buckaroo-hyva-logo-subtext" type="Buckaroo\HyvaCheckout\Plugin\MethodList" />
     </type>
+
+    <type name="Hyva\Checkout\Model\MethodMetaData\IconRenderer">
+        <plugin name="buckaroo_hyva_checkout_icon_renderer" type="Buckaroo\HyvaCheckout\Plugin\IconRenderer" />
+    </type>
 </config>

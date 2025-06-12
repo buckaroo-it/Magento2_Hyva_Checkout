@@ -14,44 +14,49 @@ use Magento\Framework\Escaper;
         <input type="text" wire:model.lazy="fullName" disabled id="buckaroo_billink_tos_fullname" class="bg-gray-200">
     </div>
 
-    <div class="flex flex-col gap-y-2 field field-reserved">
-        <label for="buckaroo_klarna_gender"><?= $escaper->escapeHtml(__('Salutation:')); ?></label>
-        <select name="issuer" id="buckaroo_klarna_gender" wire:model="gender" class="form-select">
-            <option value=""><?= $escaper->escapeHtml(__('-- Please Select Your Gender--')); ?></option>
-            <?php
-            foreach ($magewire->getGenderList() as $gender) {
-            ?>
-                <option value="<?= $escaper->escapeHtmlAttr($gender["code"]) ?>">
-                    <?= $escaper->escapeHtml($gender["name"]) ?>
-                </option>
-            <?php
-            }
-            ?>
-        </select>
-        <?php if ($magewire->hasError('gender')) : ?>
-            <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('gender')) ?></div>
-        <?php endif; ?>
-    </div>
+    <?php if (!$magewire->showB2b()) {
+        ?>
+        <div class="flex flex-col gap-y-2 field field-reserved">
+            <label for="buckaroo_klarna_gender"><?= $escaper->escapeHtml(__('Salutation:')); ?></label>
+            <select name="issuer" id="buckaroo_klarna_gender" wire:model="gender" class="form-select">
+                <option value=""><?= $escaper->escapeHtml(__('-- Please Select Your Gender--')); ?></option>
+                <?php
+                foreach ($magewire->getGenderList() as $gender) {
+                    ?>
+                    <option value="<?= $escaper->escapeHtmlAttr($gender["code"]) ?>">
+                        <?= $escaper->escapeHtml($gender["name"]) ?>
+                    </option>
+                    <?php
+                }
+                ?>
+            </select>
+            <?php if ($magewire->hasError('gender')) : ?>
+                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('gender')) ?></div>
+            <?php endif; ?>
+        </div>
 
-    <div class="flex flex-col gap-y-2 field field-reserved">
-        <label for="buckaroo_billink_dob">
-            <?= $escaper->escapeHtml(__('Date of Birth:')); ?>
-            <span class="text-red-600">*</span>
-        </label>
-        <input
-            type="date"
-            x-data
-            value="<?= $magewire->dateOfBirth ?>" @blur="$wire.call('updatedDateOfBirth', $event.target.value)"
-            id="buckaroo_billink_dob"
-        >
-        <?php if ($magewire->hasError('dateOfBirth')) : ?>
-            <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
-        <?php endif; ?>
-    </div>
+        <div class="flex flex-col gap-y-2 field field-reserved">
+            <label for="buckaroo_billink_dob">
+                <?= $escaper->escapeHtml(__('Date of Birth:')); ?>
+                <span class="text-red-600">*</span>
+            </label>
+            <input
+                type="date"
+                x-data="buckarooDateHandler"
+                x-bind:value="value"
+                @blur="handleDateChange"
+                data-initial-value="<?= $escaper->escapeHtmlAttr($magewire->dateOfBirth ?? '') ?>"
+                id="buckaroo_billink_dob"
+            >
+            <?php if ($magewire->hasError('dateOfBirth')) : ?>
+                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
+            <?php endif; ?>
+        </div>
 
-
+        <?php
+    } ?>
     <?php if ($magewire->showPhone()) {
-    ?>
+        ?>
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_billink_phone">
                 <?= $escaper->escapeHtml(__('Telephone:')); ?>
@@ -62,11 +67,11 @@ use Magento\Framework\Escaper;
                 <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('phone')) ?></div>
             <?php endif; ?>
         </div>
-    <?php
+        <?php
     } ?>
 
     <?php if ($magewire->showB2b()) {
-    ?>
+        ?>
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_billink_coc">
                 <?= $escaper->escapeHtml(__('COC Number:')); ?>
@@ -80,14 +85,14 @@ use Magento\Framework\Escaper;
 
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_billink_vat_number">
-                <?= $escaper->escapeHtml(__( 'Bank Account Number:')); ?>
+                <?= $escaper->escapeHtml(__('Bank Account Number:')); ?>
             </label>
             <input type="text" wire:model.lazy="vatNumber" id="buckaroo_billink_vat_number">
             <?php if ($magewire->hasError('vatNumber')) : ?>
                 <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('vatNumber')) ?></div>
             <?php endif; ?>
         </div>
-    <?php
+        <?php
     } ?>
 
     <div class="flex flex-col gap-y-2 ">

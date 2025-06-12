@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/buckaroo-it/Magento2/assets/105488705/b00d2fcd-2458-4a8b-ab1f-e85d678a0008" width="150px" position="center">
+  <img src="https://www.buckaroo.nl/media/33gf24ru/magento2_hyvacheckout_icon.png" width="150px" position="center">
 </p>
 
 # Buckaroo Magento 2 Hyvä Checkout
@@ -14,7 +14,7 @@ Buckaroo has developed a cutting-edge Hyvä Checkout module as an extension for 
 <br>
 
 ## Requirements
-* [Buckaroo Magento 2 plugin](https://github.com/buckaroo-it/Magento2/releases) version 1.46 or higher
+* [Buckaroo Magento 2 plugin](https://github.com/buckaroo-it/Magento2/releases) version 1.50.1 or higher
 * Hyvä Checkout version 1.1.8 or higher
 <br>
 
