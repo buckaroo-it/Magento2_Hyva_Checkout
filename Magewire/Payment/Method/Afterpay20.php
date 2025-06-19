@@ -454,4 +454,24 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
 
         return $validation->fails();
     }
+
+    /**
+     * Show financial warning for Netherlands customers
+     *
+     * @return bool
+     */
+    public function showFinancialWarning(): bool
+    {
+        $quote = $this->getQuote();
+        
+        if ($quote === null) {
+            return false;
+        }
+
+        $billingAddress = $quote->getBillingAddress();
+        
+        return $billingAddress !== null &&
+               $billingAddress->getCountryId() === 'NL' &&
+               $this->methodConfigProvider->canShowFinancialWarning();
+    }
 }
