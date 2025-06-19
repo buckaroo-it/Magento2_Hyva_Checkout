@@ -17,6 +17,7 @@ use Hyva\Checkout\Model\Magewire\Component\EvaluationInterface;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
 use Buckaroo\Magento2\Helper\Data as HelperData;
+use Buckaroo\Magento2\Model\ConfigProvider\Method\Billink as MethodConfigProvider;
 
 
 class Billink extends Component\Form implements EvaluationInterface
@@ -56,11 +57,14 @@ class Billink extends Component\Form implements EvaluationInterface
 
     protected HelperData $helper;
 
+    protected MethodConfigProvider $methodConfigProvider;
+
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
         CartRepositoryInterface $quoteRepository,
-        HelperData $helper
+        HelperData $helper,
+        MethodConfigProvider $methodConfigProvider
     ) {
         if($validator->getValidator("nlBeDePhone") === null) {
             $validator->addValidator("nlBeDePhone", new NlBeDePhone());
@@ -71,6 +75,7 @@ class Billink extends Component\Form implements EvaluationInterface
         $this->sessionCheckout = $sessionCheckout;
         $this->quoteRepository = $quoteRepository;
         $this->helper = $helper;
+        $this->methodConfigProvider = $methodConfigProvider;
     }
 
     /**
@@ -411,5 +416,25 @@ class Billink extends Component\Form implements EvaluationInterface
         );
 
         return ["required", "in:".implode(",", $genderValues)];
+    }
+
+    /**
+     * Show financial warning for Netherlands customers
+     *
+     * @return bool
+     */
+    public function showFinancialWarning(): bool
+    {
+        $quote = $this->getQuote();
+
+        if ($quote === null) {
+            return false;
+        }
+
+        $billingAddress = $quote->getBillingAddress();
+
+        return $billingAddress !== null &&
+               $billingAddress->getCountryId() === 'NL' &&
+               $this->methodConfigProvider->canShowFinancialWarning();
     }
 }

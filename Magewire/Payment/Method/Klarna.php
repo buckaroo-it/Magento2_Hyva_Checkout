@@ -13,6 +13,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationInterface;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
+use Buckaroo\Magento2\Model\ConfigProvider\Method\Klarna as MethodConfigProvider;
 
 class Klarna extends Component\Form implements EvaluationInterface
 {
@@ -34,15 +35,19 @@ class Klarna extends Component\Form implements EvaluationInterface
 
     protected CartRepositoryInterface $quoteRepository;
 
+    protected MethodConfigProvider $methodConfigProvider;
+
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
-        CartRepositoryInterface $quoteRepository
+        CartRepositoryInterface $quoteRepository,
+        MethodConfigProvider $methodConfigProvider
     ) {
         parent::__construct($validator);
 
         $this->sessionCheckout = $sessionCheckout;
         $this->quoteRepository = $quoteRepository;
+        $this->methodConfigProvider = $methodConfigProvider;
     }
 
     /**
@@ -91,5 +96,39 @@ class Klarna extends Component\Form implements EvaluationInterface
             ['code' => 'male', 'name' => __('He/him')],
             ['code' => 'female', 'name' => __('She/her')]
         ];
+    }
+
+    /**
+     * Show financial warning for Netherlands customers
+     *
+     * @return bool
+     */
+    public function showFinancialWarning(): bool
+    {
+        $quote = $this->getQuote();
+        
+        if ($quote === null) {
+            return false;
+        }
+
+        $billingAddress = $quote->getBillingAddress();
+        
+        return $billingAddress !== null &&
+               $billingAddress->getCountryId() === 'NL' &&
+               $this->methodConfigProvider->canShowFinancialWarning();
+    }
+
+    /**
+     * Get quote from session
+     *
+     * @return \Magento\Quote\Model\Quote|null
+     */
+    private function getQuote(): ?\Magento\Quote\Model\Quote
+    {
+        try {
+            return $this->sessionCheckout->getQuote();
+        } catch (LocalizedException $e) {
+            return null;
+        }
     }
 }
