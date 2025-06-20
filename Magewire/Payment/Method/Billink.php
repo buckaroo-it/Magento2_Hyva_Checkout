@@ -437,4 +437,14 @@ class Billink extends Component\Form implements EvaluationInterface
                $billingAddress->getCountryId() === 'NL' &&
                $this->methodConfigProvider->canShowFinancialWarning();
     }
+
+    /**
+     * Get payment method title
+     *
+     * @return string
+     */
+    public function getPaymentMethodTitle(): string
+    {
+        return $this->methodConfigProvider->getTitle();
+    }
 }

@@ -103,7 +103,7 @@ class In3 extends Component\Form implements EvaluationInterface
 
         $this->validateOnly([$name => $rules], $messageArray, [$name => $value]);
     }
-    
+
     public function updatedPhone(string $value): ?string
     {
         $this->validateField('phone', $this->getPhoneRules(), $value);
@@ -296,15 +296,25 @@ class In3 extends Component\Form implements EvaluationInterface
     public function showFinancialWarning(): bool
     {
         $quote = $this->getQuote();
-        
+
         if ($quote === null) {
             return false;
         }
 
         $billingAddress = $quote->getBillingAddress();
-        
+
         return $billingAddress !== null &&
                $billingAddress->getCountryId() === 'NL' &&
                $this->methodConfigProvider->canShowFinancialWarning();
+    }
+
+    /**
+     * Get payment method title
+     *
+     * @return string
+     */
+    public function getPaymentMethodTitle(): string
+    {
+        return $this->methodConfigProvider->getTitle();
     }
 }
