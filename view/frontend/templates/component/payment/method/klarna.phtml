@@ -31,7 +31,7 @@ $genders = $magewire->getGenderList();
             <div class="flex">
                 <div class="ml-3">
                     <p class="text-sm text-yellow-800">
-                        <?= $escaper->escapeHtml(__('Je moet minimaal 18+ zijn om deze dienst te gebruiken. Als je op tijd betaalt, voorkom je extra kosten en zorg je dat je in de toekomst nogmaals gebruik kunt maken van de diensten van Achteraf betalen via Riverty. Door verder te gaan, accepteer je de Algemene Voorwaarden en bevestig je dat je de Privacyverklaring en Cookieverklaring hebt gelezen.')) ?>
+                        <?= $escaper->escapeHtml(__('Je moet minimaal 18+ zijn om deze dienst te gebruiken. Als je op tijd betaalt, voorkom je extra kosten en zorg je dat je in de toekomst nogmaals gebruik kunt maken van de diensten van Achteraf betalen via %1. Door verder te gaan, accepteer je de <a target="_blank" href="%2" class="underline">Algemene Voorwaarden</a> en bevestig je dat je de <a target="_blank" href="%3" class="underline">Privacyverklaring</a> en <a target="_blank" href="%4" class="underline">Cookieverklaring</a> hebt gelezen.', $magewire->getPaymentMethodTitle(), 'https://cdn.klarna.com/1.0/shared/content/legal/terms/EID/nl_nl/invoice', 'https://cdn.klarna.com/1.0/shared/content/legal/terms/0/nl_nl/privacy', 'https://cdn.klarna.com/1.0/shared/content/legal/terms/nl-NL/cookie_purchase'), ['a']) ?>
                     </p>
                 </div>
             </div>

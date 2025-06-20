@@ -99,6 +99,16 @@ class Klarna extends Component\Form implements EvaluationInterface
     }
 
     /**
+     * Get payment method title
+     *
+     * @return string
+     */
+    public function getPaymentMethodTitle(): string
+    {
+        return $this->methodConfigProvider->getTitle() ?: 'Klarna: Pay later';
+    }
+
+    /**
      * Show financial warning for Netherlands customers
      *
      * @return bool
@@ -106,13 +116,13 @@ class Klarna extends Component\Form implements EvaluationInterface
     public function showFinancialWarning(): bool
     {
         $quote = $this->getQuote();
-        
+
         if ($quote === null) {
             return false;
         }
 
         $billingAddress = $quote->getBillingAddress();
-        
+
         return $billingAddress !== null &&
                $billingAddress->getCountryId() === 'NL' &&
                $this->methodConfigProvider->canShowFinancialWarning();
