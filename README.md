@@ -14,7 +14,7 @@ Buckaroo has developed a cutting-edge Hyvä Checkout module as an extension for 
 <br>
 
 ## Requirements
-* [Buckaroo Magento 2 plugin](https://github.com/buckaroo-it/Magento2/releases) version 1.50.1 or higher
+* [Buckaroo Magento 2 plugin](https://github.com/buckaroo-it/Magento2/releases) version v2.0.0-RC2
 * Hyvä Checkout version 1.1.8 or higher
 <br>
 
