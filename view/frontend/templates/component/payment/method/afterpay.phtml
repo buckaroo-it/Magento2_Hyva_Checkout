@@ -113,7 +113,7 @@ use Magento\Framework\Escaper;
         <label for="buckaroo_afterpay_tos"><?= $escaper->escapeHtml(__('Terms and Conditions:')); ?></label>
         <div class="flex flex-row gap-x-2">
             <input class="mt-1" type="checkbox" wire:model.lazy="tos" id="buckaroo_afterpay_tos">
-            <a class="grow" href="<?= $escaper->escapeUrl($magewire->getTosLink()) ?>">
+            <a target="_blank" class="grow" href="<?= $escaper->escapeUrl($magewire->getTosLink()) ?>">
                 <?= $escaper->escapeHtml(
                     __('The general Terms and Conditions for the Riverty payment method apply. The privacy policy of Riverty can be found here.')
                 ) ?>
