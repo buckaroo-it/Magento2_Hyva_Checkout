@@ -45,6 +45,16 @@
     border-color: #374151 !important; /* Dark gray border instead of blue */
 }
 
+/* CVC Tooltip - Pure CSS Solution for CSP Compatibility */
+.cvc-tooltip-container:hover .cvc-tooltip {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.cvc-tooltip {
+    pointer-events: none;
+}
+
 /* Tailwind CSS Reset and Base Styles for Buckaroo Components */
 .buckaroo-hyva-components *,
 .buckaroo-hyva-components ::after,
