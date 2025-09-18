@@ -176,7 +176,7 @@ class PayByBank extends Component\Form implements EvaluationInterface
     public function displayAsSelect($storeId = null): bool
     {
         return $this->scopeConfig->getValue(
-            MethodPayByBank::XPATH_ACCOUNT_SELECTION_TYPE,
+            MethodPayByBank::XPATH_PAYBYBANK_SELECTION_TYPE,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $storeId
         ) === '2';
