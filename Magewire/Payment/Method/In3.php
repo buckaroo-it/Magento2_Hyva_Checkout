@@ -16,7 +16,6 @@ use Buckaroo\HyvaCheckout\Model\Validation\Rules\NlBeDePhone;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationInterface;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
-use Buckaroo\Magento2\Model\ConfigProvider\Method\CapayableIn3 as MethodConfigProvider;
 
 class In3 extends Component\Form implements EvaluationInterface
 {
@@ -41,13 +40,11 @@ class In3 extends Component\Form implements EvaluationInterface
 
     protected ScopeConfigInterface $scopeConfig;
 
-    protected MethodConfigProvider $methodConfigProvider;
 
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
-        CartRepositoryInterface $quoteRepository,
-        MethodConfigProvider $methodConfigProvider
+        CartRepositoryInterface $quoteRepository
     ) {
         if($validator->getValidator("nlBeDePhone") === null) {
             $validator->addValidator("nlBeDePhone", new NlBeDePhone());
@@ -57,7 +54,6 @@ class In3 extends Component\Form implements EvaluationInterface
 
         $this->sessionCheckout = $sessionCheckout;
         $this->quoteRepository = $quoteRepository;
-        $this->methodConfigProvider = $methodConfigProvider;
     }
 
     /**
@@ -103,7 +99,7 @@ class In3 extends Component\Form implements EvaluationInterface
 
         $this->validateOnly([$name => $rules], $messageArray, [$name => $value]);
     }
-
+    
     public function updatedPhone(string $value): ?string
     {
         $this->validateField('phone', $this->getPhoneRules(), $value);
@@ -198,8 +194,6 @@ class In3 extends Component\Form implements EvaluationInterface
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
         }
-
-        return null;
     }
 
     /**
@@ -286,35 +280,5 @@ class In3 extends Component\Form implements EvaluationInterface
         );
 
         return $validation->fails();
-    }
-
-    /**
-     * Show financial warning for Netherlands customers
-     *
-     * @return bool
-     */
-    public function showFinancialWarning(): bool
-    {
-        $quote = $this->getQuote();
-
-        if ($quote === null) {
-            return false;
-        }
-
-        $billingAddress = $quote->getBillingAddress();
-
-        return $billingAddress !== null &&
-               $billingAddress->getCountryId() === 'NL' &&
-               $this->methodConfigProvider->canShowFinancialWarning();
-    }
-
-    /**
-     * Get payment method title
-     *
-     * @return string
-     */
-    public function getPaymentMethodTitle(): string
-    {
-        return $this->methodConfigProvider->getTitle();
     }
 }
