@@ -33,6 +33,16 @@
                 </arguments>
             </block>
 
+            <block name="checkout.payment.method.buckaroo_magento2_klarnakp"
+                   as="buckaroo_magento2_klarnakp"
+                   template="Buckaroo_HyvaCheckout::component/payment/method/klarna.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Klarna
+                    </argument>
+                </arguments>
+            </block>
+
             <block name="checkout.payment.method.buckaroo_magento2_creditcard"
                    as="buckaroo_magento2_creditcard"
                    template="Buckaroo_HyvaCheckout::component/payment/method/creditcard.phtml">
@@ -178,9 +188,9 @@
             <block name="price-summary.total-segment.pretax_buckaroo_fee"
                    as="pretax_buckaroo_fee"
                    template="Buckaroo_HyvaCheckout::total-segments/empty.phtml"/>
-            <block name="price-summary.total-segment.buckaroo_fee_hyva"
+            <block name="price-summary.total-segment.buckaroo_fee"
                    class="Buckaroo\HyvaCheckout\Block\Totals\Fee"
-                   as="buckaroo_fee_hyva"
+                   as="buckaroo_fee"
                    template="Buckaroo_HyvaCheckout::total-segments/fee.phtml"/>
             <block name="price-summary.total-segment.buckaroo_already_paid"
                    class="Buckaroo\HyvaCheckout\Block\Totals\AlreadyPaid"

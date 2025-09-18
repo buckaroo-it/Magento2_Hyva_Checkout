@@ -2,9 +2,11 @@
 
 namespace Buckaroo\HyvaCheckout\Model\Magewire\Payment;
 
+use Buckaroo\Magento2\Api\Data\BuckarooResponseDataInterface;
+use Buckaroo\Transaction\Response\TransactionResponse;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote;
 use Composer\InstalledVersions;
-use Magento\Framework\Registry;
 use Magento\Quote\Api\CartManagementInterface;
 use Hyva\Checkout\Model\Magewire\Payment\AbstractPlaceOrderService;
 
@@ -12,18 +14,24 @@ class PlaceOrderService extends AbstractPlaceOrderService
 {
     private const COMPOSER_MODULE_NAME = 'buckaroo/magento2-hyva-checkout';
 
-    protected Registry $registry;
+    /**
+     * @var BuckarooResponseDataInterface
+     */
+    private BuckarooResponseDataInterface $buckarooResponseData;
+
+    /**
+     * @var TransactionResponse|null
+     */
+    private ?TransactionResponse $buckarooResponse = null;
 
     public function __construct(
         CartManagementInterface $cartManagement,
-        Registry $registry
+        BuckarooResponseDataInterface $buckarooResponseData,
     ) {
-        $this->registry = $registry;
+        $this->buckarooResponseData = $buckarooResponseData;
         parent::__construct($cartManagement);
     }
 
-
-    
     /**
      * @throws CouldNotSaveException
      */
@@ -45,40 +53,21 @@ class PlaceOrderService extends AbstractPlaceOrderService
      */
     public function getRedirectUrl(Quote $quote, ?int $orderId = null): string
     {
-        if($this->hasRedirect()) {
-            return $this->getResponse()->RequiredAction->RedirectURL;
+        if($this->getResponse()->hasRedirect()) {
+            return $this->getResponse()->getRedirectUrl();
         }
-        
-        // If payment was successful but no redirect is required (e.g., Riverty, direct payments)
-        if($this->isSuccessfulPayment()) {
-            return 'checkout/onepage/success';
-        }
-        
         return parent::getRedirectUrl($quote, $orderId);
     }
 
+    /**
+     * @return \Buckaroo\Transaction\Response\TransactionResponse|void
+     */
     private function getResponse()
     {
-        if ($this->registry && $this->registry->registry('buckaroo_response')) {
-            return $this->registry->registry('buckaroo_response')[0];
+        if (!$this->buckarooResponse) {
+            $this->buckarooResponse = $this->buckarooResponseData->getResponse();
         }
-    }
-
-    private function hasRedirect(): bool
-    {
-        $response = $this->getResponse();
-        return !empty($response->RequiredAction->RedirectURL);
-    }
-
-    private function isSuccessfulPayment(): bool
-    {
-        $response = $this->getResponse();
-        if (!$response) {
-            return false;
-        }
-        
-        // Check if payment was successful (status code 190)
-        return !empty($response->Status->Code->Code) && $response->Status->Code->Code == 190;
+        return $this->buckarooResponse;
     }
 
     /**
@@ -87,6 +76,7 @@ class PlaceOrderService extends AbstractPlaceOrderService
      * @param Quote $quote
      *
      * @return void
+     * @throws LocalizedException
      */
     private function setPlatformInfo(Quote $quote)
     {
