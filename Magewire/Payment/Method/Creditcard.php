@@ -14,7 +14,6 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationInterface;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
-use Buckaroo\Magento2\Model\ConfigProvider\Method\Ideal as MethodIdeal;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\Creditcard as MethodConfigProvider;
 
 class Creditcard extends Component\Form implements EvaluationInterface
@@ -106,9 +105,9 @@ class Creditcard extends Component\Form implements EvaluationInterface
     public function displayAsSelect($storeId = null): bool
     {
         return $this->scopeConfig->getValue(
-            MethodIdeal::XPATH_IDEAL_SELECTION_TYPE,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $storeId
-        ) === '2';
+                MethodConfigProvider::XPATH_SELECTION_TYPE,
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                $storeId
+            ) === '2';
     }
 }
