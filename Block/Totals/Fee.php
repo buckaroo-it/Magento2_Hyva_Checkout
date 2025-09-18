@@ -11,17 +11,15 @@ use Magento\Framework\View\Element\Template\Context;
 class Fee extends \Magento\Framework\View\Element\Template
 {
     protected PaymentFee $feeHelper;
-    protected SessionCheckout $sessionCheckout;
 
     public function __construct(
-        Context $context,
-        array $data,
-        PaymentFee $feeHelper,
-        SessionCheckout $sessionCheckout
-    ) {
+        Context         $context,
+        array           $data,
+        PaymentFee      $feeHelper,
+    )
+    {
         parent::__construct($context, $data);
         $this->feeHelper = $feeHelper;
-        $this->sessionCheckout = $sessionCheckout;
     }
 
     /**
@@ -36,22 +34,5 @@ class Fee extends \Magento\Framework\View\Element\Template
         } catch (\Throwable $th) {
             return 'Payment Fee';
         }
-    }
-
-    /**
-     * Get segment data for the fee
-     *
-     * @return array
-     */
-    public function getSegment(): array
-    {
-        $quote = $this->sessionCheckout->getQuote();
-        $fee = $quote->getBuckarooFee();
-
-        return [
-            'code' => 'buckaroo_fee',
-            'title' => $this->getTitle(),
-            'value' => $fee ? (float)$fee : 0
-        ];
     }
 }
