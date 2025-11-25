@@ -7,7 +7,7 @@
 
         <script src="Buckaroo_HyvaCheckout::js/buckaroo-components.js" />
         <script src="Buckaroo_HyvaCheckout::js/creditcards.js" />
-        <script src="Buckaroo_HyvaCheckout::js/applepay-component.js" />
+        <script src="Buckaroo_HyvaCheckout::js/applepay-csp.js" />
         <script src="Buckaroo_HyvaCheckout::js/hide-applepay.js" />
         <script src="Buckaroo_HyvaCheckout::js/update-position.js"/>
     </head>
