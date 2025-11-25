@@ -1,56 +1,44 @@
 /**
  * Alpine.js CSP-compatible component for Buckaroo Apple Pay
- * This component is registered globally and can be used in templates
+ * Follows the same pattern as other Buckaroo components (creditcards, giftcards, etc.)
  */
 document.addEventListener('alpine:init', () => {
-    Alpine.data('buckarooApplepay', () => ({
-        config: null,
-        isClientSide: false,
-        
-        init() {
-            // Get isClientSide from data attribute
-            this.isClientSide = this.$el.dataset.isClientSide === 'true';
+    Alpine.data('buckarooApplepay', () => {
+        return {
+            config: null,
+            canDisplay: false,
+            isClientSide: false,
             
-            // Get config from wire
-            if (this.$wire && typeof this.$wire.get === 'function') {
-                try {
-                    this.config = this.$wire.get('config');
-                } catch (e) {
-                    console.warn('Could not get config from $wire:', e);
-                }
-            }
-            // Initialize Apple Pay
-            this.initApplePay();
-        },
-        
-        initApplePay() {
-            if (!this.isClientSide) {
-                return;
-            }
-            
-            if (window.buckaroo && window.buckaroo.applePay) {
-                const jsSdkUrl = this.getJsSdkUrl();
-                if (!jsSdkUrl) {
-                    console.warn('Apple Pay SDK URL not found');
+            init() {
+                // Get isClientSide from data attribute
+                this.isClientSide = this.$el.dataset.isClientSide === 'true';
+                
+                if (!this.isClientSide) {
                     return;
                 }
                 
-                const applePayInstance = window.buckaroo.applePay(jsSdkUrl);
-                
-                // Merge applePay methods into this component
-                if (applePayInstance) {
-                    Object.assign(this, applePayInstance);
+                // Initialize using the same pattern as other components
+                if (window.buckaroo && window.buckaroo.applePay) {
+                    const jsSdkUrl = this.$el.dataset.jsSdkUrl || '';
+                    
+                    if (!jsSdkUrl) {
+                        console.warn('Apple Pay SDK URL not found');
+                        return;
+                    }
+                    
+                    // Get the applePay instance and merge it
+                    Object.assign(this, window.buckaroo.applePay(jsSdkUrl));
+                    
+                    // Explicitly preserve $wire reference (critical for Magewire communication)
+                    this.$wire = this.$wire;
+                    
+                    // Register the component
                     if (this.register && typeof this.register === 'function') {
                         this.register();
                     }
                 }
             }
-        },
-        
-        getJsSdkUrl() {
-            // Get the URL from the form's data attribute
-            return this.$el.dataset.jsSdkUrl || '';
-        }
-    }));
+        };
+    });
 });
 
