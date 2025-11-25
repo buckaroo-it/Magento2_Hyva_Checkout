@@ -814,6 +814,8 @@ function initializeBuckarooComponents() {
                 config: null,
                 canDisplay: false,
                 isClientSide: false,
+                applePayInstance: null,
+                
                 init() {
                     this.isClientSide = this.$el.dataset.isClientSide === 'true';
                     
@@ -826,15 +828,12 @@ function initializeBuckarooComponents() {
                         return;
                     }
                     
-                    // Merge Apple Pay methods into this component
-                    Object.assign(this, window.buckaroo.applePay(jsSdkUrl));
+                    // Store Apple Pay instance separately and inject $wire reference
+                    this.applePayInstance = window.buckaroo.applePay(jsSdkUrl);
+                    this.applePayInstance.$wire = this.$wire;
                     
-                    // Bind methods to maintain Alpine component context when called as callbacks
-                    // This is the standard pattern for preserving context in Alpine/Livewire
-                    if (this.register) this.register = this.register.bind(this);
-                    if (this.captureFunds) this.captureFunds = this.captureFunds.bind(this);
-                    if (this.beginPayment) this.beginPayment = this.beginPayment.bind(this);
-                    if (this.formatTransactionResponse) this.formatTransactionResponse = this.formatTransactionResponse.bind(this);
+                    // Copy properties and methods to this component for compatibility
+                    Object.assign(this, this.applePayInstance);
                     
                     // Initialize
                     if (this.register && typeof this.register === 'function') {
