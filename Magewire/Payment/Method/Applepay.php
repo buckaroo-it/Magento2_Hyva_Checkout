@@ -26,6 +26,10 @@ class Applepay extends Component\Form implements EvaluationInterface
     ];
 
     public ?string $encriptedData = null;
+    
+    public ?string $applepayTransaction = null;
+    
+    public ?string $billingContact = null;
 
     public array $config = [];
 
@@ -73,12 +77,17 @@ class Applepay extends Component\Form implements EvaluationInterface
     public function updateData(string $paymentData, string $billingContact)
     {
         try {
+            // Encode and set public properties
+            // Hyvä Checkout will automatically map these to $data['additional_data']
+            $this->applepayTransaction = base64_encode($paymentData);
+            $this->billingContact = $billingContact;
+            
+            // Also save to quote payment for fallback/persistence
             $quote = $this->sessionCheckout->getQuote();
-            $applePayEncoded = base64_encode($paymentData);
-            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $applePayEncoded);
+            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $this->applepayTransaction);
             $quote->getPayment()->setAdditionalInformation('billingContact', $billingContact);
-
             $this->quoteRepository->save($quote);
+            
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
         }
