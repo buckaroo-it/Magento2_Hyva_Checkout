@@ -4,12 +4,11 @@
 
 $isClientSide = (bool) $magewire->getIntegrationMode();
 ?>
-<div class="col-span-6">
-    <form 
-        x-data="buckarooApplepay" 
-        data-is-client-side="<?= $isClientSide ? 'true' : 'false' ?>"
-        data-js-sdk-url="<?= $escaper->escapeHtmlAttr($magewire->getJsSdkUrl()) ?>"
-        novalidate
-    >
-    </form>
-</div>
+<form 
+    wire:id="checkout.payment.method.buckaroo_magento2_applepay"
+    x-data="buckarooApplepay" 
+    data-is-client-side="<?= $isClientSide ? 'true' : 'false' ?>"
+    data-js-sdk-url="<?= $escaper->escapeHtmlAttr($magewire->getJsSdkUrl()) ?>"
+    novalidate
+>
+</form>
