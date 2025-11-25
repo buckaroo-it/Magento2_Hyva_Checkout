@@ -841,15 +841,26 @@ function initializeBuckarooComponents() {
             // Alpine component methods that delegate to the Apple Pay instance
             // These methods run in the Alpine context where $wire is available
             async register() {
-                if (!this.applePayInstance) return;
+                console.log('[Apple Pay] register called');
+                console.log('[Apple Pay] applePayInstance:', !!this.applePayInstance);
+                console.log('[Apple Pay] $wire:', !!this.$wire);
+                
+                if (!this.applePayInstance) {
+                    console.error('[Apple Pay] applePayInstance not available');
+                    return;
+                }
                 
                 this.config = this.$wire.get('config');
+                console.log('[Apple Pay] config:', this.config);
+                
                 window.merchantIdentifier = this.config.guid;
                 
                 await this.applePayInstance.loadSdk();
                 this.canDisplay = await BuckarooApplePay.checkPaySupport(this.config.guid);
+                console.log('[Apple Pay] canDisplay:', this.canDisplay);
                 
                 window.buckarooTask = async () => {
+                    console.log('[Apple Pay] buckarooTask triggered');
                     if (this.canDisplay) {
                         await this.beginPayment();
                     }
@@ -857,8 +868,18 @@ function initializeBuckarooComponents() {
             },
             
             async beginPayment() {
+                console.log('[Apple Pay] beginPayment called');
+                console.log('[Apple Pay] config:', this.config);
+                console.log('[Apple Pay] $wire in beginPayment:', !!this.$wire);
+                
                 const promise = new Promise((resolve) => {
                     this.resolve = resolve;
+                    
+                    const totals = this.$wire.get('totals');
+                    const grandTotal = this.$wire.get('grandTotal');
+                    
+                    console.log('[Apple Pay] totals:', totals);
+                    console.log('[Apple Pay] grandTotal:', grandTotal);
                     
                     const config = new BuckarooApplePay.PayOptions(
                         this.config.storeName,
@@ -866,8 +887,8 @@ function initializeBuckarooComponents() {
                         this.config.currency,
                         this.config.cultureCode,
                         this.config.guid,
-                        this.$wire.get('totals'),
-                        this.$wire.get('grandTotal'),
+                        totals,
+                        grandTotal,
                         'shipping',
                         [],
                         (payment) => this.captureFunds(payment),
@@ -876,18 +897,32 @@ function initializeBuckarooComponents() {
                         ["name", "postalAddress", "phone"],
                         ["name", "postalAddress", "phone"]
                     );
+                    
+                    console.log('[Apple Pay] Starting Apple Pay session...');
                     new BuckarooApplePay.PayPayment(config).beginPayment();
                 });
                 await promise;
             },
             
             async captureFunds(payment) {
+                console.log('[Apple Pay] captureFunds called');
+                console.log('[Apple Pay] payment object:', payment);
+                console.log('[Apple Pay] $wire available:', !!this.$wire);
+                console.log('[Apple Pay] applePayInstance available:', !!this.applePayInstance);
+                
                 const billingContact = payment && payment.billingContact
                     ? JSON.stringify(payment.billingContact)
                     : '';
                 
+                console.log('[Apple Pay] billingContact:', billingContact);
+                
                 const formattedData = await this.applePayInstance.formatTransactionResponse(payment);
+                console.log('[Apple Pay] formattedData:', formattedData);
+                
+                console.log('[Apple Pay] Calling $wire.updateData...');
                 await this.$wire.updateData(formattedData, billingContact);
+                console.log('[Apple Pay] $wire.updateData completed');
+                
                 this.resolve();
                 
                 return {
