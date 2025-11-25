@@ -809,39 +809,97 @@ function initializeBuckarooComponents() {
             };
         });
 
-        Alpine.data('buckarooApplepay', () => {
-            return {
-                config: null,
-                canDisplay: false,
-                isClientSide: false,
-                applePayInstance: null,
+        Alpine.data('buckarooApplepay', () => ({
+            config: null,
+            canDisplay: false,
+            isClientSide: false,
+            applePayInstance: null,
+            
+            init() {
+                this.isClientSide = this.$el.dataset.isClientSide === 'true';
                 
-                init() {
-                    this.isClientSide = this.$el.dataset.isClientSide === 'true';
-                    
-                    if (!this.isClientSide || !window.buckaroo || !window.buckaroo.applePay) {
-                        return;
-                    }
-                    
-                    const jsSdkUrl = this.$el.dataset.jsSdkUrl || '';
-                    if (!jsSdkUrl) {
-                        return;
-                    }
-                    
-                    // Store Apple Pay instance separately and inject $wire reference
-                    this.applePayInstance = window.buckaroo.applePay(jsSdkUrl);
-                    this.applePayInstance.$wire = this.$wire;
-                    
-                    // Copy properties and methods to this component for compatibility
-                    Object.assign(this, this.applePayInstance);
-                    
-                    // Initialize
-                    if (this.register && typeof this.register === 'function') {
-                        this.register();
-                    }
+                if (!this.isClientSide || !window.buckaroo || !window.buckaroo.applePay) {
+                    return;
                 }
-            };
-        });
+                
+                const jsSdkUrl = this.$el.dataset.jsSdkUrl || '';
+                if (!jsSdkUrl) {
+                    return;
+                }
+                
+                // Create Apple Pay instance
+                this.applePayInstance = window.buckaroo.applePay(jsSdkUrl);
+                
+                // Copy only properties (not methods) for compatibility
+                this.config = this.applePayInstance.config;
+                this.canDisplay = this.applePayInstance.canDisplay;
+                
+                // Call our own register method which delegates to the instance
+                this.register();
+            },
+            
+            // Alpine component methods that delegate to the Apple Pay instance
+            // These methods run in the Alpine context where $wire is available
+            async register() {
+                if (!this.applePayInstance) return;
+                
+                this.config = this.$wire.get('config');
+                window.merchantIdentifier = this.config.guid;
+                
+                await this.applePayInstance.loadSdk();
+                this.canDisplay = await BuckarooApplePay.checkPaySupport(this.config.guid);
+                
+                window.buckarooTask = async () => {
+                    if (this.canDisplay) {
+                        await this.beginPayment();
+                    }
+                };
+            },
+            
+            async beginPayment() {
+                const promise = new Promise((resolve) => {
+                    this.resolve = resolve;
+                    
+                    const config = new BuckarooApplePay.PayOptions(
+                        this.config.storeName,
+                        this.config.country,
+                        this.config.currency,
+                        this.config.cultureCode,
+                        this.config.guid,
+                        this.$wire.get('totals'),
+                        this.$wire.get('grandTotal'),
+                        'shipping',
+                        [],
+                        (payment) => this.captureFunds(payment),
+                        null,
+                        null,
+                        ["name", "postalAddress", "phone"],
+                        ["name", "postalAddress", "phone"]
+                    );
+                    new BuckarooApplePay.PayPayment(config).beginPayment();
+                });
+                await promise;
+            },
+            
+            async captureFunds(payment) {
+                const billingContact = payment && payment.billingContact
+                    ? JSON.stringify(payment.billingContact)
+                    : '';
+                
+                const formattedData = await this.applePayInstance.formatTransactionResponse(payment);
+                await this.$wire.updateData(formattedData, billingContact);
+                this.resolve();
+                
+                return {
+                    status: window.ApplePaySession.STATUS_SUCCESS,
+                    errors: [],
+                };
+            },
+            
+            async submit() {
+                await hyvaCheckout.order.place();
+            }
+        }));
     }
 }
 
