@@ -815,42 +815,30 @@ function initializeBuckarooComponents() {
                 canDisplay: false,
                 isClientSide: false,
                 init() {
-                    console.log('[Buckaroo Apple Pay] Initializing...');
-                    
-                    // Read isClientSide from data attribute
                     this.isClientSide = this.$el.dataset.isClientSide === 'true';
                     
-                    console.log('[Buckaroo Apple Pay] isClientSide:', this.isClientSide);
-                    console.log('[Buckaroo Apple Pay] $wire available:', !!this.$wire);
-                    
-                    if (!this.isClientSide) {
-                        console.log('[Buckaroo Apple Pay] Server-side mode, skipping');
+                    if (!this.isClientSide || !window.buckaroo || !window.buckaroo.applePay) {
                         return;
                     }
                     
-                    if (window.buckaroo && window.buckaroo.applePay) {
-                        const jsSdkUrl = this.$el.dataset.jsSdkUrl || '';
-                        
-                        if (!jsSdkUrl) {
-                            console.error('[Buckaroo Apple Pay] SDK URL not found');
-                            return;
-                        }
-                        
-                        console.log('[Buckaroo Apple Pay] SDK URL:', jsSdkUrl);
-                        console.log('[Buckaroo Apple Pay] Merging Apple Pay instance');
-                        
-                        Object.assign(this, window.buckaroo.applePay(jsSdkUrl));
-                        this.$wire = this.$wire;
-                        
-                        console.log('[Buckaroo Apple Pay] After merge - $wire:', !!this.$wire);
-                        console.log('[Buckaroo Apple Pay] After merge - register function:', typeof this.register);
-                        
-                        if (this.register && typeof this.register === 'function') {
-                            console.log('[Buckaroo Apple Pay] Calling register()');
-                            this.register();
-                        }
-                    } else {
-                        console.error('[Buckaroo Apple Pay] window.buckaroo.applePay not available');
+                    const jsSdkUrl = this.$el.dataset.jsSdkUrl || '';
+                    if (!jsSdkUrl) {
+                        return;
+                    }
+                    
+                    // Merge Apple Pay methods into this component
+                    Object.assign(this, window.buckaroo.applePay(jsSdkUrl));
+                    
+                    // Bind methods to maintain Alpine component context when called as callbacks
+                    // This is the standard pattern for preserving context in Alpine/Livewire
+                    if (this.register) this.register = this.register.bind(this);
+                    if (this.captureFunds) this.captureFunds = this.captureFunds.bind(this);
+                    if (this.beginPayment) this.beginPayment = this.beginPayment.bind(this);
+                    if (this.formatTransactionResponse) this.formatTransactionResponse = this.formatTransactionResponse.bind(this);
+                    
+                    // Initialize
+                    if (this.register && typeof this.register === 'function') {
+                        this.register();
                     }
                 }
             };
