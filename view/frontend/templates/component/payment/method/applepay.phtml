@@ -6,7 +6,8 @@ $isClientSide = (bool) $magewire->getIntegrationMode();
 ?>
 <form
     wire:id="checkout.payment.method.buckaroo_magento2_applepay"
-    x-data="buckarooApplepay($wire, <?= $isClientSide ? 'true' : 'false' ?>)"
+    x-data="buckarooApplepay"
+    data-is-client-side="<?= $isClientSide ? 'true' : 'false' ?>"
     data-js-sdk-url="<?= $escaper->escapeHtmlAttr($magewire->getJsSdkUrl()) ?>"
     novalidate
 >

@@ -3,12 +3,14 @@
  * This component is registered globally and can be used in templates
  */
 document.addEventListener('alpine:init', () => {
-    Alpine.data('buckarooApplepay', (wireInstance, isClientSide) => ({
+    Alpine.data('buckarooApplepay', () => ({
         config: null,
-        $wire: wireInstance,
-        isClientSide: isClientSide,
+        isClientSide: false,
         
         init() {
+            // Get isClientSide from data attribute
+            this.isClientSide = this.$el.dataset.isClientSide === 'true';
+            
             // Get config from wire
             if (this.$wire && typeof this.$wire.get === 'function') {
                 try {
