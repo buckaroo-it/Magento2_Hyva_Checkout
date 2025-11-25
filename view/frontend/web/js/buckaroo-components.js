@@ -808,6 +808,38 @@ function initializeBuckarooComponents() {
                 }
             };
         });
+
+        Alpine.data('buckarooApplepay', () => {
+            return {
+                config: null,
+                canDisplay: false,
+                isClientSide: false,
+                init() {
+                    // Read isClientSide from data attribute
+                    this.isClientSide = this.$el.dataset.isClientSide === 'true';
+                    
+                    if (!this.isClientSide) {
+                        return;
+                    }
+                    
+                    if (window.buckaroo && window.buckaroo.applePay) {
+                        const jsSdkUrl = this.$el.dataset.jsSdkUrl || '';
+                        
+                        if (!jsSdkUrl) {
+                            console.warn('[Buckaroo Apple Pay] SDK URL not found');
+                            return;
+                        }
+                        
+                        Object.assign(this, window.buckaroo.applePay(jsSdkUrl));
+                        this.$wire = this.$wire;
+                        
+                        if (this.register && typeof this.register === 'function') {
+                            this.register();
+                        }
+                    }
+                }
+            };
+        });
     }
 }
 
