@@ -27,9 +27,9 @@ class Applepay extends Component\Form implements EvaluationInterface
     ];
 
     public ?string $encriptedData = null;
-    
+
     public ?string $applepayTransaction = null;
-    
+
     public ?string $billingContact = null;
 
     public array $config = [];
@@ -82,11 +82,9 @@ class Applepay extends Component\Form implements EvaluationInterface
     public function updateData(string $paymentData, string $billingContact)
     {
         try {
-            // Set public properties - Hyvä Checkout will automatically map these to $data['additional_data']
-            // Note: Don't encode here - assignData() will handle encoding
             $this->applepayTransaction = $paymentData;
             $this->billingContact = $billingContact;
-            
+
         } catch (LocalizedException $exception) {
             $this->logger->addError('[Apple Pay] Failed to update payment data: ' . $exception->getMessage());
             $this->dispatchErrorMessage($exception->getMessage());
@@ -95,17 +93,6 @@ class Applepay extends Component\Form implements EvaluationInterface
     }
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
-        try {
-            // For Apple Pay, we don't strictly validate payment data here because:
-            // 1. In SDK mode (device supports Apple Pay): Data comes via $wire.updateData() before order placement
-            // 2. In Redirect mode (device doesn't support Apple Pay): Payment happens at Buckaroo, data comes via push
-            // The actual validation happens in the core payment method (Model/Method/Applepay.php)
-            
-        } catch (LocalizedException $exception) {
-            $this->logger->addError('[Apple Pay] Evaluation failed: ' . $exception->getMessage());
-            $this->dispatchErrorMessage($exception->getMessage());
-        }
-
         return $resultFactory->createSuccess();
     }
 
