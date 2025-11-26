@@ -15,6 +15,7 @@ use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\Applepay as MethodConfigProvider;
 use Magento\Quote\Model\Quote;
+use Buckaroo\Magento2\Logging\Log as BuckarooLog;
 
 class Applepay extends Component\Form implements EvaluationInterface
 {
@@ -45,12 +46,15 @@ class Applepay extends Component\Form implements EvaluationInterface
 
     protected Repository $assetRepo;
 
+    protected BuckarooLog $logger;
+
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
         CartRepositoryInterface $quoteRepository,
         MethodConfigProvider $methodConfigProvider,
         Repository $assetRepo,
+        BuckarooLog $logger
     ) {
         parent::__construct($validator);
 
@@ -58,6 +62,7 @@ class Applepay extends Component\Form implements EvaluationInterface
         $this->quoteRepository = $quoteRepository;
         $this->methodConfigProvider = $methodConfigProvider;
         $this->assetRepo = $assetRepo;
+        $this->logger = $logger;
     }
 
     public function mount(): void
@@ -77,18 +82,13 @@ class Applepay extends Component\Form implements EvaluationInterface
     public function updateData(string $paymentData, string $billingContact)
     {
         try {
-            // Encode and set public properties
-            // Hyvä Checkout will automatically map these to $data['additional_data']
-            $this->applepayTransaction = base64_encode($paymentData);
+            // Set public properties - Hyvä Checkout will automatically map these to $data['additional_data']
+            // Note: Don't encode here - assignData() will handle encoding
+            $this->applepayTransaction = $paymentData;
             $this->billingContact = $billingContact;
             
-            // Also save to quote payment for fallback/persistence
-            $quote = $this->sessionCheckout->getQuote();
-            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $this->applepayTransaction);
-            $quote->getPayment()->setAdditionalInformation('billingContact', $billingContact);
-            $this->quoteRepository->save($quote);
-            
         } catch (LocalizedException $exception) {
+            $this->logger->addError('[Apple Pay] Failed to update payment data: ' . $exception->getMessage());
             $this->dispatchErrorMessage($exception->getMessage());
         }
         return $paymentData;
@@ -96,42 +96,26 @@ class Applepay extends Component\Form implements EvaluationInterface
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
         try {
-            $quote = $this->sessionCheckout->getQuote();
-            $integrationMode = $this->methodConfigProvider->getIntegrationMode();
-
-            if ($integrationMode) {
-                $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
-
-                if (empty($paymentData)) {
-                    return $resultFactory->createErrorMessageEvent()
-                        ->withCustomEvent('payment:method:error')
-                        ->withMessage('Payment data is missing');
-                }
-            }
+            // For Apple Pay, we don't strictly validate payment data here because:
+            // 1. In SDK mode (device supports Apple Pay): Data comes via $wire.updateData() before order placement
+            // 2. In Redirect mode (device doesn't support Apple Pay): Payment happens at Buckaroo, data comes via push
+            // The actual validation happens in the core payment method (Model/Method/Applepay.php)
+            
         } catch (LocalizedException $exception) {
+            $this->logger->addError('[Apple Pay] Evaluation failed: ' . $exception->getMessage());
             $this->dispatchErrorMessage($exception->getMessage());
         }
 
         return $resultFactory->createSuccess();
     }
 
-    public function getIntegrationMode(): bool
-    {
-        try {
-            $cfg  = $this->getJsonConfig();
-            return (bool) ($cfg['integrationMode']);
-        } catch (LocalizedException $e) {
-            $this->dispatchErrorMessage($e->getMessage());
-        }
-        return false;
-    }
-
-    public function getJsSdkUrl()
+    public function getJsSdkUrl(): string
     {
         try {
             return $this->assetRepo->getUrl('Buckaroo_HyvaCheckout::js/applepay.js');
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
+            return '';
         }
     }
 
