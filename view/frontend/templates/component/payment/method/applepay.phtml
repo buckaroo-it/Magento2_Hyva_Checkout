@@ -2,22 +2,16 @@
 /** @var \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Applepay $magewire */
 /** @var Magento\Framework\Escaper $escaper */
 
-$isClientSide = (bool) $magewire->getIntegrationMode();
+$config = $magewire->config;
+$isClientSide = isset($config['integrationMode']) ? (bool) $config['integrationMode'] : false;
 ?>
 <form
+    id="buckaroo-applepay-payment-form"
     wire:id="checkout.payment.method.buckaroo_magento2_applepay"
-    x-data="{
-        config: $wire.get('config'),
-        $wire: $wire,
-        isClientSide: <?= $isClientSide ? 'true' : 'false' ?>,
-        initApplePay() {
-            if (this.isClientSide && window.buckaroo && window.buckaroo.applePay) {
-              Object.assign(this, window.buckaroo.applePay('<?= $magewire->getJsSdkUrl() ?>'));
-              if (this.register) this.register();
-            }
-        }
-    }"
-    x-init="initApplePay()"
+    x-data="buckarooApplepay"
+    data-is-client-side="<?= $isClientSide ? 'true' : 'false' ?>"
+    data-js-sdk-url="<?= $escaper->escapeHtmlAttr($magewire->getJsSdkUrl()) ?>"
+    data-payment-code="buckaroo_magento2_applepay"
     novalidate
 >
 </form>

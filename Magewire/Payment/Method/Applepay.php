@@ -15,6 +15,7 @@ use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\Applepay as MethodConfigProvider;
 use Magento\Quote\Model\Quote;
+use Buckaroo\Magento2\Logging\Log as BuckarooLog;
 
 class Applepay extends Component\Form implements EvaluationInterface
 {
@@ -26,6 +27,10 @@ class Applepay extends Component\Form implements EvaluationInterface
     ];
 
     public ?string $encriptedData = null;
+
+    public ?string $applepayTransaction = null;
+
+    public ?string $billingContact = null;
 
     public array $config = [];
 
@@ -41,12 +46,15 @@ class Applepay extends Component\Form implements EvaluationInterface
 
     protected Repository $assetRepo;
 
+    protected BuckarooLog $logger;
+
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
         CartRepositoryInterface $quoteRepository,
         MethodConfigProvider $methodConfigProvider,
         Repository $assetRepo,
+        BuckarooLog $logger
     ) {
         parent::__construct($validator);
 
@@ -54,6 +62,7 @@ class Applepay extends Component\Form implements EvaluationInterface
         $this->quoteRepository = $quoteRepository;
         $this->methodConfigProvider = $methodConfigProvider;
         $this->assetRepo = $assetRepo;
+        $this->logger = $logger;
     }
 
     public function mount(): void
@@ -73,56 +82,27 @@ class Applepay extends Component\Form implements EvaluationInterface
     public function updateData(string $paymentData, string $billingContact)
     {
         try {
-            $quote = $this->sessionCheckout->getQuote();
-            $applePayEncoded = base64_encode($paymentData);
-            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $applePayEncoded);
-            $quote->getPayment()->setAdditionalInformation('billingContact', $billingContact);
+            $this->applepayTransaction = $paymentData;
+            $this->billingContact = $billingContact;
 
-            $this->quoteRepository->save($quote);
         } catch (LocalizedException $exception) {
+            $this->logger->addError('[Apple Pay] Failed to update payment data: ' . $exception->getMessage());
             $this->dispatchErrorMessage($exception->getMessage());
         }
         return $paymentData;
     }
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
-        try {
-            $quote = $this->sessionCheckout->getQuote();
-            $integrationMode = $this->methodConfigProvider->getIntegrationMode();
-
-            if ($integrationMode) {
-                $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
-
-                if (empty($paymentData)) {
-                    return $resultFactory->createErrorMessageEvent()
-                        ->withCustomEvent('payment:method:error')
-                        ->withMessage('Payment data is missing');
-                }
-            }
-        } catch (LocalizedException $exception) {
-            $this->dispatchErrorMessage($exception->getMessage());
-        }
-
         return $resultFactory->createSuccess();
     }
 
-    public function getIntegrationMode(): bool
-    {
-        try {
-            $cfg  = $this->getJsonConfig();
-            return (bool) ($cfg['integrationMode']);
-        } catch (LocalizedException $e) {
-            $this->dispatchErrorMessage($e->getMessage());
-        }
-        return false;
-    }
-
-    public function getJsSdkUrl()
+    public function getJsSdkUrl(): string
     {
         try {
             return $this->assetRepo->getUrl('Buckaroo_HyvaCheckout::js/applepay.js');
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
+            return '';
         }
     }
 

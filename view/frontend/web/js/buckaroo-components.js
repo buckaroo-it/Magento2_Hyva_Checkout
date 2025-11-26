@@ -120,15 +120,15 @@ function initializeBuckarooComponents() {
         showTemporaryBanner(message, type = 'success') {
             const banner = document.createElement('div');
             const isSuccess = type === 'success';
-            
+
             banner.className = 'buckaroo-notification';
             banner.setAttribute('data-type', type);
-            
+
             banner.innerHTML = `
                 <div class="buckaroo-notification-content">
                     <div class="buckaroo-notification-message">
                         <svg class="buckaroo-notification-icon" viewBox="0 0 20 20">
-                            ${isSuccess 
+                            ${isSuccess
                                 ? '<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>'
                                 : '<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>'
                             }
@@ -138,14 +138,14 @@ function initializeBuckarooComponents() {
                     <button class="buckaroo-notification-close" onclick="this.closest('.buckaroo-notification').remove()">×</button>
                 </div>
             `;
-            
+
             document.body.appendChild(banner);
-            
+
             // Animate in
             setTimeout(() => {
                 banner.classList.add('buckaroo-notification-show');
             }, 10);
-            
+
             // Auto-remove after 5 seconds
             setTimeout(() => {
                 if (banner.parentElement) {
@@ -310,26 +310,26 @@ function initializeBuckarooComponents() {
                 pin: '',
                 cardNumber: '',
                 canSubmit:false,
-                
+
                 updateCard(event) {
                     this.card = event.target.value;
                     this.onChange();
                 },
-                
+
                 updateCardNumber(event) {
                     this.cardNumber = event.target.value;
                     this.onChange();
                 },
-                
+
                 updatePin(event) {
                     this.pin = event.target.value;
                     this.onChange();
                 },
-                
+
                 onChange() {
                     // Called by template on change events
                 },
-                
+
                 async formValid() {
                     try {
                         await this.validate();
@@ -338,15 +338,15 @@ function initializeBuckarooComponents() {
                         return false;
                     }
                 },
-                
+
                 async submit() {
                     if(!await this.formValid()) {
                         return;
                     }
-                    
+
                     let responseHandled = false;
                     const responsePromise = this.waitForGiftcardResponse(5000);
-                    
+
                     try {
                         if (this.$wire && typeof this.$wire.applyGiftcard === 'function') {
                             const wireCallPromise = Promise.race([
@@ -355,7 +355,7 @@ function initializeBuckarooComponents() {
                                     setTimeout(() => reject(new Error('Wire call timeout')), 3000);
                                 })
                             ]);
-                            
+
                             try {
                                 await wireCallPromise;
                                 try {
@@ -381,7 +381,7 @@ function initializeBuckarooComponents() {
                                 }
                             }
                         }
-                        
+
                         if (!responseHandled) {
                             if (this.$wire && typeof this.$wire.call === 'function') {
                                 try {
@@ -393,13 +393,13 @@ function initializeBuckarooComponents() {
                                     console.warn('Giftcard call error:', callError);
                                 }
                             }
-                            
+
                             if (!responseHandled) {
                                 await this.submitViaAjax();
                                 responseHandled = true;
                             }
                         }
-                        
+
                     } catch (error) {
                         console.warn('Giftcard submission error:', error);
                         if (!responseHandled) {
@@ -411,7 +411,7 @@ function initializeBuckarooComponents() {
                         }
                     }
                 },
-                
+
                 displayGenericSuccess() {
                     if (typeof hyvaCheckout !== 'undefined' && hyvaCheckout.order && hyvaCheckout.order.refreshTotals) {
                         try {
@@ -420,36 +420,36 @@ function initializeBuckarooComponents() {
                             // Silent fail
                         }
                     }
-                    
+
                     const message = 'Giftcard has been applied successfully! The order total will be updated.';
                     window.buckaroo.showTemporaryBanner(message, 'success');
-                    
+
                     setTimeout(() => {
                         window.location.reload();
                     }, 3000);
                 },
-                
+
                 async waitForGiftcardResponse(timeout = 3000) {
                     return new Promise((resolve, reject) => {
                         let responseReceived = false;
-                        
+
                         const handleResponse = (response) => {
                             if (responseReceived) return;
                             responseReceived = true;
                             this.handleGiftcardResponse(response);
                             resolve(response);
                         };
-                        
+
                         const eventHandler = (event) => {
                             handleResponse(event.detail);
                         };
-                        
+
                         window.addEventListener('buckaroo-giftcard-response', eventHandler, { once: true });
-                        
+
                         if (this.$wire && this.$wire.on) {
                             this.$wire.on('giftcard_response', handleResponse);
                         }
-                        
+
                         setTimeout(() => {
                             if (!responseReceived) {
                                 window.removeEventListener('buckaroo-giftcard-response', eventHandler);
@@ -458,7 +458,7 @@ function initializeBuckarooComponents() {
                         }, timeout);
                     });
                 },
-                
+
                 handleGiftcardResponse(response) {
                     if (response.error) {
                         this.displayError(response.error);
@@ -474,7 +474,7 @@ function initializeBuckarooComponents() {
                         this.displaySuccess(response);
                     }
                 },
-                
+
                 async submitViaAjax() {
                     const response = await fetch('/buckaroo/checkout/giftcard', {
                         method: 'POST',
@@ -488,13 +488,13 @@ function initializeBuckarooComponents() {
                             pin: this.pin
                         })
                     });
-                    
+
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
-                    
+
                     const result = await response.json();
-                    
+
                     if (result.error) {
                         this.displayError(result.error);
                     } else if(result.remainder_amount === undefined) {
@@ -506,32 +506,32 @@ function initializeBuckarooComponents() {
                         this.displaySuccess(result);
                     }
                 },
-                
+
                 displaySuccess(response) {
                     window.buckaroo.showTemporaryBanner(response.message, 'success');
-                    
+
                     // Refresh page to show updated totals after successful giftcard application
                     setTimeout(() => {
                         window.location.reload();
                     }, 3000);
                 },
-                
+
                 displayError(message) {
                     window.buckaroo.showTemporaryBanner(message, 'error');
                 },
-                
+
                 listenToSubmit() {
                     if (this.$wire && this.$wire.on) {
                         this.$wire.on('giftcard_response', (response) => {
                             this.handleGiftcardResponse(response);
                         });
                     }
-                    
+
                     window.addEventListener('buckaroo-giftcard-response', (event) => {
                         this.handleGiftcardResponse(event.detail);
                     });
                 },
-                
+
                 register() {
                     this.listenToSubmit();
                     window.buckarooTask = async () => {
@@ -549,26 +549,26 @@ function initializeBuckarooComponents() {
                 cardHolder: '',
                 cardNumber: '',
                 cardExpiration: '',
-                
+
                 updateCardHolder(event) {
                     this.cardHolder = event.target.value;
                     this.onChange();
                 },
-                
+
                 updateCardNumber(event) {
                     this.cardNumber = event.target.value;
                     this.onChange();
                 },
-                
+
                 updateCardExpiration(event) {
                     this.cardExpiration = event.target.value;
                     this.onChange();
                 },
-                
+
                 onChange() {
                     // Called by template on change events
                 },
-                
+
                 async saveEncryptedData() {
                     let parts = this.cardExpiration.split('/');
                     const year = parts[1];
@@ -586,7 +586,7 @@ function initializeBuckarooComponents() {
                     })
                     return await enc;
                 },
-                
+
                 register() {
                     window.addEventListener('buckaroo-cse-load', () => {
                         this.cseHasLoaded = true;
@@ -602,7 +602,7 @@ function initializeBuckarooComponents() {
                             return false;
                         }
                     }
-                    
+
                     window.buckarooTask = async () => {
                         const isValid = await formValid();
                         if (this.cseHasLoaded && isValid) {
@@ -618,16 +618,16 @@ function initializeBuckarooComponents() {
             return Object.assign((typeof hyva !== 'undefined' ? hyva.formValidation($el) : {}), {
                 code:'',
                 canSubmit:false,
-                
+
                 updateCode(event) {
                     this.code = event.target.value;
                     this.onChange();
                 },
-                
+
                 onChange() {
                     // Called by template on change events
                 },
-                
+
                 async formValid() {
                     try {
                         await this.validate();
@@ -654,7 +654,7 @@ function initializeBuckarooComponents() {
                         await fetch(ajaxUrl, params)
                     ).json();
                     await this.$wire.refreshTotals();
-                    
+
                     if (response.error) {
                         this.displayError(response.error);
                     } else if(response.remainder_amount === undefined) {
@@ -694,17 +694,17 @@ function initializeBuckarooComponents() {
 
     // Register Alpine.data components
     if (typeof Alpine !== 'undefined' && Alpine.data) {
-        
+
         // CSP-friendly date handler for date of birth fields
         Alpine.data('buckarooDateHandler', () => ({
             value: '',
-            
+
             init() {
                 // Get initial value from data attribute
                 const initialValue = this.$el.getAttribute('data-initial-value');
                 this.value = initialValue || '';
             },
-            
+
             handleDateChange(event) {
                 if (event && event.target) {
                     this.value = event.target.value;
@@ -715,7 +715,7 @@ function initializeBuckarooComponents() {
                 }
             }
         }));
-        
+
         Alpine.data('buckarooCreditcards', () => {
             return {
                 oauthTokenError: '',
@@ -808,6 +808,176 @@ function initializeBuckarooComponents() {
                 }
             };
         });
+
+        Alpine.data('buckarooApplepay', () => ({
+            config: null,
+            canDisplay: false,
+            isClientSide: false,
+            isAvailable: true,
+            applePayInstance: null,
+            resolve: null,
+            reject: null,
+
+            init() {
+                this.isClientSide = this.$el.dataset.isClientSide === 'true';
+
+                if (!this.isClientSide) {
+                    this.isAvailable = true;
+                    return;
+                }
+
+                if (!window.buckaroo || !window.buckaroo.applePay) {
+                    console.warn('[Apple Pay] SDK not loaded - hiding payment method');
+                    this.isAvailable = false;
+                    return;
+                }
+
+                const jsSdkUrl = this.$el.dataset.jsSdkUrl || '';
+                if (!jsSdkUrl) {
+                    console.error('[Apple Pay] No SDK URL provided');
+                    this.isAvailable = false;
+                    return;
+                }
+
+                // Create Apple Pay instance
+                this.applePayInstance = window.buckaroo.applePay(jsSdkUrl);
+
+                // Copy only properties (not methods) for compatibility
+                this.config = this.applePayInstance.config;
+                this.canDisplay = this.applePayInstance.canDisplay;
+
+                // Call our own register method which delegates to the instance
+                this.register();
+            },
+
+            // Alpine component methods that delegate to the Apple Pay instance
+            // These methods run in the Alpine context where $wire is available
+            async register() {
+                if (!this.applePayInstance) {
+                    console.error('[Apple Pay] Instance not available');
+                    this.isAvailable = false;
+                    this.hidePaymentMethod();
+                    return;
+                }
+
+                this.config = this.$wire.get('config');
+                window.merchantIdentifier = this.config.guid;
+
+                await this.applePayInstance.loadSdk();
+
+                // Check Apple Pay availability
+                this.canDisplay = await BuckarooApplePay.checkPaySupport(this.config.guid);
+                this.isAvailable = this.canDisplay;
+
+                if (!this.canDisplay) {
+                    this.hidePaymentMethod();
+                }
+
+                window.buckarooTask = async () => {
+                    if (this.canDisplay) {
+                        await this.beginPayment();
+                    }
+                };
+            },
+
+            hidePaymentMethod() {
+                // Use specific payment code to target ONLY Buckaroo Apple Pay
+                const paymentCode = this.$el.dataset.paymentCode || 'buckaroo_magento2_applepay';
+                
+                // Find the radio button with exact payment code match
+                const radio = document.querySelector(`input[type="radio"][value="${paymentCode}"]`);
+                
+                if (radio) {
+                    // Find the closest payment method wrapper (label or parent container)
+                    const paymentWrapper = radio.closest('li, div.payment-method, label');
+                    if (paymentWrapper) {
+                        paymentWrapper.style.display = 'none';
+                        return;
+                    }
+                }
+                
+                // Fallback: hide the form element itself
+                this.$el.style.display = 'none';
+            },
+
+            async beginPayment() {
+                const promise = new Promise((resolve, reject) => {
+                    this.resolve = resolve;
+                    this.reject = reject;
+
+                    try {
+                        const totals = this.$wire.get('totals');
+                        const grandTotal = this.$wire.get('grandTotal');
+
+                        const config = new BuckarooApplePay.PayOptions(
+                            this.config.storeName,
+                            this.config.country,
+                            this.config.currency,
+                            this.config.cultureCode,
+                            this.config.guid,
+                            totals,
+                            grandTotal,
+                            'shipping',
+                            [],
+                            (payment) => this.captureFunds(payment),
+                            null,
+                            null,
+                            ["name", "postalAddress", "phone"],
+                            ["name", "postalAddress", "phone"]
+                        );
+
+                        new BuckarooApplePay.PayPayment(config).beginPayment();
+                    } catch (error) {
+                        console.error('[Apple Pay] Error starting payment:', error);
+                        reject(error);
+                    }
+                });
+
+                try {
+                    await promise;
+                } catch (error) {
+                    console.warn('[Apple Pay] SDK payment failed, falling back to redirect mode');
+                    // Don't throw - allow the flow to continue to redirect mode
+                }
+            },
+
+            async captureFunds(payment) {
+                try {
+                    const billingContact = payment && payment.billingContact
+                        ? JSON.stringify(payment.billingContact)
+                        : '';
+
+                    const formattedData = await this.applePayInstance.formatTransactionResponse(payment);
+
+                    if (!formattedData) {
+                        throw new Error('No transaction data from Apple Pay');
+                    }
+
+                    await this.$wire.updateData(formattedData, billingContact);
+                    this.resolve();
+
+                    return {
+                        status: window.ApplePaySession.STATUS_SUCCESS,
+                        errors: [],
+                    };
+                } catch (error) {
+                    console.error('[Apple Pay] Payment capture failed:', error.message);
+                    this.resolve(); // Resolve anyway to allow fallback to redirect mode
+
+                    return {
+                        status: window.ApplePaySession.STATUS_FAILURE,
+                        errors: [{
+                            code: 'paymentError',
+                            message: error.message || 'Payment processing failed'
+                        }],
+                    };
+                }
+            },
+
+            async submit() {
+                await hyvaCheckout.order.place();
+            }
+        }));
     }
 }
 
