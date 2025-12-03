@@ -40,6 +40,7 @@
                 <item name="buckaroo_magento2_twint" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_bizum" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_swish" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
+                <item name="buckaroo_magento2_wero" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
 
             </argument>
         </arguments>
