@@ -85,6 +85,23 @@ class Applepay extends Component\Form implements EvaluationInterface
             $this->applepayTransaction = $paymentData;
             $this->billingContact = $billingContact;
 
+            // Base64 encode the payment data (required by Buckaroo API)
+            // This matches what assignData() does in the payment method
+            $applepayEncoded = base64_encode($paymentData);
+
+            // Save payment data to quote payment additional information
+            $quote = $this->sessionCheckout->getQuote();
+            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $applepayEncoded);
+            $quote->getPayment()->setAdditionalInformation('billingContact', $billingContact);
+            
+            $this->quoteRepository->save($quote);
+            
+            $this->logger->addDebug('[Apple Pay Hyva] Payment data saved to quote (base64 encoded)', [
+                'payment_data_length' => strlen($paymentData),
+                'encoded_length' => strlen($applepayEncoded),
+                'has_billing_contact' => !empty($billingContact)
+            ]);
+
         } catch (LocalizedException $exception) {
             $this->logger->addError('[Apple Pay] Failed to update payment data: ' . $exception->getMessage());
             $this->dispatchErrorMessage($exception->getMessage());
@@ -93,6 +110,18 @@ class Applepay extends Component\Form implements EvaluationInterface
     }
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
+        // Check if we're in client-side mode (SDK mode)
+        $config = $this->getJsonConfig();
+        $isClientSide = isset($config['integrationMode']) ? (bool) $config['integrationMode'] : false;
+        
+        // Only validate payment data in client-side/SDK mode
+        if ($isClientSide && empty($this->applepayTransaction)) {
+            $this->logger->addError('[Apple Pay Hyva] Payment data missing during order placement');
+            return $resultFactory->createErrorMessageEvent()
+                ->withCustomEvent('payment:method:error')
+                ->withMessage('Apple Pay payment data is missing. Please try again.');
+        }
+        
         return $resultFactory->createSuccess();
     }
 
