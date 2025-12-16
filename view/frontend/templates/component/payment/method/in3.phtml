@@ -53,20 +53,4 @@ use Magento\Framework\Escaper;
         </div>
     <?php
     } ?>
-
-    <?php if ($magewire->showFinancialWarning()): ?>
-        <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div class="flex">
-                <div class="ml-3">
-                    <p class="text-sm text-yellow-800">
-                        <?= $escaper->escapeHtml(
-                            __('Je moet minimaal 18+ zijn om deze dienst te gebruiken. Als je op tijd betaalt, voorkom je extra kosten en zorg je dat je in de toekomst nogmaals gebruik kunt maken van de diensten van Achteraf betalen via %1. Door verder te gaan, accepteer je de Algemene Voorwaarden en bevestig je dat je de Privacyverklaring en Cookieverklaring hebt gelezen.',
-                                $magewire->getPaymentMethodTitle()
-                            )
-                        ) ?>
-                    </p>
-                </div>
-            </div>
-        </div>
-    <?php endif; ?>
 </div>
