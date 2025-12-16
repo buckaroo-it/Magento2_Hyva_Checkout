@@ -25,7 +25,15 @@ class Applepay extends Component\Form implements EvaluationInterface
         'coupon_code_revoked' => 'refresh'
     ];
 
-    public ?string $encriptedData = null;
+    /**
+     * Apple Pay transaction data (will be automatically mapped to additional_data by Hyvä)
+     */
+    public ?string $applepayTransaction = null;
+
+    /**
+     * Billing contact data (will be automatically mapped to additional_data by Hyvä)
+     */
+    public ?string $billingContact = null;
 
     public array $config = [];
 
@@ -59,6 +67,11 @@ class Applepay extends Component\Form implements EvaluationInterface
     public function mount(): void
     {
         $this->config = $this->getJsonConfig();
+
+        if (empty($this->config)) {
+            return;
+        }
+
         $this->totals = $this->getTotalLines();
         $this->grandTotal = $this->getGrandTotal();
     }
@@ -66,74 +79,91 @@ class Applepay extends Component\Form implements EvaluationInterface
     public function hydrate()
     {
         $this->config = $this->getJsonConfig();
+
+        if (empty($this->config)) {
+            return;
+        }
+
         $this->totals = $this->getTotalLines();
         $this->grandTotal = $this->getGrandTotal();
     }
 
-    public function updateData(string $paymentData, string $billingContact)
+    /**
+     * Update Apple Pay transaction and billing contact data
+     *
+     * @param string $paymentData
+     * @param string $billingContact
+     * @return string
+     */
+    public function updateData(string $paymentData, string $billingContact): string
     {
         try {
+            $this->applepayTransaction = $paymentData;
+            $this->billingContact = $billingContact;
+
             $quote = $this->sessionCheckout->getQuote();
-            $applePayEncoded = base64_encode($paymentData);
-            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $applePayEncoded);
+            $quote->getPayment()->setAdditionalInformation('applepayTransaction', $paymentData);
             $quote->getPayment()->setAdditionalInformation('billingContact', $billingContact);
 
+            // Save the quote to persist the additional information
             $this->quoteRepository->save($quote);
+
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
         }
         return $paymentData;
     }
+    /**
+     * Evaluate completion - allow order placement
+     *
+     * window.buckarooTask handles Apple Pay authorization before this is called
+     *
+     * @param EvaluationResultFactory $resultFactory
+     * @return EvaluationResultInterface
+     */
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
-        try {
-            $quote = $this->sessionCheckout->getQuote();
-            $integrationMode = $this->methodConfigProvider->getIntegrationMode();
-
-            if ($integrationMode) {
-                $paymentData = $quote->getPayment()->getAdditionalInformation('applepayTransaction');
-
-                if (empty($paymentData)) {
-                    return $resultFactory->createErrorMessageEvent()
-                        ->withCustomEvent('payment:method:error')
-                        ->withMessage('Payment data is missing');
-                }
-            }
-        } catch (LocalizedException $exception) {
-            $this->dispatchErrorMessage($exception->getMessage());
-        }
-
         return $resultFactory->createSuccess();
     }
 
-    public function getIntegrationMode(): bool
-    {
-        try {
-            $cfg  = $this->getJsonConfig();
-            return (bool) ($cfg['integrationMode']);
-        } catch (LocalizedException $e) {
-            $this->dispatchErrorMessage($e->getMessage());
-        }
-        return false;
-    }
-
-    public function getJsSdkUrl()
+    /**
+     * Get Apple Pay JavaScript SDK URL
+     *
+     * @return string
+     */
+    public function getJsSdkUrl(): string
     {
         try {
             return $this->assetRepo->getUrl('Buckaroo_HyvaCheckout::js/applepay.js');
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
+            return '';
         }
     }
 
 
+    /**
+     * Get Apple Pay configuration from config provider
+     *
+     * @return array
+     */
     private function getJsonConfig(): array
     {
-        $config = $this->methodConfigProvider->getConfig();
-        if(!isset($config['payment']['buckaroo']['applepay'])) {
-            $this->dispatchErrorMessage('Cannot retrieved config');
+        try {
+            $config = $this->methodConfigProvider->getConfig();
+
+            if (empty($config)) {
+                return [];
+            }
+
+            if (!isset($config['payment']['buckaroo']['buckaroo_magento2_applepay'])) {
+                return [];
+            }
+
+            return $config['payment']['buckaroo']['buckaroo_magento2_applepay'];
+        } catch (\Exception $e) {
+            return [];
         }
-        return $config['payment']['buckaroo']['applepay'];
     }
 
     /**
@@ -145,21 +175,21 @@ class Applepay extends Component\Form implements EvaluationInterface
     {
         $totals = [];
         $quote = $this->getQuote();
-        if($quote === null) {
+        if ($quote === null) {
             return $totals;
         }
         $quote->collectTotals();
         foreach ($quote->getTotals() as $key => $total) {
-            if($total->getData('value') != 0 && $key !== 'grand_total') {
+            if ($total->getData('value') != 0 && $key !== 'grand_total') {
                 $amount = $total->getData('value');
-                if($key === 'subtotal') {
-                    $amount = $quote->getSubtotalWithDiscount();//for subtotal we get it with discounts
+                if ($key === 'subtotal') {
+                    $amount = $quote->getSubtotalWithDiscount();
                 }
 
                 $totals[] = [
-                    "label" => $total->getData('title'),
-                    "amount" => $amount,
-                    "type" => 'final',
+                    'label' => $total->getData('title'),
+                    'amount' => $amount,
+                    'type' => 'final',
                 ];
             }
         }
@@ -174,31 +204,31 @@ class Applepay extends Component\Form implements EvaluationInterface
     private function getGrandTotal(): array
     {
         $quote = $this->getQuote();
-        if($quote === null) {
+        if ($quote === null) {
             return [];
         }
-        if(!isset($quote->getTotals()['grand_total'])) {
+        if (!isset($quote->getTotals()['grand_total'])) {
             return [];
         }
 
         $total = $quote->getTotals()['grand_total'];
 
         return [
-            "label" => $total->getData('title'),
-            "amount" => $total->getData('value'),
-            "type" => 'final',
+            'label' => $total->getData('title'),
+            'amount' => $total->getData('value'),
+            'type' => 'final',
         ];
     }
 
     /**
-     * Get quote fro session
+     * Get quote from session
      *
      * @return Quote|null
      */
-    private function getQuote() :?Quote
+    private function getQuote(): ?Quote
     {
         try {
-           return $this->sessionCheckout->getQuote();
+            return $this->sessionCheckout->getQuote();
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
         }
