@@ -184,8 +184,6 @@ class SepaDirect extends Component\Form implements EvaluationInterface
         } catch (LocalizedException $exception) {
             $this->dispatchErrorMessage($exception->getMessage());
         }
-
-        return null;
     }
 
     /**

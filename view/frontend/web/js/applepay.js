@@ -61,6 +61,7 @@ const getButtonClass = function (buttonStyle, buttonType) {
             classes.push('apple-pay-button-white-with-line');
             break;
     }
+    return classes.join(' ');
 };
 var PayPayment = function (options) {
     var _this = this;
