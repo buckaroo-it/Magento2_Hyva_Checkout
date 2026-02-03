@@ -17,6 +17,7 @@ use Hyva\Checkout\Model\Magewire\Component\EvaluationInterface;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
 use Buckaroo\Magento2\Helper\Data as HelperData;
+use Buckaroo\Magento2\Model\ConfigProvider\Method\Billink as BillinkConfigProvider;
 
 
 class Billink extends Component\Form implements EvaluationInterface
@@ -56,11 +57,14 @@ class Billink extends Component\Form implements EvaluationInterface
 
     protected HelperData $helper;
 
+    protected BillinkConfigProvider $billinkConfigProvider;
+
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
         CartRepositoryInterface $quoteRepository,
-        HelperData $helper
+        HelperData $helper,
+        BillinkConfigProvider $billinkConfigProvider
     ) {
         if($validator->getValidator("nlBeDePhone") === null) {
             $validator->addValidator("nlBeDePhone", new NlBeDePhone());
@@ -71,6 +75,7 @@ class Billink extends Component\Form implements EvaluationInterface
         $this->sessionCheckout = $sessionCheckout;
         $this->quoteRepository = $quoteRepository;
         $this->helper = $helper;
+        $this->billinkConfigProvider = $billinkConfigProvider;
     }
 
     /**
@@ -409,5 +414,44 @@ class Billink extends Component\Form implements EvaluationInterface
         );
 
         return ["required", "in:".implode(",", $genderValues)];
+    }
+
+    /**
+     * Check if financial warning should be shown
+     * Only shown for Dutch customers when enabled in config
+     *
+     * @return bool
+     */
+    public function showFinancialWarning(): bool
+    {
+        return $this->getCountryId() === 'NL' && $this->billinkConfigProvider->canShowFinancialWarning();
+    }
+
+    /**
+     * Get payment method title
+     *
+     * @return string
+     */
+    public function getPaymentMethodTitle(): string
+    {
+        return (string) ($this->billinkConfigProvider->getTitle() ?? 'Billink');
+    }
+
+    /**
+     * Get financial warning message for Billink
+     *
+     * @return string
+     */
+    public function getFinancialWarningMessage(): string
+    {
+        $title = $this->getPaymentMethodTitle();
+
+        return (string)__(
+            'Je moet minimaal 18+ zijn om deze dienst te gebruiken. Als je op tijd betaalt, voorkom je extra kosten en zorg je dat je in de toekomst nogmaals gebruik kunt maken van de diensten van %1. Door verder te gaan, accepteer je de <a target="_blank" href="%2">Algemene&nbsp;Voorwaarden</a> en bevestig je dat je de <a target="_blank" href="%3">Privacyverklaring</a> en <a target="_blank" href="%4">Cookieverklaring</a> hebt gelezen.',
+            $title,
+            'https://www.billink.nl/gebruikersvoorwaarden',
+            'https://www.billink.nl/privacy-statement',
+            'https://www.billink.nl/privacy-statement'
+        );
     }
 }
