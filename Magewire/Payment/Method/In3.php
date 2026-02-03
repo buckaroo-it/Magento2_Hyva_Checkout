@@ -16,6 +16,7 @@ use Buckaroo\HyvaCheckout\Model\Validation\Rules\NlBeDePhone;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationInterface;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
+use Buckaroo\Magento2\Model\ConfigProvider\Method\CapayableIn3 as In3ConfigProvider;
 
 class In3 extends Component\Form implements EvaluationInterface
 {
@@ -40,11 +41,13 @@ class In3 extends Component\Form implements EvaluationInterface
 
     protected ScopeConfigInterface $scopeConfig;
 
+    protected In3ConfigProvider $in3ConfigProvider;
 
     public function __construct(
         Validator $validator,
         SessionCheckout $sessionCheckout,
-        CartRepositoryInterface $quoteRepository
+        CartRepositoryInterface $quoteRepository,
+        In3ConfigProvider $in3ConfigProvider
     ) {
         if($validator->getValidator("nlBeDePhone") === null) {
             $validator->addValidator("nlBeDePhone", new NlBeDePhone());
@@ -54,6 +57,7 @@ class In3 extends Component\Form implements EvaluationInterface
 
         $this->sessionCheckout = $sessionCheckout;
         $this->quoteRepository = $quoteRepository;
+        $this->in3ConfigProvider = $in3ConfigProvider;
     }
 
     /**
@@ -280,5 +284,44 @@ class In3 extends Component\Form implements EvaluationInterface
         );
 
         return $validation->fails();
+    }
+
+    /**
+     * Check if financial warning should be shown
+     * Only shown for Dutch customers when enabled in config
+     *
+     * @return bool
+     */
+    public function showFinancialWarning(): bool
+    {
+        return $this->getCountryId() === 'NL' && $this->in3ConfigProvider->canShowFinancialWarning();
+    }
+
+    /**
+     * Get payment method title
+     *
+     * @return string
+     */
+    public function getPaymentMethodTitle(): string
+    {
+        return (string) ($this->in3ConfigProvider->getTitle() ?? 'In3');
+    }
+
+    /**
+     * Get financial warning message for In3
+     *
+     * @return string
+     */
+    public function getFinancialWarningMessage(): string
+    {
+        $title = $this->getPaymentMethodTitle();
+
+        return (string)__(
+            'Je moet minimaal 18+ zijn om deze dienst te gebruiken. Als je op tijd betaalt, voorkom je extra kosten en zorg je dat je in de toekomst nogmaals gebruik kunt maken van de diensten van %1. Door verder te gaan, accepteer je de <a target="_blank" href="%2">Algemene&nbsp;Voorwaarden</a> en bevestig je dat je de <a target="_blank" href="%3">Privacyverklaring</a> en <a target="_blank" href="%4">Cookieverklaring</a> hebt gelezen.',
+            $title,
+            'https://payin3.eu/nl/legal/',
+            'https://payin3.eu/nl/privacyverklaringen/',
+            'https://payin3.eu/nl/cookiebeleid/'
+        );
     }
 }
