@@ -915,7 +915,6 @@ function initializeBuckarooComponents() {
                 init() {
                     if (window.buckaroo && window.buckaroo.credicards) {
                         Object.assign(this, window.buckaroo.credicards(this.$el));
-                        this.$wire = this.$wire;
                         if (this.register) this.register();
                         if (this.initCreditCardFields) this.initCreditCardFields();
                     }
@@ -960,7 +959,6 @@ function initializeBuckarooComponents() {
                     if (window.buckaroo && window.buckaroo.voucher) {
                         const ajaxUrl = this.$el.dataset.ajaxUrl || '';
                         Object.assign(this, window.buckaroo.voucher(this.$el, ajaxUrl));
-                        this.$wire = this.$wire;
                         if (this.register) this.register();
                     }
                 },
@@ -980,7 +978,6 @@ function initializeBuckarooComponents() {
                 init() {
                     if (window.buckaroo && window.buckaroo.mrCash) {
                         Object.assign(this, window.buckaroo.mrCash(this.$el));
-                        this.$wire = this.$wire;
                         if (this.register) this.register();
                     }
                 },

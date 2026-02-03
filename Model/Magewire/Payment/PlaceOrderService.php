@@ -7,23 +7,27 @@ use Composer\InstalledVersions;
 use Magento\Framework\Registry;
 use Magento\Quote\Api\CartManagementInterface;
 use Hyva\Checkout\Model\Magewire\Payment\AbstractPlaceOrderService;
+use Buckaroo\Magento2\Api\Data\BuckarooResponseDataInterface;
 
 class PlaceOrderService extends AbstractPlaceOrderService
 {
     private const COMPOSER_MODULE_NAME = 'buckaroo/magento2-hyva-checkout';
 
     protected Registry $registry;
+    protected BuckarooResponseDataInterface $buckarooResponseData;
 
     public function __construct(
         CartManagementInterface $cartManagement,
-        Registry $registry
+        Registry $registry,
+        BuckarooResponseDataInterface $buckarooResponseData
     ) {
         $this->registry = $registry;
+        $this->buckarooResponseData = $buckarooResponseData;
         parent::__construct($cartManagement);
     }
 
 
-    
+
     /**
      * @throws CouldNotSaveException
      */
@@ -48,12 +52,12 @@ class PlaceOrderService extends AbstractPlaceOrderService
         if($this->hasRedirect()) {
             return $this->getResponse()->RequiredAction->RedirectURL;
         }
-        
+
         // If payment was successful but no redirect is required (e.g., Riverty, direct payments)
         if($this->isSuccessfulPayment()) {
             return 'checkout/onepage/success';
         }
-        
+
         return parent::getRedirectUrl($quote, $orderId);
     }
 
@@ -62,6 +66,12 @@ class PlaceOrderService extends AbstractPlaceOrderService
         if ($this->registry && $this->registry->registry('buckaroo_response')) {
             return $this->registry->registry('buckaroo_response')[0];
         }
+
+        if ($this->buckarooResponseData->getResponse()) {
+            return json_decode(json_encode($this->buckarooResponseData->getResponse()->toArray()));
+        }
+
+        return null;
     }
 
     private function hasRedirect(): bool
@@ -76,7 +86,7 @@ class PlaceOrderService extends AbstractPlaceOrderService
         if (!$response) {
             return false;
         }
-        
+
         // Check if payment was successful (status code 190)
         return !empty($response->Status->Code->Code) && $response->Status->Code->Code == 190;
     }

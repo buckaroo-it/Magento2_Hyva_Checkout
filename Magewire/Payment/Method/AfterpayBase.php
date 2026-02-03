@@ -476,4 +476,43 @@ abstract class AfterpayBase extends Component\Form implements EvaluationInterfac
 
         return $validation->fails();
     }
+
+    /**
+     * Check if financial warning should be shown
+     * Only shown for Dutch customers when enabled in config
+     *
+     * @return bool
+     */
+    public function showFinancialWarning(): bool
+    {
+        return $this->getCountryId() === 'NL' && $this->methodConfigProvider->canShowFinancialWarning();
+    }
+
+    /**
+     * Get payment method title
+     *
+     * @return string
+     */
+    public function getPaymentMethodTitle(): string
+    {
+        return (string) ($this->methodConfigProvider->getTitle() ?? 'Riverty');
+    }
+
+    /**
+     * Get financial warning message for Afterpay/Riverty
+     *
+     * @return string
+     */
+    public function getFinancialWarningMessage(): string
+    {
+        $title = $this->getPaymentMethodTitle();
+
+        return (string)__(
+            'Je moet minimaal 18+ zijn om deze dienst te gebruiken. Als je op tijd betaalt, voorkom je extra kosten en zorg je dat je in de toekomst nogmaals gebruik kunt maken van de diensten van %1. Door verder te gaan, accepteer je de <a target="_blank" href="%2">Algemene&nbsp;Voorwaarden</a> en bevestig je dat je de <a target="_blank" href="%3">Privacyverklaring</a> en <a target="_blank" href="%4">Cookieverklaring</a> hebt gelezen.',
+            $title,
+            'https://documents.riverty.com/terms_conditions/payment_methods/invoice/nl_nl/default',
+            'https://www.riverty.com/nl-nl/privacybeleid/',
+            'https://www.riverty.com/nl-nl/cookies/'
+        );
+    }
 }

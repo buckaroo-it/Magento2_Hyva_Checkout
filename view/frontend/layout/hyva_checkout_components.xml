@@ -162,16 +162,6 @@
                     </argument>
                 </arguments>
             </block>
-
-            <block name="checkout.payment.method.buckaroo_magento2_paybybank"
-                   as="buckaroo_magento2_paybybank"
-                   template="Buckaroo_HyvaCheckout::component/payment/method/paybybank.phtml">
-                <arguments>
-                    <argument name="magewire" xsi:type="object">
-                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\PayByBank
-                    </argument>
-                </arguments>
-            </block>
         </referenceBlock>
 
         <referenceBlock name="price-summary.total-segments">
