@@ -1,0 +1,69 @@
+<?php
+/**
+ * PayPal Express button for product page - Hyva/standalone (no RequireJS/Knockout).
+ * Uses same Block and REST API as Buckaroo_Magento2; only the frontend is standalone.
+ *
+ * @var \Buckaroo\Magento2\Block\Catalog\Product\View\PaypalExpress $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+?>
+<?php if ($block->canShowProductButton() && !$block->isIdinVerificationRequired()): ?>
+<?php
+$config = $block->getConfig();
+$config['baseUrl'] = $block->getUrl('', ['_secure' => $block->getRequest()->isSecure()]);
+$config['amount'] = 0.1;
+$config['page'] = 'product';
+?>
+<div id="paypal-express-button-component-hyva" class="buckaroo-paypal-express-product">
+    <div id="paypal-validation-error-hyva" class="paypal-validation-error" style="display: none;"></div>
+    <div class="buckaroo-paypal-express" id="buckaroo-paypal-express-product"></div>
+</div>
+<script>
+(function() {
+    'use strict';
+
+    var config = <?= /* @noEscape */ json_encode($config) ?>;
+    if (!config) return;
+
+    var paypalContainer = document.getElementById('paypal-express-button-component-hyva');
+    var addToCartButton = document.getElementById('product-addtocart-button');
+
+    if (!paypalContainer) return;
+
+    window.BuckarooHyvaCheckoutPaypalExpressConfig = config;
+
+    /**
+     * Position PayPal button below Add to Cart button
+     */
+    function positionPayPalButton() {
+        if (!addToCartButton || !paypalContainer) return;
+
+        var outerContainer = addToCartButton.closest('.flex.flex-col.sm\\:flex-row.items-end.my-4');
+        if (!outerContainer || !outerContainer.parentElement) return;
+
+        if (outerContainer.nextSibling === paypalContainer) return;
+
+        outerContainer.parentNode.insertBefore(paypalContainer, outerContainer.nextSibling || null);
+    }
+
+    /**
+     * Initialize when DOM is ready
+     */
+    function init() {
+        positionPayPalButton();
+
+        if (typeof window.BuckarooHyvaCheckoutPaypalExpressInit === 'function') {
+            window.BuckarooHyvaCheckoutPaypalExpressInit();
+        }
+
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+})();
+</script>
+<?php endif; ?>
