@@ -459,3 +459,23 @@
         transform: translateY(0) !important;
     }
 }
+
+/* HyvaCheckout PayPal Express Product Page */
+#paypal-express-button-component-hyva {
+    margin-top: 1rem;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* HyvaCheckout PayPal Express Cart Page */
+#paypal-express-cart-hyva {
+    margin-top: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#paypal-express-cart-hyva .buckaroo-paypal-express {
+    width: 100%;
+    max-width: 100%;
+}
