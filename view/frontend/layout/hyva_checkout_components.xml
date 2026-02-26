@@ -23,16 +23,6 @@
                 </arguments>
             </block>
 
-            <block name="checkout.payment.method.buckaroo_magento2_klarnain"
-                   as="buckaroo_magento2_klarnain"
-                   template="Buckaroo_HyvaCheckout::component/payment/method/klarna.phtml">
-                <arguments>
-                    <argument name="magewire" xsi:type="object">
-                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Klarna
-                    </argument>
-                </arguments>
-            </block>
-
             <block name="checkout.payment.method.buckaroo_magento2_creditcard"
                    as="buckaroo_magento2_creditcard"
                    template="Buckaroo_HyvaCheckout::component/payment/method/creditcard.phtml">
