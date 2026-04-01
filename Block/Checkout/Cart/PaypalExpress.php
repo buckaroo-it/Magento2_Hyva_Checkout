@@ -50,4 +50,23 @@ class PaypalExpress extends PaypalExpressBase
             return 0.01;
         }
     }
+
+    /**
+     * Check if current quote has one or more items.
+     *
+     * @return bool
+     */
+    public function hasCartItems(): bool
+    {
+        try {
+            $quote = $this->checkoutSession->getQuote();
+            if (!$quote || !$quote->getId()) {
+                return false;
+            }
+
+            return (int) $quote->getItemsQty() > 0;
+        } catch (NoSuchEntityException $e) {
+            return false;
+        }
+    }
 }

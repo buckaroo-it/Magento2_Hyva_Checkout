@@ -7,7 +7,7 @@
  * @var \Magento\Framework\Escaper $escaper
  */
 ?>
-<?php if ($block->canShowCartButton() && !$block->isIdinVerificationRequired()): ?>
+<?php if ($block->canShowCartButton() && $block->hasCartItems() && !$block->isIdinVerificationRequired()): ?>
 <?php
 $config = $block->getConfig();
 $config['baseUrl'] = $block->getUrl('', ['_secure' => $block->getRequest()->isSecure()]);
