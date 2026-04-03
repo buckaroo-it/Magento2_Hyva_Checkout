@@ -1,0 +1,22 @@
+<?php
+/** @var \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Googlepay $magewire */
+/** @var Magento\Framework\Escaper $escaper */
+
+$hasConfig = !empty($magewire->config);
+// Integration mode: 0 = client/SDK mode, 1 = redirect mode
+$integrationMode = $hasConfig ? ($magewire->config['integrationMode'] ?? '1') : '1';
+$isClientSide = $hasConfig && ($integrationMode === '0' || $integrationMode === 0);
+?>
+<div
+    wire:id="checkout.payment.method.buckaroo_magento2_googlepay"
+    x-data="buckarooGooglepay"
+    data-has-config="<?= $hasConfig ? 'true' : 'false' ?>"
+    data-is-client-side="<?= $isClientSide ? 'true' : 'false' ?>"
+    data-payment-code="buckaroo_magento2_googlepay"
+>
+    <div
+        id="google-pay-button-container"
+        x-ref="buttonContainer"
+        style="display: none;"
+    ></div>
+</div>
