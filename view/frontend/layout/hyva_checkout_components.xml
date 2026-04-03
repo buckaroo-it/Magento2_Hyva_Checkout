@@ -143,6 +143,16 @@
                 </arguments>
             </block>
 
+            <block name="checkout.payment.method.buckaroo_magento2_googlepay"
+                   as="buckaroo_magento2_googlepay"
+                   template="Buckaroo_HyvaCheckout::component/payment/method/googlepay.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Googlepay
+                    </argument>
+                </arguments>
+            </block>
+
             <block name="checkout.payment.method.buckaroo_magento2_giftcards"
                    as="buckaroo_magento2_giftcards"
                    template="Buckaroo_HyvaCheckout::component/payment/method/giftcards.phtml">
