@@ -6,6 +6,7 @@ namespace Buckaroo\HyvaCheckout\Block\Checkout\Cart;
 
 use Buckaroo\Magento2\Block\Catalog\Product\View\PaypalExpress as PaypalExpressBase;
 use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
@@ -27,7 +28,15 @@ class PaypalExpress extends PaypalExpressBase
         ?\Magento\Framework\Registry $registry = null,
         array $data = []
     ) {
-        parent::__construct($context, $configProviderAccount, $encryptor, $paypalConfig, $registry, $data);
+        parent::__construct(
+            $context,
+            $configProviderAccount,
+            $encryptor,
+            $paypalConfig,
+            $registry,
+            $checkoutSession,
+            $data
+        );
         $this->checkoutSession = $checkoutSession;
     }
 
@@ -35,6 +44,7 @@ class PaypalExpress extends PaypalExpressBase
      * Cart total for PayPal amount. Uses quote grand_total (includes tax).
      *
      * @return float
+     * @throws LocalizedException
      */
     public function getCartTotal(): float
     {
@@ -52,9 +62,10 @@ class PaypalExpress extends PaypalExpressBase
     }
 
     /**
-     * Check if current quote has one or more items.
+     * Check if the current quote has one or more items.
      *
      * @return bool
+     * @throws LocalizedException
      */
     public function hasCartItems(): bool
     {
