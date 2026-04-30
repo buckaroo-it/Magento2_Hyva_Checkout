@@ -57,6 +57,7 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
             "creditcards" => "svg/creditcards.svg",
             "giftcards" => "svg/giftcards.svg",
             "idealprocessing" => "svg/ideal.svg",
+            "ideal" => "svg/ideal-wero.svg",
             "klarnakp" => "svg/klarna.svg",
             "mrcash" => "svg/bancontact.svg",
             "p24" => "svg/przelewy24.svg",
