@@ -327,9 +327,9 @@ class PayPerEmail extends Component\Form implements EvaluationInterface
     public function getGenderList(): array
     {
         return [
-            ['code' => 1, 'name' => __('He/him')],
-            ['code' => 2, 'name' => __('She/her')],
-            ['code' => 0, 'name' => __('They/them')],
+            ['code' => 1, 'name' => __('Male')],
+            ['code' => 2, 'name' => __('Female')],
+            ['code' => 0, 'name' => __('Other')],
             ['code' => 9, 'name' => __('I prefer not to say')]
         ];
     }

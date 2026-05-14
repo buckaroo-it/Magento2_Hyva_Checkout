@@ -9,7 +9,7 @@ use Magento\Framework\Escaper;
 ?>
 <div class="col-span-6">
     <div class="flex flex-col gap-y-2 field field-reserved">
-        <label for="buckaroo_klarna_gender"><?= $escaper->escapeHtml(__('Salutation:')); ?></label>
+        <label for="buckaroo_klarna_gender"><?= $escaper->escapeHtml(__('Gender:')); ?></label>
         <select name="issuer" id="buckaroo_klarna_gender" wire:model="gender" class="form-select">
             <option value=""><?= $escaper->escapeHtml(__('-- Please Select Your Gender--')); ?></option>
             <?php

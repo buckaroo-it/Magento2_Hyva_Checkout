@@ -4,6 +4,7 @@ namespace Buckaroo\HyvaCheckout\Plugin;
 
 use Magento\Framework\View\Element\Template;
 use Hyva\Checkout\Model\MethodMetaDataInterface;
+use Buckaroo\Magento2\Model\Config\Source\TransferPaymentMethodLogo;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\Factory;
 use Magento\Payment\Model\MethodInterface as PaymentMethodInterface;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\ConfigProviderInterface;
@@ -48,6 +49,11 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
     private function getSvgLogo(string $methodCode): string
     {
         $method = str_replace("buckaroo_magento2_", "", $methodCode);
+
+        if ($method === "transfer") {
+            return "Buckaroo_Magento2::images/{$this->getTransferLogoPath($methodCode)}";
+        }
+
         $mappings = [
             "afterpay2" => "svg/afterpay.svg",
             "afterpay20" => "svg/afterpay.svg",
@@ -56,6 +62,7 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
             "creditcard" => "svg/creditcards.svg",
             "creditcards" => "svg/creditcards.svg",
             "giftcards" => "svg/giftcards.svg",
+            "ideal" => "svg/ideal-wero.svg",
             "idealprocessing" => "svg/ideal.svg",
             "klarnakp" => "svg/klarna.svg",
             "mrcash" => "svg/bancontact.svg",
@@ -63,7 +70,6 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
             "sepadirectdebit" => "svg/sepa-directdebit.svg",
             "emandate" => "emandate.png",
             "pospayment" => "pos.png",
-            "transfer" => "svg/sepa-credittransfer.svg",
             "voucher" => "svg/vouchers.svg",
             "paybybank" => "paybybank.gif",
             "knaken" => "svg/gosettle.svg",
@@ -76,6 +82,20 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
         }
 
         return "Buckaroo_Magento2::images/{$name}";
+    }
+
+    private function getTransferLogoPath(string $methodCode): string
+    {
+        $config = $this->getConfig($methodCode);
+        $option = TransferPaymentMethodLogo::OPTION_GENERIC_BANK_LOGO;
+
+        if (method_exists($config, 'getPaymentMethodLogo')) {
+            $option = $config->getPaymentMethodLogo();
+        }
+
+        return $option === TransferPaymentMethodLogo::OPTION_SEPA_CREDIT_TRANSFER
+            ? "svg/sepa-directdebit.svg"
+            : "svg/sepa-credittransfer.svg";
     }
 
     private function getSubtitle(string $methodCode): ?string
