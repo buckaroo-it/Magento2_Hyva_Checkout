@@ -49,6 +49,8 @@ class Billink extends Component\Form implements EvaluationInterface
 
     public const RULES_DATE_OF_BIRTH = ['required', 'date', 'before:-18 years'];
 
+    private const GENDER_UNKNOWN = 'unknown';
+
     protected SessionCheckout $sessionCheckout;
 
     protected CartRepositoryInterface $quoteRepository;
@@ -97,10 +99,11 @@ class Billink extends Component\Form implements EvaluationInterface
 
         $this->tos = $tos === true;
         $this->coc = $payment->getAdditionalInformation('customer_chamberOfCommerce');
-        $this->phone = $payment->getAdditionalInformation('customer_telephone');
+        $this->phone = $this->getBillingTelephone()
+            ?: $payment->getAdditionalInformation('customer_telephone');
         $this->vatNumber = $payment->getAdditionalInformation('customer_VATNumber');
         $this->dateOfBirth = $payment->getAdditionalInformation('customer_DoB');
-        $this->gender = $payment->getAdditionalInformation('customer_gender');
+        $this->gender = self::GENDER_UNKNOWN;
         $this->fullName = $this->getFullName();
     }
 
@@ -231,6 +234,9 @@ class Billink extends Component\Form implements EvaluationInterface
 
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
+        $this->useBillingPhoneWhenAvailable();
+        $this->useUnknownGenderForB2c();
+
         $validation = $this->validator->validate(
             $this->getFormValues(),
             $this->getFormRules()
@@ -293,23 +299,68 @@ class Billink extends Component\Form implements EvaluationInterface
     }
 
     /**
+     * Get billing telephone from quote
+     *
+     * @return string|null
+     */
+    private function getBillingTelephone(): ?string
+    {
+        $quote = $this->getQuote();
+        if ($quote === null) {
+            return null;
+        }
+
+        $telephone = trim((string)$quote->getBillingAddress()->getTelephone());
+
+        return $telephone !== '' ? $telephone : null;
+    }
+
+    /**
+     * Use billing telephone for Billink when no fallback input is needed
+     *
+     * @return void
+     */
+    private function useBillingPhoneWhenAvailable(): void
+    {
+        $billingTelephone = $this->getBillingTelephone();
+        if ($billingTelephone === null) {
+            return;
+        }
+
+        $this->phone = $billingTelephone;
+        $this->updatePaymentField('customer_telephone', $billingTelephone);
+    }
+
+    /**
+     * Billink accepts unknown salutation, so B2C customers should not need to choose one.
+     *
+     * @return void
+     */
+    private function useUnknownGenderForB2c(): void
+    {
+        if ($this->showB2b()) {
+            return;
+        }
+
+        $this->gender = self::GENDER_UNKNOWN;
+        $this->updatePaymentField('customer_gender', self::GENDER_UNKNOWN);
+    }
+
+    /**
      * Get form values
      *
      * @return array
      */
     private function getFormValues(): array
     {
-        $values = [
-            'tos' => $this->tos
-        ];
+        $values = [];
 
         if ($this->showPhone()) {
             $values = array_merge($values, ['phone' => $this->phone]);
         }
         if(!$this->showB2b()) {
             $values = array_merge($values, [
-                'dateOfBirth' => $this->dateOfBirth,
-                'gender' => $this->gender
+                'dateOfBirth' => $this->dateOfBirth
             ]);
         }
         if($this->showB2b()) {
@@ -330,14 +381,11 @@ class Billink extends Component\Form implements EvaluationInterface
      */
     private function getFormRules(): array
     {
-        $rules = [
-            'tos' => self::RULES_TOS
-        ];
+        $rules = [];
 
         if(!$this->showB2b()) {
             $rules = array_merge($rules, [
-                'dateOfBirth' => self::RULES_DATE_OF_BIRTH,
-                'gender' => $this->getGenderRules()
+                'dateOfBirth' => self::RULES_DATE_OF_BIRTH
             ]);
 
         }
@@ -374,23 +422,13 @@ class Billink extends Component\Form implements EvaluationInterface
 
 
     /**
-     * Show phone number field if phone is invalid
+     * Show phone number field only when billing phone is missing
      *
      * @return bool
      */
     public function showPhone(): bool
     {
-        $quote = $this->getQuote();
-
-        if ($quote === null) {
-            return true;
-        }
-        $validation = $this->validator->validate(
-            ["phone" => $quote->getBillingAddress()->getTelephone()],
-            ["phone" => $this->getPhoneRules()]
-        );
-
-        return $validation->fails();
+        return $this->getBillingTelephone() === null;
     }
 
     public function getGenderList(): array
