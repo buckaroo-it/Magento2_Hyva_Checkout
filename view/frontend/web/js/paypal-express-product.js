@@ -1,223 +1,254 @@
 /**
- * PayPal Express - product page standalone init (no RequireJS).
- * Mirrors Buckaroo_Magento2/js/view/checkout/paypal-express/pay.js for product context.
+ * PayPal Express - product page (Hyvä).
  */
 (function () {
     'use strict';
 
     var containerSelector = '#buckaroo-paypal-express-product';
-    var result = null;
-    var cartId = null;
+    var productPriceMixin = window.BuckarooExpressProductPrice;
+    var hyvaPaypal = window.BuckarooHyvaPaypalExpress;
 
-    var config = null;
-    var baseUrl = '';
-    var restBase = '';
-
-    function buildUrl(path) {
-        return restBase + path;
+    if (!productPriceMixin || !hyvaPaypal) {
+        console.error('[PayPal Express] Required scripts are not loaded');
+        return;
     }
 
-    function post(url, data) {
-        if (typeof window.jQuery !== 'undefined' && window.jQuery.post) {
-            return new Promise(function(resolve, reject) {
-                window.jQuery.post(url, data)
-                    .done(resolve)
-                    .fail(function(xhr) {
-                        var err = new Error(
-                            xhr.responseJSON && xhr.responseJSON.message
-                                ? xhr.responseJSON.message
-                                : 'Request failed'
-                        );
-                        err.response = xhr;
-                        err.body = xhr.responseJSON;
-                        reject(err);
-                    });
-            });
-        }
+    var paypalExpress = Object.assign({}, productPriceMixin, {
+        page: 'product',
+        result: null,
+        cart_id: null,
+        options: null,
+        baseUrl: '',
+        restBase: '',
 
-        var params = new URLSearchParams();
+        resolveProductPrice: function (config) {
+            var serverAmount = hyvaPaypal.parseAmount(config.amount);
+            var productPrice = this.getProductTotalPrice();
 
-        if (typeof data === 'object') {
-            Object.keys(data).forEach(function(key) {
-                var value = data[key];
-                if (value === null || value === undefined) return;
-
-                if (typeof value === 'object' && !Array.isArray(value)) {
-                    Object.keys(value).forEach(function(nestedKey) {
-                        var nestedValue = value[nestedKey];
-                        if (nestedValue !== null && nestedValue !== undefined && nestedValue !== '') {
-                            params.append(key + '[' + nestedKey + ']', String(nestedValue));
-                        }
-                    });
-                } else {
-                    params.append(key, String(value));
-                }
-            });
-        }
-
-        return fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: params.toString(),
-            credentials: 'same-origin'
-        }).then(function (res) {
-            if (!res.ok) {
-                return res.json().then(function (responseBody) {
-                    var msg = responseBody && responseBody.message
-                        ? responseBody.message
-                        : 'Request failed';
-                    var err = new Error(msg);
-                    err.response = res;
-                    err.body = responseBody;
-                    throw err;
-                });
+            if ((!productPrice || productPrice <= 0) && serverAmount) {
+                productPrice = serverAmount;
+                this.productSelected.unitPrice = serverAmount / (this.productSelected.qty || 1);
             }
-            return res.json();
-        });
-    }
 
-    function getOrderData() {
-        if (typeof window.jQuery !== 'undefined') {
-            var form = window.jQuery('#product_addtocart_form');
-            if (form.length) return form.serialize();
-        }
+            return productPrice;
+        },
 
-        var formEl = document.querySelector('#product_addtocart_form');
-        if (!formEl) return '';
+        setConfig: function (config) {
+            var self = this;
+            this.page = 'product';
 
-        var fd = new FormData(formEl);
-        var pairs = [];
+            if (config.isTestMode !== undefined && window.BuckarooSdk && window.BuckarooSdk.Base) {
+                window.BuckarooSdk.Base.setTestMode(config.isTestMode);
+            }
 
-        fd.forEach(function (value, key) {
-            pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
-        });
+            this.onProductPriceChange = function (total) {
+                if (self.options && total > 0) {
+                    self.options.amount = total.toFixed(2);
+                }
+            };
 
-        return pairs.join('&');
-    }
+            this.initProductPriceWatchers();
 
-    function displayErrorMessage(message) {
-        var errorText = typeof message === 'string'
-            ? message
-            : (message && message.message) || 'Cannot create payment';
+            var productPrice = this.resolveProductPrice(config);
+            if (!productPrice || productPrice <= 0) {
+                this.displayErrorMessage(
+                    'Unable to initialize PayPal Express: Product price not available. Please refresh the page and try again.'
+                );
+                return;
+            }
 
-        var errorEl = document.getElementById('paypal-validation-error-hyva');
-        if (errorEl) {
-            errorEl.textContent = errorText;
-            errorEl.style.display = 'block';
-        }
-    }
+            this.options = Object.assign({}, config, {
+                containerSelector: containerSelector,
+                amount: productPrice.toFixed(2),
+                createPaymentHandler: this.createPaymentHandler.bind(this),
+                onShippingChangeHandler: this.onShippingChangeHandler.bind(this),
+                onSuccessCallback: this.onSuccessCallback.bind(this),
+                onErrorCallback: this.onErrorCallback.bind(this),
+                onCancelCallback: this.onCancelCallback.bind(this),
+                onInitCallback: function () {},
+                onClickCallback: function () {
+                    self.result = null;
+                },
+                onValidationCallback: this.validateBeforePaypalOrder.bind(this)
+            });
+        },
 
-    var options = {
-        containerSelector: containerSelector,
+        init: function () {
+            if (!window.BuckarooSdk || !window.BuckarooSdk.PayPal || !window.BuckarooSdk.PayPal.initiate || !this.options) {
+                return;
+            }
+
+            var container = document.querySelector(containerSelector);
+            if (!container || container.hasAttribute('data-buckaroo-paypal-rendered')) {
+                return;
+            }
+
+            container.setAttribute('data-buckaroo-paypal-rendered', '1');
+            window.BuckarooSdk.PayPal.initiate(this.options);
+        },
+
+        onShippingChangeHandler: function (data, actions) {
+            var self = this;
+
+            if (typeof window.jQuery !== 'undefined') {
+                var form = window.jQuery('#product_addtocart_form');
+                if (form.length && typeof form.valid === 'function' && form.valid() === false) {
+                    return actions.reject();
+                }
+            }
+
+            return hyvaPaypal.post(this.restBase + '/buckaroo/paypal-express/quote/create', {
+                shipping_address: data.shipping_address,
+                order_data: this.getOrderData(),
+                page: 'product'
+            }).then(function (response) {
+                if (response.message) {
+                    return Promise.reject(response.message);
+                }
+
+                self.cart_id = response.cart_id;
+
+                var newTotal = parseFloat(response.value);
+                if (Number.isNaN(newTotal)) {
+                    return Promise.reject('Cannot update payment totals');
+                }
+
+                var currency = self.options.currency;
+                var bd = response.breakdown || {};
+                var itemTotal = bd.item_total ? parseFloat(bd.item_total.value) : newTotal;
+                var shippingAmt = bd.shipping ? parseFloat(bd.shipping.value) : 0;
+                var taxTotal = bd.tax_total ? parseFloat(bd.tax_total.value) : 0;
+
+                if (Number.isNaN(itemTotal)) {
+                    itemTotal = newTotal;
+                }
+                if (Number.isNaN(shippingAmt)) {
+                    shippingAmt = 0;
+                }
+                if (Number.isNaN(taxTotal)) {
+                    taxTotal = 0;
+                }
+
+                return actions.order.patch([
+                    {
+                        op: 'replace',
+                        path: "/purchase_units/@reference_id=='default'/amount",
+                        value: {
+                            currency_code: currency,
+                            value: newTotal.toFixed(2),
+                            breakdown: {
+                                item_total: {
+                                    currency_code: currency,
+                                    value: itemTotal.toFixed(2)
+                                },
+                                shipping: {
+                                    currency_code: currency,
+                                    value: shippingAmt.toFixed(2)
+                                },
+                                tax_total: {
+                                    currency_code: currency,
+                                    value: taxTotal.toFixed(2)
+                                }
+                            }
+                        }
+                    }
+                ]).then(function () {
+                    self.options.amount = newTotal.toFixed(2);
+                }).catch(function () {
+                    self.options.amount = newTotal.toFixed(2);
+                });
+            });
+        },
 
         createPaymentHandler: function (orderID) {
-            return post(buildUrl('/buckaroo/paypal-express/order/create'), {
+            var self = this;
+
+            return hyvaPaypal.post(this.restBase + '/buckaroo/paypal-express/order/create', {
                 paypal_order_id: orderID,
-                cart_id: cartId
+                cart_id: this.cart_id
             }).then(function (response) {
-                result = response;
+                self.result = response;
                 return response;
             });
         },
 
-        onShippingChangeHandler: function (data, actions) {
-            var payload = {
-                shipping_address: data.shipping_address,
-                order_data: getOrderData(),
-                page: 'product'
-            };
-
-            return post(buildUrl('/buckaroo/paypal-express/quote/create'), payload)
-                .then(function (response) {
-
-                    if (response.message) {
-                        return Promise.reject(response.message);
-                    }
-
-                    cartId = response.cart_id;
-
-                    var newTotal = parseFloat(response.value);
-                    var baseAmount = response.breakdown && response.breakdown.item_total
-                        ? parseFloat(response.breakdown.item_total.value)
-                        : newTotal;
-
-                    var shippingCost = response.breakdown && response.breakdown.shipping
-                        ? parseFloat(response.breakdown.shipping.value)
-                        : 0;
-
-                    return actions.order.patch([
-                        {
-                            op: 'replace',
-                            path: "/purchase_units/@reference_id=='default'/amount",
-                            value: {
-                                currency_code: options.currency,
-                                value: newTotal.toFixed(2),
-                                breakdown: {
-                                    item_total: {
-                                        currency_code: options.currency,
-                                        value: baseAmount.toFixed(2)
-                                    },
-                                    shipping: {
-                                        currency_code: options.currency,
-                                        value: shippingCost.toFixed(2)
-                                    }
-                                }
-                            }
-                        }
-                    ]).catch(function () {
-                        // Ignore patch failure
-                    });
-                });
-        },
-
         onSuccessCallback: function () {
-            if (result && result.cart_id) {
-                window.location.replace(baseUrl + '/checkout/onepage/success/');
+            if (this.result && this.result.message) {
+                this.displayErrorMessage(this.result.message);
+                return;
+            }
+
+            if (this.result && this.result.cart_id && this.result.cart_id.length) {
+                window.location.replace(this.baseUrl + '/checkout/onepage/success/');
             } else {
-                displayErrorMessage('Cannot create payment');
+                this.displayErrorMessage('Cannot create payment');
             }
         },
 
         onErrorCallback: function (reason) {
-            displayErrorMessage(reason);
+            this.displayErrorMessage(reason);
         },
 
         onCancelCallback: function () {
-            displayErrorMessage('You have canceled the payment request.');
+            this.displayErrorMessage('You have canceled the payment request.');
+        },
+
+        getOrderData: function () {
+            var form = document.getElementById('product_addtocart_form');
+            if (!form) {
+                return '';
+            }
+
+            if (typeof window.jQuery !== 'undefined') {
+                var $form = window.jQuery(form);
+                if ($form.length) {
+                    return $form.serialize();
+                }
+            }
+
+            return new URLSearchParams(new FormData(form)).toString();
+        },
+
+        displayErrorMessage: function (message) {
+            var errorText = typeof message === 'string'
+                ? message
+                : (message && message.message) || 'Cannot create payment';
+
+            var errorEl = document.getElementById('paypal-validation-error-hyva');
+            if (errorEl) {
+                errorEl.textContent = errorText;
+                errorEl.style.display = 'block';
+            }
+        },
+
+        validateBeforePaypalOrder: function () {
+            var optionsResult = this.validateConfigurableOptions();
+            if (optionsResult !== true) {
+                return optionsResult;
+            }
+
+            var total = this.getProductTotalPrice();
+            if (!total || total <= 0) {
+                return {
+                    isValid: false,
+                    message: 'Please select all product options before continuing.'
+                };
+            }
+
+            this.options.amount = total.toFixed(2);
+            return true;
         }
-    };
+    });
 
     window.BuckarooHyvaCheckoutPaypalExpressInit = function () {
-
-        config = window.BuckarooHyvaCheckoutPaypalExpressConfig;
-        if (!config) return;
-
-        if (!window.BuckarooSdk || !window.BuckarooSdk.PayPal) return;
-
-        baseUrl = (config.baseUrl || '').replace(/\/?$/, '');
-        restBase = baseUrl + '/rest/V1';
-
-        options.buckarooWebsiteKey = config.buckarooWebsiteKey || '';
-        options.paypalMerchantId = config.paypalMerchantId || '';
-        options.currency = config.currency || 'EUR';
-        options.amount = config.amount || 0.1;
-        options.page = 'product';
-
-        if (config.style) {
-            options.style = config.style;
-        }
-
-        var container = document.querySelector(containerSelector);
-        if (!container || container.hasAttribute('data-buckaroo-paypal-rendered')) {
+        var config = window.BuckarooHyvaCheckoutPaypalExpressConfig;
+        if (!config) {
             return;
         }
 
-        container.setAttribute('data-buckaroo-paypal-rendered', '1');
-
-        window.BuckarooSdk.PayPal.initiate(options);
+        paypalExpress.baseUrl = (config.baseUrl || '').replace(/\/?$/, '');
+        paypalExpress.restBase = paypalExpress.baseUrl + '/rest/V1';
+        paypalExpress.setConfig(config);
+        paypalExpress.init();
     };
-
 })();

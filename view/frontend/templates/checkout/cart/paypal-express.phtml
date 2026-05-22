@@ -1,7 +1,6 @@
 <?php
 /**
  * PayPal Express button for cart page - Hyva/standalone (no RequireJS/Knockout).
- * Uses same Block and REST API as Buckaroo_Magento2; only the frontend is standalone.
  *
  * @var \Buckaroo\HyvaCheckout\Block\Checkout\Cart\PaypalExpress $block
  * @var \Magento\Framework\Escaper $escaper
@@ -9,103 +8,40 @@
 ?>
 <?php if ($block->canShowCartButton() && $block->hasCartItems() && !$block->isIdinVerificationRequired()): ?>
 <?php
-$config = $block->getConfig();
+$config = $block->getCartConfig();
 $config['baseUrl'] = $block->getUrl('', ['_secure' => $block->getRequest()->isSecure()]);
-$config['amount'] = $block->getCartTotal();
-$config['page'] = 'cart';
 ?>
 <div id="paypal-express-cart-hyva" class="buckaroo-paypal-express-cart">
     <div id="paypal-validation-error-cart-hyva" class="paypal-validation-error" style="display: none;"></div>
     <div class="buckaroo-paypal-express" id="buckaroo-paypal-express-cart"></div>
 </div>
 <script>
-(function() {
+(function () {
     'use strict';
 
-    var config = <?= /* @noEscape */ json_encode($config) ?>;
-    if (!config) return;
-
-    var checkoutButton = document.getElementById('checkout-link-button');
-    var paypalContainer = document.getElementById('paypal-express-cart-hyva');
-
-    if (!paypalContainer) return;
-
-    window.BuckarooHyvaCheckoutPaypalExpressCartConfig = config;
-
-    var paypalListItem = null;
-    var resizeTimeout;
-    var resizeListenerAttached = false;
-
-    /**
-     * Match PayPal button width to proceed to checkout button
-     */
-    function matchWidth() {
-        if (!checkoutButton || !paypalContainer) return;
-
-        var checkoutButtonWidth = checkoutButton.offsetWidth;
-        var computedStyle = window.getComputedStyle(checkoutButton);
-
-        paypalContainer.style.width = checkoutButtonWidth + 'px';
-        paypalContainer.style.maxWidth = computedStyle.maxWidth || 'none';
-        paypalContainer.style.minWidth = computedStyle.minWidth || 'auto';
+    var hyvaPaypal = window.BuckarooHyvaPaypalExpress;
+    if (!hyvaPaypal) {
+        return;
     }
 
-    /**
-     * Position PayPal button below checkout button and match its width
-     */
-    function positionPayPalButton() {
-        if (!checkoutButton || !paypalContainer) return;
+    window.BuckarooHyvaCheckoutPaypalExpressCartConfig = <?= /* @noEscape */ json_encode($config) ?>;
 
-        var checkoutListItem = checkoutButton.closest('li.item');
-        if (!checkoutListItem || !checkoutListItem.parentElement) return;
-
-        if (paypalListItem && checkoutListItem.nextSibling === paypalListItem) {
-            matchWidth();
-            return;
-        }
-
-        if (!paypalListItem) {
-            paypalListItem = document.createElement('li');
-            paypalListItem.className = 'item';
-            paypalContainer.parentNode.insertBefore(paypalListItem, paypalContainer);
-            paypalListItem.appendChild(paypalContainer);
-        }
-
-        var parent = checkoutListItem.parentNode;
-        if (checkoutListItem.nextSibling) {
-            parent.insertBefore(paypalListItem, checkoutListItem.nextSibling);
-        } else {
-            parent.appendChild(paypalListItem);
-        }
-
-        matchWidth();
-
-        if (!resizeListenerAttached) {
-            window.addEventListener('resize', function () {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(matchWidth, 100);
-            });
-            resizeListenerAttached = true;
-        }
-    }
-
-    /**
-     * Initialize when DOM is ready
-     */
-    function init() {
-        positionPayPalButton();
-
-        if (typeof window.BuckarooHyvaCheckoutPaypalExpressCartInit === 'function') {
-            window.BuckarooHyvaCheckoutPaypalExpressCartInit();
-        }
+    function run() {
+        hyvaPaypal.positionCartPaypalButton();
+        hyvaPaypal.whenReady(function () {
+            return window.jQuery && window.BuckarooSdk && window.BuckarooSdk.PayPal;
+        }, function () {
+            if (typeof window.BuckarooHyvaCheckoutPaypalExpressCartInit === 'function') {
+                window.BuckarooHyvaCheckoutPaypalExpressCartInit();
+            }
+        });
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', run);
     } else {
-        init();
+        run();
     }
-
 })();
 </script>
 <?php endif; ?>
