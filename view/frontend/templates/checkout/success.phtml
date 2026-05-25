@@ -20,8 +20,29 @@
 ?>
 
 <script>
-    window.addEventListener('load', function() {
+    (function () {
+        'use strict';
+
+        var reload = window.BuckarooHyvaPaypalExpress
+            && window.BuckarooHyvaPaypalExpress.reloadCustomerSectionData;
+
+        if (reload) {
+            reload();
+            return;
+        }
+
+        var storage = typeof window.hyva !== 'undefined' && window.hyva.getBrowserStorage
+            ? window.hyva.getBrowserStorage()
+            : null;
+
+        if (storage) {
+            storage.removeItem('mage-cache-storage');
+        }
+
+        if (typeof window.hyva !== 'undefined' && window.hyva.setCookie) {
+            window.hyva.setCookie('mage-cache-sessid', '', -1, true);
+        }
+
         window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
-        console.log('Reload shopping cart on success via Hyvä method');
-    });
+    })();
 </script>

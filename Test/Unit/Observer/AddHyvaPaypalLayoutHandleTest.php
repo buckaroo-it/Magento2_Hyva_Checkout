@@ -20,6 +20,7 @@ class AddHyvaPaypalLayoutHandleTest extends TestCase
 {
     private const HANDLE_CART = 'buckaroo_hyvacheckout_paypal_express_cart';
     private const HANDLE_PRODUCT = 'buckaroo_hyvacheckout_paypal_express_product';
+    private const HANDLE_SUCCESS = 'hyva_checkout_onepage_success';
 
     public function testNoopWhenThemeIsNotHyva(): void
     {
@@ -50,6 +51,16 @@ class AddHyvaPaypalLayoutHandleTest extends TestCase
         $processor->expects(self::once())->method('addHandle')->with(self::HANDLE_PRODUCT);
 
         $layout = $this->createLayout(['catalog_product_view'], $processor);
+
+        (new AddHyvaPaypalLayoutHandle($this->hyvaTheme()))->execute($this->makeObserver($layout));
+    }
+
+    public function testAddsSuccessHandleOnHyvaCheckoutSuccessPage(): void
+    {
+        $processor = $this->createMock(ProcessorInterface::class);
+        $processor->expects(self::once())->method('addHandle')->with(self::HANDLE_SUCCESS);
+
+        $layout = $this->createLayout(['checkout_onepage_success'], $processor);
 
         (new AddHyvaPaypalLayoutHandle($this->hyvaTheme()))->execute($this->makeObserver($layout));
     }
