@@ -107,9 +107,30 @@
         });
     }
 
+    /**
+     * Force Hyvä to reload customer section data (e.g. cart minicart count).
+     * REST API order placement does not invalidate private content like frontend POST requests.
+     */
+    function reloadCustomerSectionData() {
+        var storage = typeof window.hyva !== 'undefined' && window.hyva.getBrowserStorage
+            ? window.hyva.getBrowserStorage()
+            : null;
+
+        if (storage) {
+            storage.removeItem('mage-cache-storage');
+        }
+
+        if (typeof window.hyva !== 'undefined' && window.hyva.setCookie) {
+            window.hyva.setCookie('mage-cache-sessid', '', -1, true);
+        }
+
+        window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
+    }
+
     window.BuckarooHyvaPaypalExpress = {
         parseAmount: parseAmount,
         whenReady: whenReady,
-        post: post
+        post: post,
+        reloadCustomerSectionData: reloadCustomerSectionData
     };
 })(window);

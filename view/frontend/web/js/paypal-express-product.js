@@ -179,6 +179,9 @@
             }
 
             if (this.result && this.result.cart_id && this.result.cart_id.length) {
+                if (hyvaPaypal.reloadCustomerSectionData) {
+                    hyvaPaypal.reloadCustomerSectionData();
+                }
                 window.location.replace(this.baseUrl + '/checkout/onepage/success/');
             } else {
                 this.displayErrorMessage('Cannot create payment');

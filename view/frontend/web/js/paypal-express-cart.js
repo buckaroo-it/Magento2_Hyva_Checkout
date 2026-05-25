@@ -90,6 +90,9 @@
             if (result && result.message) {
                 displayErrorMessage(result.message);
             } else if (result && result.cart_id) {
+                if (hyvaPaypal.reloadCustomerSectionData) {
+                    hyvaPaypal.reloadCustomerSectionData();
+                }
                 window.location.replace(baseUrl + '/checkout/onepage/success/');
             } else {
                 displayErrorMessage('Cannot create payment');

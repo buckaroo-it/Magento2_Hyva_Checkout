@@ -10,13 +10,14 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\View\Layout;
 
 /**
- * Adds Hyvä-only layout handles for PayPal Express so Luma stores are unaffected.
+ * Adds Hyvä-only layout handles for PayPal Express and checkout success so Luma stores are unaffected.
  */
 class AddHyvaPaypalLayoutHandle implements ObserverInterface
 {
     private const PAGE_HANDLE_MAP = [
         'checkout_cart_index' => 'buckaroo_hyvacheckout_paypal_express_cart',
         'catalog_product_view' => 'buckaroo_hyvacheckout_paypal_express_product',
+        'checkout_onepage_success' => 'hyva_checkout_onepage_success',
     ];
 
     /**
