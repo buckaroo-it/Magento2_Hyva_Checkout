@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Buckaroo_HyvaCheckout::css/buckaroo-components.css"/>
+        <css src="Buckaroo_Magento2::css/express-payments.css"/>
+        <script src="jquery/jquery.min.js"/>
+        <script src="Buckaroo_HyvaCheckout::js/paypal-express-common.js"/>
+        <script src="Buckaroo_HyvaCheckout::js/paypal-express-ui.js"/>
+        <script src="Buckaroo_HyvaCheckout::js/product-price-mixin.js"/>
+        <script src="Buckaroo_Magento2::js/lib/buckaroo-sdk.js"/>
+        <script src="Buckaroo_HyvaCheckout::js/paypal-express-product.js"/>
+    </head>
+    <body>
+        <referenceBlock name="buckaroo_magento2.product.info.paypal.express"
+                        template="Buckaroo_HyvaCheckout::catalog/product/view/paypal-express.phtml">
+            <arguments>
+                <argument name="product_paypal_express_config" xsi:type="object">Buckaroo\HyvaCheckout\ViewModel\ProductPaypalExpressConfig</argument>
+            </arguments>
+        </referenceBlock>
+    </body>
+</page>

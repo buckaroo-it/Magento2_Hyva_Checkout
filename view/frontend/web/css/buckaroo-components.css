@@ -18,7 +18,6 @@
 #payment-method-option-buckaroo_magento2_afterpay20.bg-primary,
 #payment-method-option-buckaroo_magento2_billink.bg-primary,
 #payment-method-option-buckaroo_magento2_klarna.bg-primary,
-#payment-method-option-buckaroo_magento2_klarnain.bg-primary,
 #payment-method-option-buckaroo_magento2_sepadirectdebit.bg-primary,
 #payment-method-option-buckaroo_magento2_payperemail.bg-primary,
 #payment-method-option-buckaroo_magento2_paybybank.bg-primary,
@@ -37,7 +36,6 @@
 #payment-method-option-buckaroo_magento2_afterpay20.border-primary,
 #payment-method-option-buckaroo_magento2_billink.border-primary,
 #payment-method-option-buckaroo_magento2_klarna.border-primary,
-#payment-method-option-buckaroo_magento2_klarnain.border-primary,
 #payment-method-option-buckaroo_magento2_sepadirectdebit.border-primary,
 #payment-method-option-buckaroo_magento2_payperemail.border-primary,
 #payment-method-option-buckaroo_magento2_paybybank.border-primary,
@@ -458,4 +456,30 @@
     .buckaroo-notification-show {
         transform: translateY(0) !important;
     }
+}
+
+/* HyvaCheckout PayPal Express Product Page */
+#paypal-express-button-component-hyva {
+    margin-top: 1rem;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#paypal-express-button-component-hyva .buckaroo-paypal-express {
+    width: min(70%, 240px) !important;
+    max-width: 240px !important;
+    margin-left: auto;
+}
+
+/* HyvaCheckout PayPal Express Cart Page */
+#paypal-express-cart-hyva {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#paypal-express-cart-hyva .buckaroo-paypal-express {
+    width: 100%;
+    margin-bottom: 2rem;
+    max-width: 100%;
 }

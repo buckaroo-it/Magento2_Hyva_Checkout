@@ -1,0 +1,47 @@
+<?php
+/**
+ * PayPal Express button for cart page - Hyva/standalone (no RequireJS/Knockout).
+ *
+ * @var \Buckaroo\HyvaCheckout\Block\Checkout\Cart\PaypalExpress $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+?>
+<?php if ($block->canShowCartButton() && $block->hasCartItems() && !$block->isIdinVerificationRequired()): ?>
+<?php
+$config = $block->getCartConfig();
+$config['baseUrl'] = $block->getUrl('', ['_secure' => $block->getRequest()->isSecure()]);
+?>
+<div id="paypal-express-cart-hyva" class="buckaroo-paypal-express-cart">
+    <div id="paypal-validation-error-cart-hyva" class="paypal-validation-error" style="display: none;"></div>
+    <div class="buckaroo-paypal-express" id="buckaroo-paypal-express-cart"></div>
+</div>
+<script>
+(function () {
+    'use strict';
+
+    var hyvaPaypal = window.BuckarooHyvaPaypalExpress;
+    if (!hyvaPaypal) {
+        return;
+    }
+
+    window.BuckarooHyvaCheckoutPaypalExpressCartConfig = <?= /* @noEscape */ json_encode($config) ?>;
+
+    function run() {
+        hyvaPaypal.positionCartPaypalButton();
+        hyvaPaypal.whenReady(function () {
+            return window.jQuery && window.BuckarooSdk && window.BuckarooSdk.PayPal;
+        }, function () {
+            if (typeof window.BuckarooHyvaCheckoutPaypalExpressCartInit === 'function') {
+                window.BuckarooHyvaCheckoutPaypalExpressCartInit();
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run);
+    } else {
+        run();
+    }
+})();
+</script>
+<?php endif; ?>

@@ -28,6 +28,35 @@ function initializeBuckarooComponents() {
                 return;
             }
 
+            window.buckarooTasks = window.buckarooTasks || {};
+            window.buckarooLegacyTask = window.buckarooLegacyTask || null;
+
+            if (!window.__buckarooTaskDispatcherInitialized) {
+                Object.defineProperty(window, 'buckarooTask', {
+                    configurable: true,
+                    get() {
+                        return async () => {
+                            const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
+                            const paymentCode = selectedPayment ? selectedPayment.value : null;
+                            const registeredTask = paymentCode ? window.buckarooTasks[paymentCode] : null;
+
+                            if (typeof registeredTask === 'function') {
+                                return registeredTask();
+                            }
+
+                            if (typeof window.buckarooLegacyTask === 'function') {
+                                return window.buckarooLegacyTask();
+                            }
+                        };
+                    },
+                    set(task) {
+                        window.buckarooLegacyTask = typeof task === 'function' ? task : null;
+                    }
+                });
+
+                window.__buckarooTaskDispatcherInitialized = true;
+            }
+
             const addTask = function() {
                 hyvaCheckout.navigation.addTask(async () => {
                     if (window.buckarooTask) {
@@ -117,6 +146,79 @@ function initializeBuckarooComponents() {
         },
 
         // Shared notification system
+        registerTask(paymentCode, task) {
+            if (!paymentCode || typeof task !== 'function') {
+                return;
+            }
+
+            window.buckarooTasks = window.buckarooTasks || {};
+            window.buckarooTasks[paymentCode] = task;
+        },
+
+        registerGooglepayComponent(paymentCode, component) {
+            if (!paymentCode || !component) {
+                return;
+            }
+
+            window.buckaroo.googlepayComponents = window.buckaroo.googlepayComponents || {};
+            window.buckaroo.googlepayComponents[paymentCode] = component;
+        },
+
+        unregisterGooglepayComponent(paymentCode) {
+            if (!paymentCode || !window.buckaroo.googlepayComponents) {
+                return;
+            }
+
+            delete window.buckaroo.googlepayComponents[paymentCode];
+        },
+
+        registerGooglepayMethod(paymentCode) {
+            if (!paymentCode || typeof hyvaCheckout === 'undefined' || !hyvaCheckout.payment) {
+                return;
+            }
+
+            const googlepayValidate = async function () {
+                const component = window.buckaroo
+                    && window.buckaroo.googlepayComponents
+                    ? window.buckaroo.googlepayComponents[paymentCode]
+                    : null;
+
+                if (!component) {
+                    return false;
+                }
+
+                return component.authorizePayment();
+            };
+
+            const existingMethod = typeof hyvaCheckout.payment.getByCode === 'function'
+                ? hyvaCheckout.payment.getByCode(paymentCode)
+                : null;
+
+            if (existingMethod && existingMethod.__buckarooGooglepayMethod) {
+                return;
+            }
+
+            const method = Object.assign({}, existingMethod || {}, {
+                validate: googlepayValidate,
+                __buckarooGooglepayMethod: true
+            });
+
+            if (typeof hyvaCheckout.payment.activate === 'function') {
+                hyvaCheckout.payment.activate(paymentCode, method);
+                return;
+            }
+
+            if (existingMethod && Array.isArray(hyvaCheckout.payment.methods)) {
+                const index = hyvaCheckout.payment.methods.findIndex(candidate => candidate && candidate.code === paymentCode);
+
+                if (index !== -1) {
+                    hyvaCheckout.payment.methods.splice(index, 1);
+                }
+            }
+
+            hyvaCheckout.payment.registerMethod({ code: paymentCode, method: method });
+        },
+
         showTemporaryBanner(message, type = 'success') {
             const banner = document.createElement('div');
             const isSuccess = type === 'success';
@@ -769,11 +871,11 @@ function initializeBuckarooComponents() {
 
                 this.isAvailable = this.canDisplay;
 
-                window.buckarooTask = async () => {
+                window.buckaroo.registerTask('buckaroo_magento2_applepay', async () => {
                     if (this.canDisplay && this.isClientSide) {
                         await this.beginPayment();
                     }
-                };
+                });
             },
 
             /**
@@ -968,6 +1070,319 @@ function initializeBuckarooComponents() {
                 }
             };
         });
+
+        Alpine.data('buckarooGooglepay', () => ({
+            canDisplay: false,
+            isClientSide: false,
+            hasConfig: false,
+            config: {},
+            googlepayPaymentData: null,
+            paymentsClient: null,
+
+            init() {
+                this.hasConfig = this.$el.dataset.hasConfig === 'true';
+                this.isClientSide = this.$el.dataset.isClientSide === 'true';
+                this.config = this.$wire.get('config') || {};
+                const paymentCode = this.getPaymentCode();
+
+                window.buckaroo.registerGooglepayComponent(paymentCode, this);
+                this.initializeHyvaRegistration(paymentCode);
+                this.updateButtonVisibility();
+
+                if (!this.hasConfig) {
+                    this.hidePaymentMethod();
+                    return;
+                }
+
+                if (this.isClientSide) {
+                    this.initGooglePay();
+                }
+            },
+
+            getPaymentCode() {
+                return this.$el.dataset.paymentCode || 'buckaroo_magento2_googlepay';
+            },
+
+            initializeHyvaRegistration(paymentCode) {
+                if (!this.isClientSide) {
+                    return;
+                }
+
+                const registerMethod = () => window.buckaroo.registerGooglepayMethod(paymentCode);
+
+                if (typeof hyvaCheckout !== 'undefined' && hyvaCheckout.api && hyvaCheckout.payment) {
+                    hyvaCheckout.api.after(registerMethod);
+                    return;
+                }
+
+                window.addEventListener('checkout:init:after', registerMethod, { once: true });
+            },
+
+            updateButtonVisibility() {
+                const buttonContainer = this.$refs.buttonContainer;
+                if (!buttonContainer) {
+                    return;
+                }
+
+                buttonContainer.style.display = this.isClientSide && this.canDisplay ? '' : 'none';
+            },
+
+            async authorizePayment() {
+                if (!this.isClientSide || !this.canDisplay) {
+                    return false;
+                }
+
+                if (this.googlepayPaymentData) {
+                    return true;
+                }
+
+                try {
+                    await this.openGooglePaySheet();
+                    return true;
+                } catch (error) {
+                    if (error && error.statusCode !== 'CANCELED') {
+                        console.error('[Google Pay] Authorization failed:', error);
+                    }
+
+                    return false;
+                }
+            },
+
+            hidePaymentMethod() {
+                this.canDisplay = false;
+                this.updateButtonVisibility();
+
+                const paymentCode = this.getPaymentCode();
+                const radio = document.querySelector(`input[type="radio"][value="${paymentCode}"]`);
+                if (radio) {
+                    const wrapper = radio.closest('li, div.payment-method, label');
+                    if (wrapper) {
+                        wrapper.style.display = 'none';
+                        return;
+                    }
+                }
+                this.$el.style.display = 'none';
+            },
+
+            loadGooglePaySdk() {
+                return new Promise((resolve) => {
+                    if (window.google && window.google.payments) {
+                        resolve();
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.src = 'https://pay.google.com/gp/p/js/pay.js';
+                    script.async = true;
+                    script.onload = resolve;
+                    document.head.appendChild(script);
+                });
+            },
+
+            getPayConfig() {
+                const wireConfig = this.$wire && typeof this.$wire.get === 'function'
+                    ? this.$wire.get('config')
+                    : null;
+                const rawConfig = (wireConfig && Object.keys(wireConfig).length)
+                    ? wireConfig
+                    : (window.checkoutConfig?.payment?.buckaroo?.buckaroo_magento2_googlepay || {});
+                const scalar = (value, fallback = null) => {
+                    if (Array.isArray(value)) {
+                        const flattened = value.flat(Infinity);
+
+                        for (let index = flattened.length - 1; index >= 0; index -= 1) {
+                            const candidate = flattened[index];
+
+                            if (candidate !== null && candidate !== undefined && candidate !== '') {
+                                return candidate;
+                            }
+                        }
+
+                        return flattened.length ? flattened[flattened.length - 1] : fallback;
+                    }
+
+                    return value !== undefined ? value : fallback;
+                };
+                const normalizeBoolean = (value, fallback = false) => {
+                    const normalized = scalar(value, fallback);
+
+                    if (typeof normalized === 'boolean') {
+                        return normalized;
+                    }
+
+                    if (typeof normalized === 'number') {
+                        return normalized === 1;
+                    }
+
+                    if (typeof normalized === 'string') {
+                        return normalized === '1' || normalized.toLowerCase() === 'true';
+                    }
+
+                    return Boolean(normalized);
+                };
+                const normalizeArray = (value, fallback = []) => {
+                    if (!Array.isArray(value)) {
+                        return value ? [value] : fallback;
+                    }
+
+                    return value.flat(Infinity).filter(item => item !== null && item !== undefined && item !== '');
+                };
+
+                return {
+                    ...rawConfig,
+                    isTestMode: normalizeBoolean(rawConfig.isTestMode, false),
+                    merchantName: scalar(rawConfig.merchantName, scalar(rawConfig.storeName, '')),
+                    storeName: scalar(rawConfig.storeName, ''),
+                    currency: scalar(rawConfig.currency, 'EUR'),
+                    countryCode: scalar(rawConfig.countryCode, scalar(rawConfig.country, 'NL')),
+                    merchantId: scalar(rawConfig.merchantId, ''),
+                    gatewayMerchantId: scalar(rawConfig.gatewayMerchantId, scalar(rawConfig.guid, '')),
+                    guid: scalar(rawConfig.guid, ''),
+                    dontAskBillingInfoInCheckout: normalizeBoolean(rawConfig.dontAskBillingInfoInCheckout, false),
+                    allowedCardNetworks: normalizeArray(rawConfig.allowedCardNetworks, ['AMEX', 'DISCOVER', 'JCB', 'MASTERCARD', 'VISA']),
+                };
+            },
+
+            getGrandTotal() {
+                const wireGrandTotal = this.$wire && typeof this.$wire.get === 'function'
+                    ? this.$wire.get('grandTotal')
+                    : null;
+                const wireAmount = wireGrandTotal && typeof wireGrandTotal === 'object'
+                    ? wireGrandTotal.amount
+                    : wireGrandTotal;
+                const totalsGrandTotal = window.checkoutConfig?.totalsData?.grand_total;
+                const quoteGrandTotal = window.checkoutConfig?.quoteData?.grand_total;
+                const remainingAmount = window.checkoutConfig?.totalsData?.total_segments?.find(segment => segment.code === 'remaining_amount')?.value;
+                const amount = remainingAmount || wireAmount || totalsGrandTotal || quoteGrandTotal || 0;
+                const parsed = Number.parseFloat(amount);
+
+                return Number.isFinite(parsed) && parsed > 0 ? parsed.toFixed(2) : '0.00';
+            },
+
+            async initGooglePay() {
+                try {
+                    await this.loadGooglePaySdk();
+                } catch (e) {
+                    console.error('[Google Pay] Failed to load SDK:', e);
+                    this.hidePaymentMethod();
+                    return;
+                }
+
+                const config = this.getPayConfig();
+                const isTest = config.isTestMode === true;
+
+                this.paymentsClient = new google.payments.api.PaymentsClient({
+                    environment: isTest ? 'TEST' : 'PRODUCTION',
+                });
+
+                const isReadyToPayRequest = {
+                    apiVersion: 2,
+                    apiVersionMinor: 0,
+                    allowedPaymentMethods: [{
+                        type: 'CARD',
+                        parameters: {
+                            allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
+                            allowedCardNetworks: config.allowedCardNetworks || ['AMEX', 'DISCOVER', 'JCB', 'MASTERCARD', 'VISA'],
+                        },
+                    }],
+                };
+
+                try {
+                    const response = await this.paymentsClient.isReadyToPay(isReadyToPayRequest);
+                    this.canDisplay = response.result;
+                    this.updateButtonVisibility();
+
+                    if (!this.canDisplay) {
+                        this.hidePaymentMethod();
+                    }
+                } catch (e) {
+                    console.error('[Google Pay] isReadyToPay error:', e);
+                    this.hidePaymentMethod();
+                }
+            },
+
+            async openGooglePaySheet() {
+                const config = this.getPayConfig();
+                const grandTotal = this.getGrandTotal();
+                const isTest = config.isTestMode === true;
+                const merchantInfo = {
+                    merchantName: config.merchantName || config.storeName || '',
+                };
+
+                if (!isTest && config.merchantId) {
+                    merchantInfo.merchantId = String(config.merchantId);
+                }
+
+                const paymentDataRequest = {
+                    apiVersion: 2,
+                    apiVersionMinor: 0,
+                    allowedPaymentMethods: [{
+                        type: 'CARD',
+                        parameters: {
+                            allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
+                            allowedCardNetworks: config.allowedCardNetworks || ['AMEX', 'DISCOVER', 'JCB', 'MASTERCARD', 'VISA'],
+                            billingAddressRequired: true,
+                            billingAddressParameters: { format: 'FULL' },
+                        },
+                        tokenizationSpecification: {
+                            type: 'PAYMENT_GATEWAY',
+                            parameters: {
+                                gateway: 'buckaroo',
+                                gatewayMerchantId: config.gatewayMerchantId || config.guid || '',
+                            },
+                        },
+                    }],
+                    merchantInfo: merchantInfo,
+                    transactionInfo: {
+                        totalPriceStatus: 'FINAL',
+                        totalPrice: String(grandTotal),
+                        currencyCode: config.currency || 'EUR',
+                        countryCode: config.countryCode || 'NL',
+                        checkoutOption: 'COMPLETE_IMMEDIATE_PURCHASE',
+                    },
+                    emailRequired: !config.dontAskBillingInfoInCheckout,
+                };
+
+                let paymentData;
+
+                try {
+                    paymentData = await this.paymentsClient.loadPaymentData(paymentDataRequest);
+                } catch (error) {
+                    console.error('[Buckaroo Hyva Google Pay] loadPaymentData failed', {
+                        statusCode: error?.statusCode || null,
+                        statusMessage: error?.statusMessage || null,
+                        message: error?.message || null,
+                        error,
+                    });
+
+                    throw error;
+                }
+
+                const formattedData = this.formatPaymentData(paymentData);
+                await this.$wire.call('updateData', formattedData);
+                this.googlepayPaymentData = formattedData;
+                return formattedData;
+            },
+
+            formatPaymentData(paymentData) {
+                const tokenizationData = paymentData.paymentMethodData.tokenizationData;
+                const token = typeof tokenizationData.token === 'string'
+                    ? JSON.parse(tokenizationData.token)
+                    : tokenizationData.token;
+
+                return JSON.stringify({
+                    paymentMethodData: {
+                        type: paymentData.paymentMethodData.type,
+                        description: paymentData.paymentMethodData.description,
+                        info: paymentData.paymentMethodData.info,
+                        tokenizationData: {
+                            type: tokenizationData.type,
+                            token: token,
+                        },
+                    },
+                    email: paymentData.email || null,
+                });
+            },
+        }));
 
         Alpine.data('buckarooMrCash', () => {
             return {
