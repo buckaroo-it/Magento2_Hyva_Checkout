@@ -83,6 +83,16 @@
                 </arguments>
             </block>
 
+            <block name="checkout.payment.method.buckaroo_magento2_abnb2b"
+                   as="buckaroo_magento2_abnb2b"
+                   template="Buckaroo_HyvaCheckout::component/payment/method/abnb2b.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\AbnB2b
+                    </argument>
+                </arguments>
+            </block>
+
             <block name="checkout.payment.method.buckaroo_magento2_sepadirectdebit"
                    as="buckaroo_magento2_sepadirectdebit"
                    template="Buckaroo_HyvaCheckout::component/payment/method/sepaDirect.phtml">
