@@ -20,23 +20,38 @@ use Magento\Framework\Escaper;
         >
     </div>
 
-    <div class="flex flex-col gap-y-2 field field-reserved">
-        <label for="buckaroo_capayablein3_dob">
-            <?= $escaper->escapeHtml(__('Date of Birth:')); ?>
-            <span class="text-red-600">*</span>
-        </label>
-        <input
-            type="date"
-            x-data="buckarooDateHandler"
-            x-bind:value="value"
-            @blur="handleDateChange"
-            data-initial-value="<?= $escaper->escapeHtmlAttr($magewire->dateOfBirth ?? '') ?>"
-            id="buckaroo_capayablein3_dob"
-        >
-        <?php if ($magewire->hasError('dateOfBirth')) : ?>
-            <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
-        <?php endif; ?>
-    </div>
+    <?php if (!$magewire->showB2b()) : ?>
+        <div class="flex flex-col gap-y-2 field field-reserved">
+            <label for="buckaroo_capayablein3_dob">
+                <?= $escaper->escapeHtml(__('Date of Birth:')); ?>
+                <span class="text-red-600">*</span>
+            </label>
+            <input
+                type="date"
+                x-data="buckarooDateHandler"
+                x-bind:value="value"
+                @blur="handleDateChange"
+                data-initial-value="<?= $escaper->escapeHtmlAttr($magewire->dateOfBirth ?? '') ?>"
+                id="buckaroo_capayablein3_dob"
+            >
+            <?php if ($magewire->hasError('dateOfBirth')) : ?>
+                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($magewire->showB2b()) : ?>
+        <div class="flex flex-col gap-y-2 field field-reserved">
+            <label for="buckaroo_capayablein3_coc">
+                <?= $escaper->escapeHtml(__('COC Number:')); ?>
+                <span class="text-red-600">*</span>
+            </label>
+            <input type="text" wire:model.lazy="coc" id="buckaroo_capayablein3_coc">
+            <?php if ($magewire->hasError('coc')) : ?>
+                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('coc')) ?></div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 
 
     <?php if ($magewire->showPhone()) {
