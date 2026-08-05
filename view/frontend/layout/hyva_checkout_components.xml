@@ -153,6 +153,16 @@
                 </arguments>
             </block>
 
+            <block name="checkout.payment.method.buckaroo_magento2_clicktopay"
+                   as="buckaroo_magento2_clicktopay"
+                   template="Buckaroo_HyvaCheckout::component/payment/method/clicktopay.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Clicktopay
+                    </argument>
+                </arguments>
+            </block>
+
             <block name="checkout.payment.method.buckaroo_magento2_giftcards"
                    as="buckaroo_magento2_giftcards"
                    template="Buckaroo_HyvaCheckout::component/payment/method/giftcards.phtml">
