@@ -1384,6 +1384,336 @@ function initializeBuckarooComponents() {
             },
         }));
 
+        Alpine.data('buckarooClicktopay', () => ({
+            initErrorMessage: '',
+            accessTokenCache: null,
+            captureContextAmount: null,
+            initSequence: 0,
+            placingOrder: false,
+            totalsDebounceTimer: null,
+            sdkReady: false,
+
+            init() {
+                const hasConfig = this.$el.dataset.hasConfig === 'true';
+                if (!hasConfig) {
+                    return;
+                }
+
+                this.loadSdk()
+                    .then(() => {
+                        this.sdkReady = true;
+                        this.initializeCaptureContext();
+                        this.watchTotals();
+                    })
+                    .catch((error) => {
+                        console.error('[ClicktoPay] Failed to load Buckaroo SDK:', error);
+                        this.initErrorMessage = this.getInitErrorText();
+                    });
+            },
+
+            watchTotals() {
+                if (typeof this.$watch !== 'function') {
+                    return;
+                }
+
+                this.$watch('$wire.grandTotal', () => {
+                    clearTimeout(this.totalsDebounceTimer);
+                    this.totalsDebounceTimer = setTimeout(() => {
+                        this.initializeCaptureContext();
+                    }, 300);
+                });
+            },
+
+            loadScript(src) {
+                return new Promise((resolve, reject) => {
+                    if (!src) {
+                        reject(new Error('Script URL is missing.'));
+                        return;
+                    }
+
+                    const existing = document.querySelector(`script[src="${src}"]`);
+                    if (existing) {
+                        if (existing.dataset.loaded === 'true') {
+                            resolve();
+                            return;
+                        }
+                        existing.addEventListener('load', () => resolve(), { once: true });
+                        existing.addEventListener('error', () => reject(new Error(`Failed to load script: ${src}`)), { once: true });
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.async = true;
+                    script.onload = () => {
+                        script.dataset.loaded = 'true';
+                        resolve();
+                    };
+                    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+                    document.head.appendChild(script);
+                });
+            },
+
+            getJqueryUrl() {
+                return this.$el.dataset.jqueryUrl || '';
+            },
+
+            async loadSdk() {
+                if (typeof BuckarooSdk !== 'undefined' && BuckarooSdk.ClickToPay) {
+                    return;
+                }
+
+                if (typeof jQuery === 'undefined' && typeof window.jQuery === 'undefined') {
+                    const jqueryUrl = this.getJqueryUrl();
+                    if (!jqueryUrl) {
+                        throw new Error('jQuery URL is missing for Click to Pay.');
+                    }
+                    await this.loadScript(jqueryUrl);
+                }
+
+                const sdkUrl = this.$el.dataset.sdkUrl;
+                if (!sdkUrl) {
+                    throw new Error('Click to Pay SDK URL is missing.');
+                }
+
+                await this.loadScript(sdkUrl);
+
+                if (typeof BuckarooSdk === 'undefined' || !BuckarooSdk.ClickToPay) {
+                    throw new Error('Buckaroo Click to Pay SDK is unavailable after load.');
+                }
+            },
+
+            getConfig() {
+                const wireConfig = this.$wire && typeof this.$wire.get === 'function'
+                    ? this.$wire.get('config')
+                    : null;
+
+                return (wireConfig && Object.keys(wireConfig).length)
+                    ? wireConfig
+                    : (window.checkoutConfig?.payment?.buckaroo?.buckaroo_magento2_clicktopay || {});
+            },
+
+            getGrandTotal() {
+                const wireGrandTotal = this.$wire && typeof this.$wire.get === 'function'
+                    ? this.$wire.get('grandTotal')
+                    : null;
+                const wireAmount = wireGrandTotal && typeof wireGrandTotal === 'object'
+                    ? wireGrandTotal.amount
+                    : wireGrandTotal;
+                const totalsGrandTotal = window.checkoutConfig?.totalsData?.grand_total;
+                const quoteGrandTotal = window.checkoutConfig?.quoteData?.grand_total;
+                const amount = wireAmount || totalsGrandTotal || quoteGrandTotal || 0;
+                const parsed = Number.parseFloat(amount);
+
+                return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+            },
+
+            getFormKey() {
+                if (typeof hyva !== 'undefined' && typeof hyva.getFormKey === 'function') {
+                    return hyva.getFormKey();
+                }
+
+                const input = document.querySelector('input[name="form_key"]');
+                if (input && input.value) {
+                    return input.value;
+                }
+
+                const match = document.cookie.match(/(?:^|; )form_key=([^;]*)/);
+                return match ? decodeURIComponent(match[1]) : '';
+            },
+
+            getBaseUrl() {
+                if (window.BASE_URL) {
+                    return window.BASE_URL;
+                }
+
+                if (window.checkoutConfig?.payment?.buckaroo?.baseUrl) {
+                    return window.checkoutConfig.payment.buckaroo.baseUrl;
+                }
+
+                return '/';
+            },
+
+            getInitErrorText() {
+                return 'An error occurred, please try another payment method or try again later.';
+            },
+
+            normalizeCaptureContext(response) {
+                if (!response || typeof response !== 'object') {
+                    return response;
+                }
+
+                return Object.keys(response).reduce((accumulator, key) => {
+                    const camelKey = key.charAt(0).toLowerCase() + key.slice(1);
+                    accumulator[camelKey] = response[key];
+                    return accumulator;
+                }, {});
+            },
+
+            async fetchAccessToken() {
+                if (this.accessTokenCache && this.accessTokenCache.expiresAt > Date.now()) {
+                    return this.accessTokenCache.token;
+                }
+
+                const formKey = this.getFormKey();
+                const body = new URLSearchParams();
+                if (formKey) {
+                    body.append('form_key', formKey);
+                }
+
+                const response = await fetch(this.getBaseUrl() + 'buckaroo/clicktopay/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: body.toString(),
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to obtain Click to Pay access token.');
+                }
+
+                const data = await response.json();
+                if (data.error || !data.access_token) {
+                    throw new Error(data.error || 'Failed to obtain Click to Pay access token.');
+                }
+
+                const expiresIn = parseInt(data.expires_in, 10) || 0;
+                if (expiresIn > 0) {
+                    this.accessTokenCache = {
+                        token: data.access_token,
+                        expiresAt: Date.now() + (expiresIn * 1000)
+                    };
+                }
+
+                return data.access_token;
+            },
+
+            async onPaymentComplete(paymentData) {
+                const transientToken = paymentData?.transientToken || '';
+                const identifier = paymentData?.identifier || '';
+
+                if (!transientToken) {
+                    this.initErrorMessage = this.getInitErrorText();
+                    return;
+                }
+
+                try {
+                    await this.$wire.call('updatePaymentData', transientToken, identifier);
+
+                    if (this.placingOrder) {
+                        return;
+                    }
+
+                    this.placingOrder = true;
+                    await hyvaCheckout.order.place();
+                } catch (error) {
+                    console.error('[ClicktoPay] Place order failed:', error);
+                    this.initErrorMessage = this.getInitErrorText();
+                    if (this.$wire && typeof this.$wire.call === 'function') {
+                        await this.$wire.call('updatePaymentData', '', '');
+                    }
+                } finally {
+                    this.placingOrder = false;
+                }
+            },
+
+            async initializeCaptureContext() {
+                if (!this.sdkReady || typeof BuckarooSdk === 'undefined' || !BuckarooSdk.ClickToPay) {
+                    return;
+                }
+
+                const config = this.getConfig();
+                if (!config || !config.merchantIdentifier) {
+                    return;
+                }
+
+                const buttonWrapper = this.$refs.buttonWrapper || document.getElementById('buckaroo-clicktopay-button');
+                const screenWrapper = this.$refs.screenWrapper || document.getElementById('buckaroo-clicktopay-screen');
+
+                if (!buttonWrapper || !screenWrapper) {
+                    return;
+                }
+
+                const grandTotal = this.getGrandTotal();
+                if (!grandTotal || grandTotal === this.captureContextAmount) {
+                    return;
+                }
+
+                this.captureContextAmount = grandTotal;
+                this.initErrorMessage = '';
+                const sequence = ++this.initSequence;
+
+                let captureContext;
+                let captureContextOptions;
+
+                try {
+                    captureContextOptions = new BuckarooSdk.ClickToPay.CaptureContextOptions(
+                        config.merchantIdentifier,
+                        config.targetOrigins,
+                        config.country,
+                        config.locale,
+                        {
+                            currency: config.currency,
+                            totalAmount: grandTotal
+                        },
+                        (paymentData) => {
+                            this.onPaymentComplete(paymentData);
+                        }
+                    );
+
+                    captureContext = new BuckarooSdk.ClickToPay.CaptureContext(
+                        '#buckaroo-clicktopay-button',
+                        '#buckaroo-clicktopay-screen',
+                        captureContextOptions
+                    );
+                } catch (error) {
+                    this.captureContextAmount = null;
+                    this.initErrorMessage = this.getInitErrorText();
+                    console.error('[ClicktoPay] SDK initialization failed:', error);
+                    return;
+                }
+
+                try {
+                    const accessToken = await this.fetchAccessToken();
+                    const rawContext = await captureContext.generateCaptureContext(accessToken);
+                    const context = this.normalizeCaptureContext(rawContext);
+
+                    if (sequence !== this.initSequence) {
+                        return;
+                    }
+
+                    if (!context || !context.successful || !context.scriptUrl || !context.jwt) {
+                        throw new Error(
+                            (context && context.errorReason) || 'Capture context response was not successful.'
+                        );
+                    }
+
+                    buttonWrapper.innerHTML = '';
+                    screenWrapper.innerHTML = '';
+
+                    BuckarooSdk.ClickToPay.initiateClickToPayDropInUI(
+                        context.identifier,
+                        context.scriptUrl,
+                        context.jwt,
+                        '#buckaroo-clicktopay-button',
+                        '#buckaroo-clicktopay-screen',
+                        captureContextOptions.processPaymentCallback
+                    );
+
+                    this.initErrorMessage = '';
+                } catch (error) {
+                    if (sequence === this.initSequence) {
+                        this.captureContextAmount = null;
+                        this.initErrorMessage = this.getInitErrorText();
+                    }
+                    console.error('[ClicktoPay] SDK initialization failed:', error);
+                }
+            }
+        }));
+
         Alpine.data('buckarooMrCash', () => {
             return {
                 cseHasLoaded: false,

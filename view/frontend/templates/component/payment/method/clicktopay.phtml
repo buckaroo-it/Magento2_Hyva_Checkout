@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+/** @var Escaper $escaper */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Clicktopay $magewire */
+
+use Magento\Framework\Escaper;
+
+$hasConfig = !empty($magewire->config) && !empty($magewire->config['merchantIdentifier']);
+$sdkUrl = $hasConfig ? $magewire->getSdkUrl() : '';
+$jqueryUrl = $hasConfig ? $magewire->getJqueryUrl() : '';
+?>
+<div
+    class="col-span-6"
+    wire:key="buckaroo-clicktopay"
+    x-data="buckarooClicktopay"
+    data-has-config="<?= $hasConfig ? 'true' : 'false' ?>"
+    data-sdk-url="<?= $escaper->escapeHtmlAttr($sdkUrl) ?>"
+    data-jquery-url="<?= $escaper->escapeHtmlAttr($jqueryUrl) ?>"
+    data-payment-code="buckaroo_magento2_clicktopay"
+>
+    <?php if (!$hasConfig) : ?>
+        <div class="text-red-600 text-sm">
+            <?= $escaper->escapeHtml(__('An error occurred, please try another payment method or try again later.')); ?>
+        </div>
+    <?php else : ?>
+        <div
+            class="text-red-600 text-sm mb-2"
+            x-show="initErrorMessage"
+            x-text="initErrorMessage"
+            x-cloak
+        ></div>
+
+        <!-- Click to Pay Drop-in UI containers; SDK renders button and payment screen here -->
+        <div
+            id="buckaroo-clicktopay-button"
+            x-ref="buttonWrapper"
+            class="my-2"
+        ></div>
+
+        <div
+            id="buckaroo-clicktopay-screen"
+            x-ref="screenWrapper"
+            class="my-2"
+        ></div>
+    <?php endif; ?>
+</div>

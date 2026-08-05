@@ -30,6 +30,7 @@
                 <item name="buckaroo_magento2_voucher" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_applepay" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_googlepay" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
+                <item name="buckaroo_magento2_clicktopay" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_multibanco" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_knaken" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_mbway" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
