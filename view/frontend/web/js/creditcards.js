@@ -20,6 +20,7 @@
 // Hosted Fields SDK Integration for Hyva Checkout
 window.buckarooHostedFields = {
     sdkClient: null,
+    errorGate: null,
     tokenExpiresAt: null,
     oauthTokenError: '',
     paymentError: '',
@@ -38,9 +39,9 @@ window.buckarooHostedFields = {
                     'X-Requested-From': 'MagentoFrontend'
                 }
             });
-            
+
             const data = await response.json();
-            
+
             if (data.error) {
                 this.oauthTokenError = "An error occurred, please try another payment method or try again later.";
                 return false;
@@ -91,10 +92,15 @@ window.buckarooHostedFields = {
      */
     async resetHostedFields(errorMsg = '') {
         this.removeHostedFieldIframes();
+
+        if (this.errorGate) {
+            this.errorGate.reset();
+        }
+
         this.paymentError = errorMsg;
         await this.getOAuthToken();
         this.isPayButtonDisabled = false;
-        
+
         // Trigger update for Alpine.js components
         window.dispatchEvent(new CustomEvent('buckaroo-hosted-fields-reset'));
     },
@@ -115,23 +121,40 @@ window.buckarooHostedFields = {
             this.sdkClient.setLanguage(languageCode);
             this.sdkClient.setSupportedServices(issuers);
 
+            this.errorGate = window.BuckarooHostedFieldsErrorGate
+                ? window.BuckarooHostedFieldsErrorGate.createErrorGate({
+                    errorElementIds: {
+                        cardHolderName: 'cc-name-error',
+                        cardNumber: 'cc-number-error',
+                        expiryDate: 'cc-expiry-error',
+                        cvc: 'cc-cvc-error'
+                    }
+                })
+                : null;
+
             // Start the session and update the pay button state based on validation.
             await this.sdkClient.startSession((event) => {
-                this.sdkClient.handleValidation(
-                    event,
-                    'cc-name-error',
-                    'cc-number-error',
-                    'cc-expiry-error',
-                    'cc-cvc-error'
-                );
+                if (this.errorGate) {
+                    this.sdkClient.handleValidation(event);
+                    this.errorGate.handle(event);
+                } else {
+                    this.sdkClient.handleValidation(
+                        event,
+                        'cc-name-error',
+                        'cc-number-error',
+                        'cc-expiry-error',
+                        'cc-cvc-error'
+                    );
+                }
+
                 this.isPayButtonDisabled = !this.sdkClient.formIsValid();
                 this.service = this.sdkClient.getService();
-                
+
                 // Trigger update for Alpine.js components
                 window.dispatchEvent(new CustomEvent('buckaroo-hosted-fields-validation', {
-                    detail: { 
+                    detail: {
                         isValid: this.sdkClient.formIsValid(),
-                        service: this.service 
+                        service: this.service
                     }
                 }));
             });
@@ -206,7 +229,7 @@ window.buckarooHostedFields = {
 
             // Trigger success event
             window.dispatchEvent(new CustomEvent('buckaroo-hosted-fields-ready'));
-            
+
         } catch (error) {
             console.error("Error initializing hosted fields:", error);
             this.paymentError = "Failed to initialize payment form. Please try again.";
@@ -237,6 +260,10 @@ window.buckarooHostedFields = {
     async processPayment() {
         this.isPayButtonDisabled = true;
 
+        if (this.errorGate) {
+            this.errorGate.showAll();
+        }
+
         // Check if the token has expired before processing payment.
         if (Date.now() > this.tokenExpiresAt) {
             await this.resetHostedFields("We are refreshing the payment form, because the session has expired.");
@@ -252,7 +279,7 @@ window.buckarooHostedFields = {
             }
             this.encryptedCardData = paymentToken;
             this.service = this.sdkClient.getService();
-            
+
             return {
                 encryptedCardData: this.encryptedCardData,
                 service: this.service
@@ -264,4 +291,4 @@ window.buckarooHostedFields = {
             return null;
         }
     }
-}; 
+};

@@ -6,6 +6,7 @@
         <css src="Buckaroo_HyvaCheckout::css/buckaroo-components.css" />
 
         <script src="Buckaroo_HyvaCheckout::js/buckaroo-components.js" />
+        <script src="Buckaroo_Magento2::js/view/checkout/creditcards/hosted-fields-error-gate.js" />
         <script src="Buckaroo_HyvaCheckout::js/creditcards.js" />
         <script src="Buckaroo_HyvaCheckout::js/hide-applepay.js" />
         <script src="Buckaroo_HyvaCheckout::js/update-position.js"/>
