@@ -72,7 +72,6 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
             "pospayment" => "pos.png",
             "voucher" => "svg/vouchers.svg",
             "paybybank" => "paybybank.gif",
-            "knaken" => "svg/gosettle.svg",
         ];
 
         $name = "svg/{$method}.svg";
