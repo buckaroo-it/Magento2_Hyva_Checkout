@@ -91,13 +91,13 @@ class Giftcards extends Component\Form implements EvaluationInterface
         $config = $this->getConfig();
         if (
             $config === null ||
-            !isset($config['avaibleGiftcards']) ||
-            !is_array($config['avaibleGiftcards'])
+            !isset($config['availableGiftcards']) ||
+            !is_array($config['availableGiftcards'])
         ) {
             return [];
         }
         return array_filter(
-            $config['avaibleGiftcards'],
+            $config['availableGiftcards'],
             function ($type) {
                 return isset($type['code']) &&
                     isset($type['title']);
@@ -118,10 +118,8 @@ class Giftcards extends Component\Form implements EvaluationInterface
     private function getConfig(): ?array
     {
         $config = $this->methodConfigProvider->getConfig();
-        if (isset($config['payment']['buckaroo'])) {
-            return $config['payment']['buckaroo'];
-        }
-        return null;
+
+        return $config['payment']['buckaroo']['buckaroo_magento2_giftcards'] ?? null;
     }
 
     /**
