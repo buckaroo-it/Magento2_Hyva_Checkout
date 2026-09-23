@@ -74,7 +74,7 @@ php bin/magento cache:flush
 ```
 
 > [!TIP]
-> Always test an upgrade on a staging environment first and check the [release notes](https://github.com/buckaroo-it/Magento2_Hyva_Checkout/releases) for breaking changes.
+> Always test an upgrade on a staging environment first and check the [changelog](CHANGELOG.md) and [release notes](https://github.com/buckaroo-it/Magento2_Hyva_Checkout/releases) for breaking changes.
 
 ---
 
@@ -110,7 +110,7 @@ Still stuck? Contact us and include your Magento version, Hyvä Checkout version
 
 We really appreciate it when developers help improve the Buckaroo plugins. Please read our [Contribution Guidelines](https://github.com/buckaroo-it/Magento2_Hyva_Checkout/blob/main/CONTRIBUTING.md) before opening a pull request.
 
-Found a security issue? Please report it privately to [support@buckaroo.nl](mailto:support@buckaroo.nl) instead of opening a public issue.
+Found a security issue? Please report it privately as described in our [Security Policy](SECURITY.md) instead of opening a public issue.
 
 ---
 
