@@ -72,6 +72,8 @@ class Applepay extends Component\Form implements EvaluationInterface
             return;
         }
 
+        $this->clearStoredTransaction();
+
         $this->totals = $this->getTotalLines();
         $this->grandTotal = $this->getGrandTotal();
     }
@@ -93,9 +95,10 @@ class Applepay extends Component\Form implements EvaluationInterface
      *
      * @param string $paymentData
      * @param string $billingContact
+     * @param string $cardNetwork
      * @return string
      */
-    public function updateData(string $paymentData, string $billingContact): string
+    public function updateData(string $paymentData, string $billingContact, string $cardNetwork = ''): string
     {
         try {
             $this->applepayTransaction = $paymentData;
@@ -104,6 +107,10 @@ class Applepay extends Component\Form implements EvaluationInterface
             $quote = $this->sessionCheckout->getQuote();
             $quote->getPayment()->setAdditionalInformation('applepayTransaction', $paymentData);
             $quote->getPayment()->setAdditionalInformation('billingContact', $billingContact);
+            $quote->getPayment()->setAdditionalInformation(
+                'applepayCardNetwork',
+                $this->sanitizeCardNetwork($cardNetwork)
+            );
 
             // Save the quote to persist the additional information
             $this->quoteRepository->save($quote);
@@ -113,17 +120,85 @@ class Applepay extends Component\Form implements EvaluationInterface
         }
         return $paymentData;
     }
+
     /**
-     * Evaluate completion - allow order placement
+     * Keep only a plain card network name such as "Visa" or "MasterCard"
      *
-     * window.buckarooTask handles Apple Pay authorization before this is called
+     * @param string $cardNetwork
+     *
+     * @return string
+     */
+    private function sanitizeCardNetwork(string $cardNetwork): string
+    {
+        $cardNetwork = trim($cardNetwork);
+
+        return preg_match('/^[A-Za-z][A-Za-z ]{0,31}$/', $cardNetwork) === 1 ? $cardNetwork : '';
+    }
+
+    /**
+     * Evaluate completion
+     *
+     * In inline mode the order can only be placed once the Apple Pay sheet has returned its payment data
+     * (stored by updateData()). In redirect mode the shopper completes Apple Pay at Buckaroo.
      *
      * @param EvaluationResultFactory $resultFactory
      * @return EvaluationResultInterface
      */
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
+        if ($this->isClientSideMode() && empty($this->getStoredTransaction())) {
+            return $resultFactory->createErrorMessageEvent()
+                ->withCustomEvent('payment:method:error')
+                ->withMessage('Please use the Apple Pay button to complete your payment.');
+        }
+
         return $resultFactory->createSuccess();
+    }
+
+    /**
+     * Inline (SDK) mode: integrationMode 0. Redirect mode: integrationMode 1.
+     *
+     * @return bool
+     */
+    private function isClientSideMode(): bool
+    {
+        return !empty($this->config) && (string)($this->config['integrationMode'] ?? '1') === '0';
+    }
+
+    /**
+     * Apple Pay payment data stored on the quote for this checkout
+     *
+     * @return string|null
+     */
+    private function getStoredTransaction(): ?string
+    {
+        try {
+            $transaction = $this->sessionCheckout->getQuote()->getPayment()->getAdditionalInformation('applepayTransaction');
+        } catch (\Exception $exception) {
+            return null;
+        }
+
+        return is_string($transaction) && $transaction !== '' ? $transaction : null;
+    }
+
+    /**
+     * Apple Pay payment data can be used once; start every checkout visit without it
+     *
+     * @return void
+     */
+    private function clearStoredTransaction(): void
+    {
+        if ($this->getStoredTransaction() === null) {
+            return;
+        }
+
+        try {
+            $quote = $this->sessionCheckout->getQuote();
+            $quote->getPayment()->unsAdditionalInformation('applepayTransaction');
+            $this->quoteRepository->save($quote);
+        } catch (\Exception $exception) {
+            return;
+        }
     }
 
     /**

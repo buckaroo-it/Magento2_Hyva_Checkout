@@ -17,6 +17,15 @@ $jsSdkUrl = $hasConfig ? $magewire->getJsSdkUrl() : '';
     data-is-client-side="<?= $isClientSide ? 'true' : 'false' ?>"
     data-js-sdk-url="<?= $escaper->escapeHtmlAttr($jsSdkUrl) ?>"
     data-payment-code="buckaroo_magento2_applepay"
-    @place-order.window="handlePlaceOrder"
 >
+    <?php if ($isClientSide): ?>
+        <div x-show="canDisplay" x-cloak class="buckaroo-apple-pay-button-wrapper">
+            <apple-pay-button
+                id="buckaroo-apple-pay-button"
+                type="buy"
+                buttonstyle="black"
+                @click="startApplePay"
+            ></apple-pay-button>
+        </div>
+    <?php endif; ?>
 </div>

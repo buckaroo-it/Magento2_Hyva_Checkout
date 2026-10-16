@@ -20,6 +20,38 @@
 // Buckaroo Alpine.js Components for Hyva Checkout
 window.buckaroo = window.buckaroo || {};
 
+/**
+ * Load Apple's Apple Pay JS SDK once. It provides ApplePaySession in browsers other than
+ * Safari (payment via QR code on an iPhone). Only called when Apple Pay is offered.
+ */
+window.buckarooLoadAppleSdk = window.buckarooLoadAppleSdk || (function () {
+    const APPLE_PAY_SDK_URL = 'https://applepay.cdn-apple.com/jsapi/1.latest/apple-pay-sdk.js';
+    let loading = null;
+
+    return function () {
+        if (loading) {
+            return loading;
+        }
+
+        loading = new Promise(resolve => {
+            if (document.querySelector(`script[src="${APPLE_PAY_SDK_URL}"]`)) {
+                resolve();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = APPLE_PAY_SDK_URL;
+            script.crossOrigin = 'anonymous';
+            script.async = true;
+            script.onload = () => resolve();
+            script.onerror = () => resolve();
+            document.head.appendChild(script);
+        });
+
+        return loading;
+    };
+})();
+
 function initializeBuckarooComponents() {
     window.buckaroo = {
         start() {
@@ -262,15 +294,24 @@ function initializeBuckarooComponents() {
             return {
                 config: {},
                 canDisplay: false,
-                loadSdk() {
-                    return new Promise(resolve => {
+                async loadSdk() {
+                    await window.buckarooLoadAppleSdk();
+
+                    // The Buckaroo Apple Pay script declares globals, so it is loaded once per page
+                    if (typeof window.BuckarooApplePay !== 'undefined') {
+                        return;
+                    }
+                    window.buckarooApplePayScript = window.buckarooApplePayScript || new Promise(resolve => {
                         const script = document.createElement('script');
                         script.type = 'text/javascript';
                         script.src = jsSdk;
                         script.async = true;
                         script.onload = resolve;
+                        script.onerror = resolve;
                         document.head.appendChild(script);
-                    })
+                    });
+
+                    return window.buckarooApplePayScript;
                 },
 
                 async formatTransactionResponse(response) {
@@ -300,7 +341,10 @@ function initializeBuckarooComponents() {
                         : '';
 
                     const formattedData = await this.formatTransactionResponse(payment);
-                    await this.$wire.updateData(formattedData, billingContact);
+                    const cardNetwork = payment && payment.token && payment.token.paymentMethod
+                        ? String(payment.token.paymentMethod.network || '')
+                        : '';
+                    await this.$wire.updateData(formattedData, billingContact, cardNetwork);
                     this.resolve();
 
                     return {
@@ -752,6 +796,7 @@ function initializeBuckarooComponents() {
             applePayInstance: null,
             resolve: null,
             reject: null,
+            isPaying: false,
 
             init() {
                 const hasConfig = this.$el.dataset.hasConfig === 'true';
@@ -795,12 +840,20 @@ function initializeBuckarooComponents() {
                 this.canDisplay = await BuckarooApplePay.checkPaySupport(this.config.guid);
 
                 this.isAvailable = this.canDisplay;
+                if (!this.canDisplay) {
+                    this.hidePaymentMethod();
+                }
 
-                window.buckaroo.registerTask('buckaroo_magento2_applepay', async () => {
-                    if (this.canDisplay && this.isClientSide) {
-                        await this.beginPayment();
+                const appleButton = this.$el.querySelector('apple-pay-button');
+                if (appleButton) {
+                    appleButton.setAttribute('buttonstyle', this.config.buttonStyle || 'black');
+                    if (this.config.cultureCode) {
+                        appleButton.setAttribute('locale', this.config.cultureCode);
                     }
-                });
+                }
+
+                // The Apple Pay sheet is started from the Apple Pay button (a user gesture is required);
+                // the order is placed after the sheet returns its payment data.
             },
 
             /**
@@ -847,7 +900,8 @@ function initializeBuckarooComponents() {
                             null,
                             null,
                             ["name", "postalAddress", "phone"],
-                            ["name", "postalAddress", "phone"]
+                            ["name", "postalAddress", "phone"],
+                            () => this.reject(new Error('Apple Pay was cancelled.'))
                         );
                         new BuckarooApplePay.PayPayment(config).beginPayment();
                     } catch (error) {
@@ -877,7 +931,11 @@ function initializeBuckarooComponents() {
                     this.applepayTransaction = formattedData;
                     this.billingContact = billingContact;
 
-                    await this.$wire.call('updateData', formattedData, billingContact);
+                    const cardNetwork = payment && payment.token && payment.token.paymentMethod
+                        ? String(payment.token.paymentMethod.network || '')
+                        : '';
+
+                    await this.$wire.call('updateData', formattedData, billingContact, cardNetwork);
 
                     this.resolve();
 
@@ -902,34 +960,27 @@ function initializeBuckarooComponents() {
             },
 
             /**
-             * Handle Place Order button click
+             * Apple Pay button click: open the Apple Pay sheet, then place the order
              */
-            async handlePlaceOrder(event) {
-                // Only handle if Apple Pay is selected and SDK mode
-                const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
-                if (!selectedPayment || selectedPayment.value !== 'buckaroo_magento2_applepay') {
+            startApplePay() {
+                if (this.isPaying || !this.canDisplay || !this.isClientSide) {
                     return;
                 }
 
-                if (!this.isClientSide || !this.canDisplay) {
-                    return;
-                }
+                this.isPaying = true;
 
-                // Check if we already have data
-                if (this.applepayTransaction) {
-                    return;
-                }
-
-                // No data yet - prevent order and trigger Apple Pay
-                event.preventDefault();
-                event.stopPropagation();
-
-                try {
-                    await this.beginPayment();
-                    window.dispatchEvent(new CustomEvent('place-order', { detail: { skipValidation: true } }));
-                } catch (error) {
-                    console.error('[Apple Pay] Authorization failed:', error);
-                }
+                // beginPayment() creates the Apple Pay session synchronously inside this click
+                this.beginPayment()
+                    .then(() => hyvaCheckout.order.place())
+                    .catch((error) => {
+                        if (error && error.message !== 'Apple Pay was cancelled.') {
+                            console.error('[Apple Pay] Payment failed:', error);
+                            window.buckaroo.showTemporaryBanner('Apple Pay payment failed. Please try again.', 'error');
+                        }
+                    })
+                    .finally(() => {
+                        this.isPaying = false;
+                    });
             }
         }));
 
