@@ -235,11 +235,12 @@ function initializeBuckarooComponents() {
                                 : '<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>'
                             }
                         </svg>
-                        <span>${message}</span>
+                        <span class="buckaroo-notification-text"></span>
                     </div>
                     <button class="buckaroo-notification-close" onclick="this.closest('.buckaroo-notification').remove()">×</button>
                 </div>
             `;
+            banner.querySelector('.buckaroo-notification-text').textContent = String(message ?? '');
 
             document.body.appendChild(banner);
 
@@ -412,6 +413,7 @@ function initializeBuckarooComponents() {
                 pin: '',
                 cardNumber: '',
                 canSubmit:false,
+                isSubmitting: false,
 
                 updateCard(event) {
                     this.card = event.target.value;
@@ -442,75 +444,28 @@ function initializeBuckarooComponents() {
                 },
 
                 async submit() {
-                    if(!await this.formValid()) {
+                    if (!await this.formValid() || this.isSubmitting) {
                         return;
                     }
 
-                    let responseHandled = false;
-                    const responsePromise = this.waitForGiftcardResponse(5000);
+                    // One server call per submit: a retry could send a second payment for the same card
+                    this.isSubmitting = true;
+                    const responsePromise = this.waitForGiftcardResponse(30000);
+                    responsePromise.catch(() => {});
 
                     try {
-                        if (this.$wire && typeof this.$wire.applyGiftcard === 'function') {
-                            const wireCallPromise = Promise.race([
-                                this.$wire.applyGiftcard(this.card, this.cardNumber, this.pin),
-                                new Promise((_, reject) => {
-                                    setTimeout(() => reject(new Error('Wire call timeout')), 3000);
-                                })
-                            ]);
+                        await this.$wire.applyGiftcard(this.card, this.cardNumber, this.pin);
 
-                            try {
-                                await wireCallPromise;
-                                try {
-                                    await responsePromise;
-                                    responseHandled = true;
-                                    return;
-                                } catch (eventError) {
-                                    this.displayGenericSuccess();
-                                    responseHandled = true;
-                                    return;
-                                }
-                            } catch (wireError) {
-                                console.warn('Giftcard wire call error:', wireError);
-                                try {
-                                    await Promise.race([
-                                        responsePromise,
-                                        new Promise((_, reject) => setTimeout(() => reject(new Error('Response timeout')), 2000))
-                                    ]);
-                                    responseHandled = true;
-                                    return;
-                                } catch (eventError) {
-                                    // Continue to fallback
-                                }
-                            }
+                        try {
+                            await responsePromise;
+                        } catch (eventError) {
+                            this.displayGenericSuccess();
                         }
-
-                        if (!responseHandled) {
-                            if (this.$wire && typeof this.$wire.call === 'function') {
-                                try {
-                                    await this.$wire.call('applyGiftcard', this.card, this.cardNumber, this.pin);
-                                    await responsePromise;
-                                    responseHandled = true;
-                                    return;
-                                } catch (callError) {
-                                    console.warn('Giftcard call error:', callError);
-                                }
-                            }
-
-                            if (!responseHandled) {
-                                await this.submitViaAjax();
-                                responseHandled = true;
-                            }
-                        }
-
                     } catch (error) {
                         console.warn('Giftcard submission error:', error);
-                        if (!responseHandled) {
-                            try {
-                                await this.submitViaAjax();
-                            } catch (ajaxError) {
-                                window.buckaroo.showTemporaryBanner('Unable to process giftcard. Please try again.', 'error');
-                            }
-                        }
+                        window.buckaroo.showTemporaryBanner('Unable to process giftcard. Please try again.', 'error');
+                    } finally {
+                        this.isSubmitting = false;
                     }
                 },
 
@@ -574,38 +529,6 @@ function initializeBuckarooComponents() {
                         });
                     } else if (response.remainder_amount != 0) {
                         this.displaySuccess(response);
-                    }
-                },
-
-                async submitViaAjax() {
-                    const response = await fetch('/buckaroo/checkout/giftcard', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({
-                            card: this.card,
-                            cardNumber: this.cardNumber,
-                            pin: this.pin
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-
-                    const result = await response.json();
-
-                    if (result.error) {
-                        this.displayError(result.error);
-                    } else if(result.remainder_amount === undefined) {
-                        this.displayError(result.message);
-                    } else if (result.remainder_amount == 0) {
-                        this.canSubmit = true;
-                        await hyvaCheckout.order.place();
-                    } else if (result.remainder_amount != 0) {
-                        this.displaySuccess(result);
                     }
                 },
 
@@ -748,7 +671,9 @@ function initializeBuckarooComponents() {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
                         },
+                        credentials: 'same-origin',
                         body: JSON.stringify({voucherCode: this.code})
                     };
 
@@ -1565,7 +1490,8 @@ function initializeBuckarooComponents() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-Requested-From': 'MagentoFrontend'
                     },
                     body: body.toString(),
                     credentials: 'same-origin'

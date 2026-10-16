@@ -33,7 +33,8 @@ window.buckarooHostedFields = {
      */
     async getOAuthToken() {
         try {
-            const response = await fetch('/buckaroo/credentialschecker/gettoken', {
+            const baseUrl = (window.BASE_URL || '/').replace(/\/?$/, '/');
+            const response = await fetch(baseUrl + 'buckaroo/credentialschecker/gettoken', {
                 method: 'GET',
                 headers: {
                     'X-Requested-From': 'MagentoFrontend'
