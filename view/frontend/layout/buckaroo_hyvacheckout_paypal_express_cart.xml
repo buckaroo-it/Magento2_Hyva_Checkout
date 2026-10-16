@@ -8,6 +8,7 @@
         <script src="Buckaroo_HyvaCheckout::js/paypal-express-ui.js"/>
         <script src="Buckaroo_Magento2::js/lib/buckaroo-sdk.js"/>
         <script src="Buckaroo_HyvaCheckout::js/paypal-express-cart.js"/>
+        <script src="Buckaroo_HyvaCheckout::js/applepay-express.js"/>
     </head>
     <body>
         <referenceBlock name="buckaroo.paypal.express.cart.button" remove="true"/>
@@ -15,6 +16,14 @@
             <block class="Buckaroo\HyvaCheckout\Block\Checkout\Cart\PaypalExpress"
                    name="buckaroo.paypal.express.cart.button.hyva"
                    template="Buckaroo_HyvaCheckout::checkout/cart/paypal-express.phtml"/>
+            <block class="Buckaroo\Magento2\Block\Catalog\Product\View\Applepay"
+                   name="buckaroo.applepay.express.cart.button.hyva"
+                   template="Buckaroo_HyvaCheckout::express/applepay.phtml">
+                <arguments>
+                    <argument name="apple_pay_express_config" xsi:type="object">Buckaroo\HyvaCheckout\ViewModel\ApplePayExpressConfig</argument>
+                    <argument name="express_page" xsi:type="string">Cart</argument>
+                </arguments>
+            </block>
         </referenceContainer>
     </body>
 </page>

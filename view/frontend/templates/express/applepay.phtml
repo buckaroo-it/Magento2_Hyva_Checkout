@@ -1,0 +1,45 @@
+<?php
+/**
+ * Apple Pay express button for the product and cart page - Hyvä (no RequireJS/Knockout).
+ *
+ * @var \Buckaroo\Magento2\Block\Catalog\Product\View\Applepay $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var \Buckaroo\HyvaCheckout\ViewModel\ApplePayExpressConfig $viewModel */
+$viewModel = $block->getData('apple_pay_express_config');
+$page = (string)$block->getData('express_page') === 'Cart' ? 'Cart' : 'Product';
+
+if (!$viewModel || !$viewModel->canShow($block, $page)) {
+    return;
+}
+
+$config = $viewModel->getConfig($block, $page);
+$containerId = $page === 'Cart' ? 'apple-pay-express-cart-hyva' : 'apple-pay-express-product-hyva';
+?>
+<div id="<?= $escaper->escapeHtmlAttr($containerId) ?>"
+     class="buckaroo-apple-pay-express buckaroo-apple-pay-express-<?= $escaper->escapeHtmlAttr(strtolower($page)) ?>"
+     style="display: none;">
+    <apple-pay-button type="buy" buttonstyle="black"></apple-pay-button>
+</div>
+<script>
+(function () {
+    'use strict';
+
+    var config = <?= /* @noEscape */ json_encode($config) ?>;
+    var containerId = <?= /* @noEscape */ json_encode($containerId) ?>;
+
+    function run() {
+        if (window.BuckarooHyvaApplePayExpress) {
+            window.BuckarooHyvaApplePayExpress.init(containerId, config);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run);
+    } else {
+        run();
+    }
+})();
+</script>
+<?php if (isset($hyvaCsp)) { $hyvaCsp->registerInlineScript(); } ?>
