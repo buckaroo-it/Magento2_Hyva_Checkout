@@ -1,0 +1,21 @@
+<?php
+/**
+ * Apple Pay merchant identifier for the payment method list, so availability can be checked the same
+ * way as in the Magento 2 plugin before Apple Pay is selected. No inline script (strict checkout CSP).
+ *
+ * @var \Buckaroo\Magento2\Block\Catalog\Product\View\Applepay $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+if (!$block->isModuleActive()) {
+    return;
+}
+
+$config = json_decode((string)$block->getApplepayConfig(), true);
+$guid = (string)($config['payment']['buckaroo']['buckaroo_magento2_applepay']['guid'] ?? '');
+
+if ($guid === '') {
+    return;
+}
+?>
+<div id="buckaroo-applepay-checkout-config" data-guid="<?= $escaper->escapeHtmlAttr($guid) ?>" hidden></div>
