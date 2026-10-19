@@ -28,8 +28,6 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
         'customer_billing_country_saved' => 'refresh',
     ];
 
-    public ?bool $tos = true;
-
     public string $dateOfBirth = '';
 
     public string $fullName = '';
@@ -41,8 +39,6 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
     public ?string $phone = null;
 
     public const RULES_COC = ['required', 'numeric', 'digits_between:0,8'];
-
-    public const RULES_TOS = ['required', 'boolean', 'accepted'];
 
     public const RULES_ID_NUMBER = ['required', 'alpha_num'];
 
@@ -82,14 +78,6 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
             ->getQuote()
             ->getPayment();
 
-        $tos =  $payment->getAdditionalInformation('termsCondition');
-        if($tos === null) {
-            $tos = true;
-            $payment->setAdditionalInformation('termsCondition', $tos);
-        }
-
-
-        $this->tos = $tos === true;
         $this->coc = $payment->getAdditionalInformation('customer_coc');
         $this->phone = $payment->getAdditionalInformation('customer_telephone');
         $this->identificationNumber = $payment->getAdditionalInformation('customer_identificationNumber');
@@ -140,13 +128,6 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
         $this->updatePaymentField('customer_coc', $value);
         // The gateway builder sends the business registration number from this key
         $this->updatePaymentField('customer_identificationNumber', $value);
-        return $value;
-    }
-
-    public function updatedTos(bool $value): ?bool
-    {
-        $this->validateField('tos', self::RULES_TOS, $value, "This is a required field");
-        $this->updatePaymentField('termsCondition', $value);
         return $value;
     }
 
@@ -270,57 +251,6 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
     }
 
     /**
-     * Get tos link based on country and b2b
-     *
-     * @return void
-     */
-    public function getTosLink()
-    {
-        $countryId = $this->getCountryId();
-        $isB2B = $this->showCOC();
-
-        if ($isB2B){
-            $tosUrl = 'https://documents.riverty.com/terms_conditions/payment_methods/b2b_invoice/';
-        } else {
-            $tosUrl = 'https://documents.riverty.com/terms_conditions/payment_methods/invoice/';
-        }
-
-        switch ($countryId) {
-            case 'DE':
-                $tosCountry = 'de_de';
-                break;
-            case 'AT':
-                $tosCountry = 'at_de';
-                break;
-            case 'CH':
-                $tosCountry = 'ch_de';
-                break;
-            case 'NL':
-                $tosCountry = 'nl_nl';
-                break;
-            case 'BE':
-                $tosCountry = 'be_nl';
-                break;
-            case 'FI':
-                $tosCountry = 'fi_en';
-                break;
-            case 'SE':
-                $tosCountry = 'se_en';
-                break;
-            case 'NO':
-                $tosCountry = 'no_en';
-                break;
-            case 'DK':
-                $tosCountry = 'dk_en';
-                break;
-            default:
-                $tosCountry = 'nl_en';
-                break;
-        }
-        return $tosUrl . $tosCountry . '/';
-    }
-
-    /**
      * Get billing full name
      *
      * @return string
@@ -343,9 +273,7 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
      */
     private function getFormValues(): array
     {
-        $values = [
-            'tos' => $this->tos
-        ];
+        $values = [];
 
         if ($this->showBirth()) {
             $values = array_merge($values, ['dateOfBirth' => $this->dateOfBirth]);
@@ -371,7 +299,7 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
      */
     private function getFormRules(): array
     {
-        $rules = ['tos' => self::RULES_TOS];
+        $rules = [];
 
         if ($this->showBirth()) {
             $rules = array_merge($rules, ['dateOfBirth' => self::RULES_DATE_OF_BIRTH]);
@@ -453,44 +381,5 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
         );
 
         return $validation->fails();
-    }
-
-    /**
-     * Check if financial warning should be shown
-     * Only shown for Dutch customers when enabled in config
-     *
-     * @return bool
-     */
-    public function showFinancialWarning(): bool
-    {
-        return $this->getCountryId() === 'NL' && $this->methodConfigProvider->canShowFinancialWarning();
-    }
-
-    /**
-     * Get payment method title
-     *
-     * @return string
-     */
-    public function getPaymentMethodTitle(): string
-    {
-        return (string) ($this->methodConfigProvider->getTitle() ?? 'Riverty');
-    }
-
-    /**
-     * Get financial warning message for Afterpay20/Riverty
-     *
-     * @return string
-     */
-    public function getFinancialWarningMessage(): string
-    {
-        $title = $this->getPaymentMethodTitle();
-
-        return (string)__(
-            'Je moet minimaal 18+ zijn om deze dienst te gebruiken. Als je op tijd betaalt, voorkom je extra kosten en zorg je dat je in de toekomst nogmaals gebruik kunt maken van de diensten van %1. Door verder te gaan, accepteer je de <a target="_blank" href="%2">Algemene&nbsp;Voorwaarden</a> en bevestig je dat je de <a target="_blank" href="%3">Privacyverklaring</a> en <a target="_blank" href="%4">Cookieverklaring</a> hebt gelezen.',
-            $title,
-            'https://documents.riverty.com/terms_conditions/payment_methods/invoice/nl_nl/default',
-            'https://www.riverty.com/nl-nl/privacybeleid/',
-            'https://www.riverty.com/nl-nl/cookies/'
-        );
     }
 }
