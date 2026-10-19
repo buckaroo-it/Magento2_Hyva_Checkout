@@ -1,0 +1,123 @@
+rules:
+  # ---------------------------------------------------------------------------
+  # Log lines must not contain payment details such as card numbers, PINs or
+  # wallet payment data. Log the action and an order or quote reference instead.
+  # ---------------------------------------------------------------------------
+  - id: buckaroo-hyva-payment-details-in-log
+    languages: [php]
+    severity: ERROR
+    message: >-
+      This log call includes payment details ($VAR). Log a reference such as the
+      quote or order id instead.
+    patterns:
+      - pattern: $THIS->$LOGGER->$METHOD(..., <... $VAR ...>, ...)
+      - metavariable-regex:
+          metavariable: $LOGGER
+          regex: (?i).*logger.*
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: (?i)^\$\w*(cardnumber|pin|cvc|cvv|iban|encrypted|paymentdata|applepaytransaction|billingcontact)\w*$
+
+  # Full gateway responses can contain payment details; log selected fields only.
+  - id: buckaroo-hyva-full-response-in-log
+    languages: [php]
+    severity: WARNING
+    message: >-
+      A complete response is written to the log. Log only the fields needed,
+      such as the status code and transaction key.
+    patterns:
+      - pattern: $THIS->$LOGGER->$METHOD(..., <... json_encode($RESPONSE) ...>, ...)
+      - metavariable-regex:
+          metavariable: $LOGGER
+          regex: (?i).*logger.*
+      - metavariable-regex:
+          metavariable: $RESPONSE
+          regex: (?i)^\$\w*response\w*$
+
+  # ---------------------------------------------------------------------------
+  # Values must not be written into the page as HTML. Build elements and set
+  # textContent instead.
+  # ---------------------------------------------------------------------------
+  - id: buckaroo-hyva-html-from-value
+    languages: [javascript]
+    severity: ERROR
+    message: >-
+      A value is written into the page as HTML. Create the elements and set
+      textContent instead.
+    patterns:
+      - pattern-either:
+          - pattern: $EL.innerHTML = $VALUE
+          - pattern: $EL.outerHTML = $VALUE
+          - pattern: $EL.insertAdjacentHTML($POS, $VALUE)
+          - pattern: document.write($VALUE)
+      - pattern-not: $EL.innerHTML = "..."
+      - pattern-not: $EL.outerHTML = "..."
+      - pattern-not: $EL.insertAdjacentHTML($POS, "...")
+
+  # ---------------------------------------------------------------------------
+  # The Hyvä checkout runs with a strict Content Security Policy: no eval and
+  # no string code.
+  # ---------------------------------------------------------------------------
+  - id: buckaroo-hyva-string-code
+    languages: [javascript]
+    severity: ERROR
+    message: >-
+      Code built from a string does not run under the Hyvä checkout Content
+      Security Policy. Use a function instead.
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+      - pattern: setTimeout("...", ...)
+      - pattern: setInterval("...", ...)
+
+  # Every inline script in a template needs to be registered with the CSP helper.
+  - id: buckaroo-hyva-inline-script-not-registered
+    languages: [regex]
+    severity: ERROR
+    paths:
+      include:
+        - "*.phtml"
+    message: >-
+      Inline script without $hyvaCsp->registerInlineScript() directly after
+      </script>. It will not run under the Hyvä Content Security Policy.
+    pattern-regex: </script>(?!\s*<\?php[^?]*registerInlineScript\(\))
+
+  # The Alpine CSP build only accepts property and method names in directives.
+  - id: buckaroo-hyva-alpine-expression-in-template
+    languages: [regex]
+    severity: ERROR
+    paths:
+      include:
+        - "*.phtml"
+    message: >-
+      Alpine directive with an expression. The Alpine CSP build used by the
+      Hyvä checkout only accepts a property or method name; move the logic
+      into the component.
+    pattern-regex: (?:\s@|\sx-on:)[\w.:-]+="[^"]*[()!=&|?+;'`][^"]*"
+
+  # ---------------------------------------------------------------------------
+  # Product form data must go through the Magento 2 plugin's BuyRequestFilter
+  # before it is used for a quote.
+  # ---------------------------------------------------------------------------
+  - id: buckaroo-hyva-buy-request-from-unfiltered-form-data
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Form data is parsed here without BuyRequestFilter. Use
+      \Buckaroo\Magento2\Model\Service\BuyRequestFilter::fromFormString().
+    pattern: $P->fromString(...);
+
+  # ---------------------------------------------------------------------------
+  # Template output should be escaped. Mark intentional raw output with
+  # /* @noEscape */.
+  # ---------------------------------------------------------------------------
+  - id: buckaroo-hyva-unescaped-template-output
+    languages: [regex]
+    severity: WARNING
+    paths:
+      include:
+        - "*.phtml"
+    message: >-
+      Template output without escaping. Use $escaper->escapeHtml(),
+      escapeHtmlAttr(), escapeUrl() or escapeJs(), or mark it /* @noEscape */.
+    pattern-regex: <\?=(?!\s*(?:\$escaper->escape|\$block->escape|/\*\s*@noEscape|\(int\)|\(float\)|\$hyvaCsp))[^?]+\?>
