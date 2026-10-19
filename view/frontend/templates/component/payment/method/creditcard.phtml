@@ -42,7 +42,7 @@ $issuers = $magewire->getIssuers();
                     for="bk_credicard_issuer_<?= $escaper->escapeHtmlAttr($issuer["code"]) ?>"
                     class="flex flex-row flex-grow gap-x-2 items-center">
                         <img src="<?= $escaper->escapeUrl($issuer["img"]) ?>"
-                        alt="<?= $issuer["name"] ?>"
+                        alt="<?= $escaper->escapeHtmlAttr($issuer["name"]) ?>"
                         style="max-height:25px;"
                         />
                         <?=  $escaper->escapeHtml($issuer["name"]) ?>

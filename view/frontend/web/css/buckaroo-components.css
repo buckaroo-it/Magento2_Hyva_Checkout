@@ -483,3 +483,11 @@
     margin-bottom: 2rem;
     max-width: 100%;
 }
+
+/* The shared express CSS stretches the PayPal frame to its container; give the
+   Hyvä containers the same fixed height that is passed to the PayPal button */
+#paypal-express-cart-hyva .buckaroo-paypal-express .paypal-buttons,
+#paypal-express-button-component-hyva .buckaroo-paypal-express .paypal-buttons {
+    height: 40px !important;
+    min-height: 40px !important;
+}

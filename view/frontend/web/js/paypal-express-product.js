@@ -58,6 +58,8 @@
             }
 
             this.options = Object.assign({}, config, {
+                // Fixed height, matched by the container height in buckaroo-components.css
+                style: Object.assign({}, config.style || {}, { height: 40 }),
                 containerSelector: containerSelector,
                 amount: productPrice.toFixed(2),
                 createPaymentHandler: this.createPaymentHandler.bind(this),

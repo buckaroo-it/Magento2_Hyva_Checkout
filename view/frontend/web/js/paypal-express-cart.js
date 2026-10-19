@@ -133,9 +133,8 @@
         options.page = 'cart';
         options.isTestMode = !!config.isTestMode;
 
-        if (config.style) {
-            options.style = config.style;
-        }
+        // Fixed height, matched by the container height in buckaroo-components.css
+        options.style = Object.assign({}, config.style || {}, { height: 40 });
 
         var container = document.querySelector(containerSelector);
         if (!container || container.hasAttribute('data-buckaroo-paypal-rendered')) {

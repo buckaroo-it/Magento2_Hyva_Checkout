@@ -155,6 +155,7 @@ abstract class AfterpayBase extends Component\Form implements EvaluationInterfac
         );
 
         $this->updatePaymentField('cOCNumber', $value);
+        $this->updatePaymentField('COCNumber', $value);
         return $value;
     }
 
@@ -190,6 +191,7 @@ abstract class AfterpayBase extends Component\Form implements EvaluationInterfac
     {
         $this->validateField('companyName', self::RULES_COMPANY_NAME, $value);
         $this->updatePaymentField('companyName', $value);
+        $this->updatePaymentField('CompanyName', $value);
         return $value;
     }
 

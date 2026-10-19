@@ -138,6 +138,8 @@ class Afterpay20 extends Component\Form implements EvaluationInterface
 
         $this->updatePaymentField('customer_DoB', '', '');
         $this->updatePaymentField('customer_coc', $value);
+        // The gateway builder sends the business registration number from this key
+        $this->updatePaymentField('customer_identificationNumber', $value);
         return $value;
     }
 

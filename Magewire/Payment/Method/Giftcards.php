@@ -9,6 +9,8 @@ use Buckaroo\Magento2\Logging\Log;
 use Magento\Framework\UrlInterface;
 use Magewirephp\Magewire\Component;
 use Buckaroo\Magento2\Helper\PaymentGroupTransaction;
+use Buckaroo\Magento2\Service\Giftcard\AttemptLimit;
+use Buckaroo\Magento2\Model\Giftcard\Api\ApiException;
 use Magento\Checkout\Model\Session as SessionCheckout;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationInterface;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
@@ -37,6 +39,8 @@ class Giftcards extends Component\Form implements EvaluationInterface
     protected Log $logger;
     protected $pricingHelper;
 
+    protected AttemptLimit $attemptLimit;
+
     public function __construct(
         UrlInterface $urlBuilder,
         SessionCheckout $sessionCheckout,
@@ -45,7 +49,8 @@ class Giftcards extends Component\Form implements EvaluationInterface
         GiftcardRequest $giftcardRequest,
         GiftcardResponse $giftcardResponse,
         Log $logger,
-        PricingHelper $pricingHelper
+        PricingHelper $pricingHelper,
+        AttemptLimit $attemptLimit
     ) {
         $this->urlBuilder = $urlBuilder;
         $this->sessionCheckout = $sessionCheckout;
@@ -55,6 +60,7 @@ class Giftcards extends Component\Form implements EvaluationInterface
         $this->giftcardResponse = $giftcardResponse;
         $this->logger = $logger;
         $this->pricingHelper = $pricingHelper;
+        $this->attemptLimit = $attemptLimit;
     }
 
     /**
@@ -137,40 +143,61 @@ class Giftcards extends Component\Form implements EvaluationInterface
         string $cardNumber,
         string $pin
     ): void {
+        if ($this->isRedirect()) {
+            $this->emitGiftcardError(__('Cannot apply giftcard'));
+            return;
+        }
+
         try {
             $quote = $this->sessionCheckout->getQuote();
+            $this->attemptLimit->assertWithinLimit($quote);
 
-            $buckarooResponse = $this->buildGiftcardRequest($quote, $card, $cardNumber, $pin)->send();
-            
-            // Debug logging to track Buckaroo API response
-            $this->logger->addDebug('Buckaroo Giftcard API Response: ' . json_encode($buckarooResponse));
-            $this->logger->addDebug('Quote Grand Total: ' . $quote->getGrandTotal());
-            $this->logger->addDebug('Giftcard Details - Card: ' . $card . ', Number: ' . $cardNumber);
+            try {
+                $buckarooResponse = $this->buildGiftcardRequest($quote, $card, $cardNumber, $pin)->send();
+            } catch (ApiException $apiException) {
+                $this->attemptLimit->registerFailedAttempt($quote);
+                throw $apiException;
+            }
 
             $response = $this->getGiftcardResponse($quote, $buckarooResponse);
-            
-            // Log processed response
-            $this->logger->addDebug('Processed Giftcard Response: ' . json_encode($response));
 
-            // Update canSubmit status if payment is complete
+            if (isset($response['error'])) {
+                $this->attemptLimit->registerFailedAttempt($quote);
+            }
+
             if (isset($response['remainder_amount']) && $response['remainder_amount'] == 0) {
                 $this->canSubmit = true;
             }
 
-            // Emit giftcard_response with the response
             try {
                 $this->emit("giftcard_response", $response);
             } catch (\Throwable $emitError) {
                 $this->logger->addDebug('Error emitting giftcard_response: ' . $emitError->getMessage());
             }
-
         } catch (\Throwable $th) {
-            $this->logger->addDebug('Error in applyGiftcard: ' . (string)$th);
-            try {
-                $this->emit("giftcard_response", ["error" => __('Cannot apply giftcard')]);
-            } catch (\Throwable $emitError) {
-                $this->logger->addDebug('Error emitting error response: ' . $emitError->getMessage());
-            }
+            $this->logger->addError(sprintf(
+                '[Giftcard] | [Hyva] | [%s:%s] - Apply Inline Giftcard | [ERROR]: %s',
+                __METHOD__,
+                __LINE__,
+                $th->getMessage()
+            ));
+            $this->emitGiftcardError(__('Cannot apply giftcard'));
+        }
+    }
+
+    /**
+     * Emit a generic giftcard error to the frontend
+     *
+     * @param \Magento\Framework\Phrase|string $message
+     *
+     * @return void
+     */
+    private function emitGiftcardError($message): void
+    {
+        try {
+            $this->emit("giftcard_response", ["error" => $message]);
+        } catch (\Throwable $emitError) {
+            $this->logger->addDebug('Error emitting error response: ' . $emitError->getMessage());
         }
     }
 
