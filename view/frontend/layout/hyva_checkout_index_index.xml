@@ -11,4 +11,11 @@
         <script src="Buckaroo_HyvaCheckout::js/hide-applepay.js" />
         <script src="Buckaroo_HyvaCheckout::js/update-position.js"/>
     </head>
+    <body>
+        <referenceContainer name="after.body.start">
+            <block class="Buckaroo\Magento2\Block\Catalog\Product\View\Applepay"
+                   name="buckaroo.hyva.checkout.applepay.config"
+                   template="Buckaroo_HyvaCheckout::checkout/applepay-config.phtml"/>
+        </referenceContainer>
+    </body>
 </page>

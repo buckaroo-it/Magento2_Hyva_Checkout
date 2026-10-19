@@ -17,9 +17,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
+        const configElement = document.getElementById('buckaroo-applepay-checkout-config');
+        const merchantIdentifier = window.merchantIdentifier || (configElement ? configElement.dataset.guid : '');
+
         try {
-            if (window.merchantIdentifier && typeof ApplePaySession.applePayCapabilities === 'function') {
-                const capabilities = await ApplePaySession.applePayCapabilities(window.merchantIdentifier);
+            if (merchantIdentifier && typeof ApplePaySession.applePayCapabilities === 'function') {
+                const capabilities = await ApplePaySession.applePayCapabilities(merchantIdentifier);
                 return capabilities.paymentCredentialStatus !== 'applePayUnsupported';
             }
 
