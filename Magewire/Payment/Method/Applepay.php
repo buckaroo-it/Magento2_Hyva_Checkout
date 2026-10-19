@@ -263,7 +263,7 @@ class Applepay extends Component\Form implements EvaluationInterface
 
                 $totals[] = [
                     'label' => $total->getData('title'),
-                    'amount' => $amount,
+                    'amount' => $this->formatAmount($amount),
                     'type' => 'final',
                 ];
             }
@@ -290,9 +290,21 @@ class Applepay extends Component\Form implements EvaluationInterface
 
         return [
             'label' => $total->getData('title'),
-            'amount' => $total->getData('value'),
+            'amount' => $this->formatAmount($total->getData('value')),
             'type' => 'final',
         ];
+    }
+
+    /**
+     * Amounts are kept as strings so the component data stays identical between requests
+     * (a float such as 34.0 would come back from the browser as the integer 34)
+     *
+     * @param mixed $amount
+     * @return string
+     */
+    private function formatAmount($amount): string
+    {
+        return number_format((float)$amount, 2, '.', '');
     }
 
     /**

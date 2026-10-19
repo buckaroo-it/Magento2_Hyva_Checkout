@@ -363,8 +363,8 @@ function initializeBuckarooComponents() {
                             this.config.currency,
                             this.config.cultureCode,
                             this.config.guid,
-                            this.$wire.get('totals'),
-                            this.$wire.get('grandTotal'),
+                            JSON.parse(JSON.stringify(this.$wire.get('totals') || [])),
+                            JSON.parse(JSON.stringify(this.$wire.get('grandTotal') || {})),
                             'shipping',
                             [],
                             (payment) => this.captureFunds(payment),
@@ -887,8 +887,10 @@ function initializeBuckarooComponents() {
                     this.reject = reject;
 
                     try {
-                        const totals = this.$wire.get('totals');
-                        const grandTotal = this.$wire.get('grandTotal');
+                        // Copies: the Apple Pay session may change the objects it receives,
+                        // the component data itself has to stay as the server sent it
+                        const totals = JSON.parse(JSON.stringify(this.$wire.get('totals') || []));
+                        const grandTotal = JSON.parse(JSON.stringify(this.$wire.get('grandTotal') || {}));
 
                         const config = new BuckarooApplePay.PayOptions(
                             this.config.storeName,
@@ -952,7 +954,7 @@ function initializeBuckarooComponents() {
                     this.reject(error);
                     return {
                         status: window.ApplePaySession.STATUS_FAILURE,
-                        errors: [{ message: error.message || 'Payment processing failed.' }],
+                        errors: [{ message: (error && error.message) || 'Payment processing failed.' }],
                     };
                 }
             },

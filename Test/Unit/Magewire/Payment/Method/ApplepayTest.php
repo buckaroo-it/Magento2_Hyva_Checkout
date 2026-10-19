@@ -12,6 +12,7 @@ use Magento\Checkout\Model\Session as SessionCheckout;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Payment;
+use Magento\Quote\Model\Quote\Address\Total;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -111,5 +112,34 @@ class ApplepayTest extends TestCase
         $factory->method('createSuccess')->willReturn($this->createMock(Success::class));
 
         self::assertInstanceOf($expected, $component->evaluateCompletion($factory));
+    }
+
+    public function testTotalsAreUnchangedAfterAJsonRoundTrip(): void
+    {
+        $totals = [];
+        foreach (['shipping' => 5.0, 'tax' => 6.5] as $code => $value) {
+            $total = $this->createMock(Total::class);
+            $total->method('getData')->willReturnMap([['value', null, $value], ['title', null, $code]]);
+            $totals[$code] = $total;
+        }
+        $totals['grand_total'] = $this->createMock(Total::class);
+        $totals['grand_total']->method('getData')->willReturnMap([['value', null, 40.0], ['title', null, 'Total']]);
+
+        $quote = $this->createMock(Quote::class);
+        $quote->method('getTotals')->willReturn($totals);
+        $session = $this->createMock(SessionCheckout::class);
+        $session->method('getQuote')->willReturn($quote);
+
+        $reflection = new \ReflectionClass(Applepay::class);
+        $component = $reflection->newInstanceWithoutConstructor();
+        $prop = $reflection->getProperty('sessionCheckout');
+        $prop->setAccessible(true);
+        $prop->setValue($component, $session);
+
+        foreach (['getTotalLines', 'getGrandTotal'] as $method) {
+            $data = $reflection->getMethod($method)->invoke($component);
+            self::assertSame(serialize($data), serialize(json_decode(json_encode($data), true)), $method);
+        }
+        self::assertSame('40.00', $reflection->getMethod('getGrandTotal')->invoke($component)['amount']);
     }
 }
