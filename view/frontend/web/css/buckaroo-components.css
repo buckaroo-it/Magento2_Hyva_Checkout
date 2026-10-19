@@ -492,18 +492,6 @@
     min-height: 40px !important;
 }
 
-/* Apple Pay button (Apple Pay JS SDK web component) */
-.buckaroo-apple-pay-button-wrapper {
-    margin-top: 0.5rem;
-}
-
-.buckaroo-apple-pay-button-wrapper apple-pay-button {
-    --apple-pay-button-width: 100%;
-    --apple-pay-button-height: 44px;
-    --apple-pay-button-border-radius: 6px;
-    display: block;
-}
-
 /* Apple Pay express button on the product and cart page */
 .buckaroo-apple-pay-express {
     width: 100%;
