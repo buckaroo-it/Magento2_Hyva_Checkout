@@ -1,0 +1,43 @@
+name: Code checks
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  semgrep:
+    name: Semgrep (Buckaroo Hyvä rules)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v5
+
+      # Blocking: ERROR-severity rules. --error makes semgrep exit non-zero on a match.
+      - name: Code checks (blocking)
+        run: semgrep --config .semgrep/buckaroo-hyva-rules.yml --severity=ERROR --error --metrics=off --exclude Test .
+
+      # Advisory: WARNING-severity rules are reported for review and never fail the build.
+      - name: Code checks (advisory)
+        if: always()
+        continue-on-error: true
+        run: semgrep --config .semgrep/buckaroo-hyva-rules.yml --severity=WARNING --metrics=off --exclude Test .
+
+  php-lint:
+    name: PHP syntax
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.1', '8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: Lint
+        run: find . -name '*.php' -o -name '*.phtml' | grep -v '^./vendor/' | xargs -n1 -P4 php -l > /dev/null
