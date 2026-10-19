@@ -844,12 +844,16 @@ function initializeBuckarooComponents() {
                     this.hidePaymentMethod();
                 }
 
-                const appleButton = this.$el.querySelector('apple-pay-button');
-                if (appleButton) {
-                    appleButton.setAttribute('buttonstyle', this.config.buttonStyle || 'black');
-                    if (this.config.cultureCode) {
-                        appleButton.setAttribute('locale', this.config.cultureCode);
-                    }
+                // Same as the Luma checkout: Place Order opens the Apple Pay sheet. The click is caught
+                // before Hyvä places the order, because Apple Pay must start inside the click itself.
+                window.buckarooApplePayPlaceOrder = (event) => this.onPlaceOrderClick(event);
+                if (!window.buckarooApplePayPlaceOrderListener) {
+                    window.buckarooApplePayPlaceOrderListener = true;
+                    document.addEventListener('click', (event) => {
+                        if (typeof window.buckarooApplePayPlaceOrder === 'function') {
+                            window.buckarooApplePayPlaceOrder(event);
+                        }
+                    }, true);
                 }
 
                 // The Apple Pay sheet is started from the Apple Pay button (a user gesture is required);
@@ -962,6 +966,33 @@ function initializeBuckarooComponents() {
             /**
              * Apple Pay button click: open the Apple Pay sheet, then place the order
              */
+            /**
+             * Place Order with Apple Pay selected: start the Apple Pay sheet instead of placing the order
+             * @param {MouseEvent} event
+             */
+            onPlaceOrderClick(event) {
+                const button = event.target && event.target.closest ? event.target.closest('button[data-step]') : null;
+                if (!button || !document.body.contains(this.$el)) {
+                    return;
+                }
+
+                let step = {};
+                try {
+                    step = JSON.parse(button.dataset.step || '{}');
+                } catch (error) {
+                    return;
+                }
+
+                const applePayRadio = document.getElementById('payment-method-buckaroo_magento2_applepay');
+                if (!step.place || !applePayRadio || !applePayRadio.checked || !this.canDisplay || !this.isClientSide) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                this.startApplePay();
+            },
+
             startApplePay() {
                 if (this.isPaying || !this.canDisplay || !this.isClientSide) {
                     return;

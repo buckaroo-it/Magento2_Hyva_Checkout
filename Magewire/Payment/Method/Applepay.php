@@ -149,7 +149,7 @@ class Applepay extends Component\Form implements EvaluationInterface
         if ($this->isClientSideMode() && empty($this->getStoredTransaction())) {
             return $resultFactory->createErrorMessageEvent()
                 ->withCustomEvent('payment:method:error')
-                ->withMessage('Please use the Apple Pay button to complete your payment.');
+                ->withMessage('Apple Pay could not be completed. Please try again.');
         }
 
         return $resultFactory->createSuccess();
