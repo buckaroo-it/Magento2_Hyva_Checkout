@@ -492,3 +492,37 @@
     min-height: 40px !important;
 }
 
+/* Apple Pay express button on the product and cart page */
+.buckaroo-apple-pay-express {
+    width: 100%;
+    margin-top: 0.75rem;
+}
+
+.buckaroo-apple-pay-express-product {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.buckaroo-apple-pay-express apple-pay-button {
+    --apple-pay-button-width: 100%;
+    --apple-pay-button-height: 40px;
+    --apple-pay-button-border-radius: 20px;
+    display: block;
+    width: 100%;
+}
+
+.buckaroo-apple-pay-express-product apple-pay-button {
+    width: min(70%, 240px);
+}
+
+.buckaroo-apple-pay-express-error {
+    width: 100%;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #dc2626;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 0.875rem;
+}
+
