@@ -766,6 +766,23 @@ function initializeBuckarooComponents() {
     // Register Alpine.data components
     if (typeof Alpine !== 'undefined' && Alpine.data) {
 
+        // CSP-friendly info tooltip (hover on desktop, tap on touch devices)
+        Alpine.data('buckarooTooltip', () => ({
+            open: false,
+
+            show() {
+                this.open = true;
+            },
+
+            hide() {
+                this.open = false;
+            },
+
+            toggle() {
+                this.open = !this.open;
+            }
+        }));
+
         // CSP-friendly date handler for date of birth fields
         Alpine.data('buckarooDateHandler', () => ({
             value: '',

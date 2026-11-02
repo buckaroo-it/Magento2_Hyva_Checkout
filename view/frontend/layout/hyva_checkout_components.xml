@@ -84,6 +84,16 @@
                 </arguments>
             </block>
 
+            <block name="checkout.payment.method.buckaroo_magento2_zakelijkoprekening"
+                   as="buckaroo_magento2_zakelijkoprekening"
+                   template="Buckaroo_HyvaCheckout::component/payment/method/zakelijkoprekening.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\ZakelijkOpRekening
+                    </argument>
+                </arguments>
+            </block>
+
             <block name="checkout.payment.method.buckaroo_magento2_sepadirectdebit"
                    as="buckaroo_magento2_sepadirectdebit"
                    template="Buckaroo_HyvaCheckout::component/payment/method/sepaDirect.phtml">
