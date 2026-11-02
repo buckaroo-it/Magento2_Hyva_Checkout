@@ -21,7 +21,8 @@
 #payment-method-option-buckaroo_magento2_sepadirectdebit.bg-primary,
 #payment-method-option-buckaroo_magento2_payperemail.bg-primary,
 #payment-method-option-buckaroo_magento2_paybybank.bg-primary,
-#payment-method-option-buckaroo_magento2_capayablein3.bg-primary {
+#payment-method-option-buckaroo_magento2_capayablein3.bg-primary,
+#payment-method-option-buckaroo_magento2_zakelijkoprekening.bg-primary {
     background-color: #f8fafc !important; /* Light gray instead of blue */
 }
 
@@ -39,8 +40,16 @@
 #payment-method-option-buckaroo_magento2_sepadirectdebit.border-primary,
 #payment-method-option-buckaroo_magento2_payperemail.border-primary,
 #payment-method-option-buckaroo_magento2_paybybank.border-primary,
-#payment-method-option-buckaroo_magento2_capayablein3.border-primary {
+#payment-method-option-buckaroo_magento2_capayablein3.border-primary,
+#payment-method-option-buckaroo_magento2_zakelijkoprekening.border-primary {
     border-color: #374151 !important; /* Dark gray border instead of blue */
+}
+
+/* Info tooltip next to a payment method (e.g. Zakelijk op rekening) */
+.buckaroo-info-tooltip {
+    width: 16rem;
+    max-width: calc(100vw - 2rem);
+    white-space: normal;
 }
 
 /* Tailwind CSS Reset and Base Styles for Buckaroo Components */

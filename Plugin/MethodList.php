@@ -59,7 +59,7 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
             "afterpay20" => "svg/afterpay.svg",
             "capayablein3" => "svg/in3.svg",
             "capayablepostpay" => "svg/in3.svg",
-            "abnb2b" => "svg/zakelijk-op-rekening-abn-amro.svg",
+            "zakelijkoprekening" => "svg/zakelijk-op-rekening-abn-amro.svg",
             "creditcard" => "svg/creditcards.svg",
             "creditcards" => "svg/creditcards.svg",
             "giftcards" => "svg/giftcards.svg",
