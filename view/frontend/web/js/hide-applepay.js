@@ -1,16 +1,50 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const hideApplePayIfUnsupported = function () {
-        const checkApplePaySupport = function () {
-            if (!('ApplePaySession' in window)) return false;
-            if (typeof ApplePaySession === 'undefined') return false;
-            return ApplePaySession.canMakePaymentsWithActiveCard(window.merchantIdentifier);
-        };
+    const CONTAINER_ID = 'payment-method-option-buckaroo_magento2_applepay';
+    let supportCheck = null;
 
-        const applePaySupported = checkApplePaySupport();
-        const applePayContainer = document.getElementById('payment-method-option-buckaroo_magento2_applepay');
-        if (!applePaySupported && applePayContainer) {
-            applePayContainer.style.display = 'none';
+    const loadAppleSdk = function () {
+        return typeof window.buckarooLoadAppleSdk === 'function'
+            ? window.buckarooLoadAppleSdk()
+            : Promise.resolve();
+    };
+
+    // Same rule as the Luma checkout: Apple Pay is offered unless the browser reports it as unsupported.
+    // The Apple Pay JS SDK provides ApplePaySession in browsers other than Safari.
+    const checkApplePaySupport = async function () {
+        await loadAppleSdk();
+
+        if (!('ApplePaySession' in window) || typeof ApplePaySession === 'undefined') {
+            return false;
         }
+
+        const configElement = document.getElementById('buckaroo-applepay-checkout-config');
+        const merchantIdentifier = window.merchantIdentifier || (configElement ? configElement.dataset.guid : '');
+
+        try {
+            if (merchantIdentifier && typeof ApplePaySession.applePayCapabilities === 'function') {
+                const capabilities = await ApplePaySession.applePayCapabilities(merchantIdentifier);
+                return capabilities.paymentCredentialStatus !== 'applePayUnsupported';
+            }
+
+            return ApplePaySession.canMakePayments();
+        } catch (error) {
+            return false;
+        }
+    };
+
+    const hideApplePayIfUnsupported = function () {
+        const applePayContainer = document.getElementById(CONTAINER_ID);
+        if (!applePayContainer || applePayContainer.dataset.buckarooApplePayChecked) {
+            return;
+        }
+
+        applePayContainer.dataset.buckarooApplePayChecked = '1';
+        supportCheck = supportCheck || checkApplePaySupport();
+        supportCheck.then(function (applePaySupported) {
+            if (!applePaySupported) {
+                applePayContainer.style.display = 'none';
+            }
+        });
     };
 
     hideApplePayIfUnsupported();

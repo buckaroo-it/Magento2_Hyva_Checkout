@@ -15,6 +15,15 @@
 const checkPaySupport = async function (merchantIdentifier) {
     if (!('ApplePaySession' in window)) return false;
     if (typeof ApplePaySession === 'undefined') return false;
+    // applePayCapabilities (Apple Pay JS SDK) also reports support in browsers other than Safari
+    if (typeof ApplePaySession.applePayCapabilities === 'function' && merchantIdentifier) {
+        try {
+            const capabilities = await ApplePaySession.applePayCapabilities(merchantIdentifier);
+            return capabilities.paymentCredentialStatus !== 'applePayUnsupported';
+        } catch (error) {
+            return false;
+        }
+    }
     return await ApplePaySession.canMakePaymentsWithActiveCard(merchantIdentifier);
 };
 const getButtonClass = function (buttonStyle, buttonType) {

@@ -57,8 +57,8 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
         $mappings = [
             "afterpay2" => "svg/afterpay.svg",
             "afterpay20" => "svg/afterpay.svg",
-            "capayablein3" => "svg/ideal-in3.svg",
-            "capayablepostpay" => "svg/ideal-in3.svg",
+            "capayablein3" => "svg/in3.svg",
+            "capayablepostpay" => "svg/in3.svg",
             "abnb2b" => "svg/zakelijk-op-rekening-abn-amro.svg",
             "creditcard" => "svg/creditcards.svg",
             "creditcards" => "svg/creditcards.svg",
@@ -73,7 +73,6 @@ class MethodList implements \Magento\Framework\View\Element\Block\ArgumentInterf
             "pospayment" => "pos.png",
             "voucher" => "svg/vouchers.svg",
             "paybybank" => "paybybank.gif",
-            "knaken" => "svg/gosettle.svg",
         ];
 
         $name = "svg/{$method}.svg";

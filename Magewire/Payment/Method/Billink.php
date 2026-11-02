@@ -31,8 +31,6 @@ class Billink extends Component\Form implements EvaluationInterface
 
     public ?bool $tos = true;
 
-    public ?string $dateOfBirth = null;
-
     public string $fullName = '';
 
     public ?string $coc = null;
@@ -46,8 +44,6 @@ class Billink extends Component\Form implements EvaluationInterface
     public const RULES_COC = ['required'];
 
     public const RULES_TOS = ['required', 'boolean', 'accepted'];
-
-    public const RULES_DATE_OF_BIRTH = ['required', 'date', 'before:-18 years'];
 
     private const GENDER_UNKNOWN = 'unknown';
 
@@ -102,7 +98,6 @@ class Billink extends Component\Form implements EvaluationInterface
         $this->phone = $this->getBillingTelephone()
             ?: $payment->getAdditionalInformation('customer_telephone');
         $this->vatNumber = $payment->getAdditionalInformation('customer_VATNumber');
-        $this->dateOfBirth = $payment->getAdditionalInformation('customer_DoB');
         $this->gender = self::GENDER_UNKNOWN;
         $this->fullName = $this->getFullName();
     }
@@ -175,20 +170,6 @@ class Billink extends Component\Form implements EvaluationInterface
         $this->updatePaymentField('customer_gender', $value);
         return $value;
     }
-
-    public function updatedDateOfBirth(string $value): ?string
-    {
-        $this->validateField(
-            'dateOfBirth',
-            self::RULES_DATE_OF_BIRTH,
-            $value,
-            ["before" => "You should be at least 18 years old."]
-        );
-        $this->dateOfBirth = $value;
-        $this->updatePaymentField('customer_DoB', $value);
-        return $value;
-    }
-
 
     /**
      * Get rules for phone validations
@@ -358,18 +339,11 @@ class Billink extends Component\Form implements EvaluationInterface
         if ($this->showPhone()) {
             $values = array_merge($values, ['phone' => $this->phone]);
         }
-        if(!$this->showB2b()) {
-            $values = array_merge($values, [
-                'dateOfBirth' => $this->dateOfBirth
-            ]);
-        }
-        if($this->showB2b()) {
+        if ($this->showB2b()) {
             $values = array_merge($values, [
                 'coc' => $this->coc
             ]);
         }
-
-
 
         return $values;
     }
@@ -383,17 +357,11 @@ class Billink extends Component\Form implements EvaluationInterface
     {
         $rules = [];
 
-        if(!$this->showB2b()) {
-            $rules = array_merge($rules, [
-                'dateOfBirth' => self::RULES_DATE_OF_BIRTH
-            ]);
-
-        }
         if ($this->showPhone()) {
             $rules = array_merge($rules, ['phone' => $this->getPhoneRules()]);
         }
 
-        if($this->showB2b()) {
+        if ($this->showB2b()) {
             $rules = array_merge($rules, [
                 'coc' => self::RULES_COC
             ]);

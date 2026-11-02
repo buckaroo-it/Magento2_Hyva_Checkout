@@ -2,33 +2,11 @@
 
 declare(strict_types=1);
 /** @var Escaper $escaper */
-/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Billink $magewire */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Billink $magewire */
 
 use Magento\Framework\Escaper;
 ?>
 <div class="col-span-6">
-    <?php if (!$magewire->showB2b()) {
-        ?>
-        <div class="flex flex-col gap-y-2 field field-reserved">
-            <label for="buckaroo_billink_dob">
-                <?= $escaper->escapeHtml(__('Date of Birth:')); ?>
-                <span class="text-red-600">*</span>
-            </label>
-            <input
-                type="date"
-                x-data="buckarooDateHandler"
-                x-bind:value="value"
-                @blur="handleDateChange"
-                data-initial-value="<?= $escaper->escapeHtmlAttr($magewire->dateOfBirth ?? '') ?>"
-                id="buckaroo_billink_dob"
-            >
-            <?php if ($magewire->hasError('dateOfBirth')) : ?>
-                <div class="text-red-600"><?= $escaper->escapeHtmlAttr($magewire->getError('dateOfBirth')) ?></div>
-            <?php endif; ?>
-        </div>
-
-        <?php
-    } ?>
     <?php if ($magewire->showPhone()) {
         ?>
         <div class="flex flex-col gap-y-2 field field-reserved">
