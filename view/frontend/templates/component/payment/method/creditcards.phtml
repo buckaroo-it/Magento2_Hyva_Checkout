@@ -9,14 +9,16 @@ use Magento\Framework\Escaper;
 ?>
 <div class="col-span-6">
 
-    <form x-data="buckarooCreditcards" novalidate>
+    <form x-data="buckarooCreditcards"
+          data-buckaroo-hosted-fields-settings="<?= $escaper->escapeHtmlAttr(json_encode($magewire->getHostedFieldsSettings())) ?>"
+          novalidate>
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label id="cc-name-label" for="cc-name-wrapper">
                 <?= $escaper->escapeHtml(__('Cardholder Name:')); ?>
                 <span class="text-red-600">*</span>
             </label>
             <div id="cc-name-wrapper"
-                 class="shadow h-12 appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                 class="buckaroo-hosted-field">
             </div>
             <div id="cc-name-error" class="text-red-600 text-sm"></div>
         </div>
@@ -27,7 +29,7 @@ use Magento\Framework\Escaper;
                 <span class="text-red-600">*</span>
             </label>
             <div id="cc-number-wrapper"
-                 class="shadow h-12 appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                 class="buckaroo-hosted-field">
             </div>
             <div id="cc-number-error" class="text-red-600 text-sm"></div>
         </div>
@@ -40,7 +42,7 @@ use Magento\Framework\Escaper;
                         <span class="text-red-600">*</span>
                     </label>
                     <div id="cc-expiry-wrapper"
-                         class="shadow h-12 appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                         class="buckaroo-hosted-field">
                     </div>
                     <div id="cc-expiry-error" class="text-red-600 text-sm"></div>
                 </div>
@@ -51,7 +53,7 @@ use Magento\Framework\Escaper;
                         <span class="text-red-600">*</span>
                     </label>
                     <div id="cc-cvc-wrapper"
-                         class="shadow h-12 appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                         class="buckaroo-hosted-field">
                     </div>
                     <div id="cc-cvc-error" class="text-red-600 text-sm"></div>
                 </div>

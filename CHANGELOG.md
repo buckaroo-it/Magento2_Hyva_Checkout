@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Hosted Fields text and placeholders not visible on themes that do not include the field size classes; the fields now use the placeholders and styling from the payment method settings (BTI-1284).
 - In3 date of birth field was displayed when a company was present in the address (BTI-1130).
 
 ## [2.3.0] - 2026-06-08
