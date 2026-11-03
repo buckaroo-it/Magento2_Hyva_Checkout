@@ -53,4 +53,13 @@
             </argument>
         </arguments>
     </type>
+
+    <!-- iDIN verification request, same as the Magento 2 checkout (Buckaroo\Magento2\Controller\Checkout\Idin) -->
+    <type name="Buckaroo\HyvaCheckout\Magewire\Checkout\Idin">
+        <arguments>
+            <argument name="requestDataBuilder" xsi:type="object">IdinVerifyRequest</argument>
+            <argument name="transferFactory" xsi:type="object">Buckaroo\Magento2\Gateway\Http\SDKTransferFactory</argument>
+            <argument name="clientInterface" xsi:type="object">TransactionVerify</argument>
+        </arguments>
+    </type>
 </config>

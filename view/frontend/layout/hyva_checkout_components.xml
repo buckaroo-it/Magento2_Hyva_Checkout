@@ -12,6 +12,19 @@
         <script src="Buckaroo_HyvaCheckout::js/update-position.js"/>
     </head>
     <body>
+        <!-- iDIN age verification, above the payment methods -->
+        <referenceContainer name="checkout.payment.methods.before">
+            <block name="checkout.buckaroo.idin"
+                   after="component-messenger-payment-methods"
+                   template="Buckaroo_HyvaCheckout::component/checkout/idin.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Checkout\Idin
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+
         <referenceBlock name="checkout.payment.methods">
 
             <block name="checkout.payment.method.buckaroo_magento2_klarna"
