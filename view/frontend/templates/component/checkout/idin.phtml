@@ -1,0 +1,58 @@
+<?php
+
+declare(strict_types=1);
+
+use Buckaroo\HyvaCheckout\Magewire\Checkout\Idin;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var Idin $magewire */
+?>
+<div id="buckaroo-idin-verification">
+    <?php if ($magewire->isRequired()): ?>
+        <fieldset class="mb-6 p-4 border border-gray-300 rounded-md bg-gray-50">
+            <legend class="flex items-center gap-x-2 px-1 font-semibold">
+                <img src="<?= $escaper->escapeUrl($block->getViewFileUrl('Buckaroo_Magento2::images/idin.svg')) ?>"
+                     alt=""
+                     width="32"
+                     height="32"
+                     class="w-8 h-8"/>
+                <?= $escaper->escapeHtml(__('Age verification')) ?>
+            </legend>
+
+            <p class="mb-4">
+                <?= $escaper->escapeHtml(__('Verify your age with iDIN to continue with this order.')) ?>
+            </p>
+
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
+                <div class="flex flex-col gap-y-2 grow">
+                    <label for="buckaroo_idin_issuer">
+                        <?= $escaper->escapeHtml(__('Select your bank')) ?>
+                        <span class="text-red-600">*</span>
+                    </label>
+                    <select id="buckaroo_idin_issuer"
+                            name="buckaroo_idin_issuer"
+                            class="form-select w-full"
+                            wire:model.defer="issuer"
+                            required>
+                        <option value=""><?= $escaper->escapeHtml(__('Select a bank')) ?></option>
+                        <?php foreach ($magewire->getIssuers() as $issuer): ?>
+                            <option value="<?= $escaper->escapeHtmlAttr($issuer['code']) ?>">
+                                <?= $escaper->escapeHtml($issuer['name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        wire:click="verify"
+                        wire:loading.attr="disabled">
+                    <?= $escaper->escapeHtml(__('Verify your age via iDIN')) ?>
+                </button>
+            </div>
+        </fieldset>
+    <?php endif; ?>
+</div>
