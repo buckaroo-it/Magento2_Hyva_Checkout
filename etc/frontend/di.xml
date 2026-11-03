@@ -62,4 +62,10 @@
             <argument name="clientInterface" xsi:type="object">TransactionVerify</argument>
         </arguments>
     </type>
+
+    <!-- Hyvä renders its own cart express buttons; skip the Knockout versions of the Magento 2 plugin -->
+    <type name="Buckaroo\Magento2\Observer\AddExpressShortcuts">
+        <plugin name="buckaroo_hyvacheckout_skip_luma_express_shortcuts"
+                type="Buckaroo\HyvaCheckout\Plugin\SkipLumaExpressShortcuts"/>
+    </type>
 </config>

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- iDEAL Fast Checkout button on the product and cart page (BTI-1285).
 - Click to Pay payment method (BTI-1259).
 - iDIN age verification step in the checkout, shown when the cart needs an age verification (BTI-1373).
 
