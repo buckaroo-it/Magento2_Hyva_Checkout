@@ -535,6 +535,46 @@
     font-size: 0.875rem;
 }
 
+/* iDEAL Fast Checkout button on the product and cart page (image and colours: express-payments.css) */
+.buckaroo-ideal-fast-checkout {
+    width: 100%;
+    margin-top: 0.75rem;
+}
+
+.buckaroo-ideal-fast-checkout-product {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.buckaroo-ideal-fast-checkout #fast-checkout-ideal-btn-component {
+    width: 100%;
+    margin: 0;
+}
+
+.buckaroo-ideal-fast-checkout-product #fast-checkout-ideal-btn-component {
+    width: min(70%, 240px);
+}
+
+.buckaroo-ideal-fast-checkout #fast-checkout-ideal-btn {
+    height: 40px;
+    cursor: pointer;
+}
+
+.buckaroo-ideal-fast-checkout #fast-checkout-ideal-btn:disabled {
+    cursor: wait;
+}
+
+.buckaroo-ideal-fast-checkout-error {
+    width: 100%;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #dc2626;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 0.875rem;
+}
+
 /* Hosted Fields: the SDK sizes its iframe to this box, so the size is set here and not
    with Tailwind classes that the theme build may not contain. Border, radius and
    background come from the payment method settings (creditcards.js styleWrappers). */
