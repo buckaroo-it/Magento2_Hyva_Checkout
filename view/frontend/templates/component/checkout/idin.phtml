@@ -9,10 +9,12 @@ use Magento\Framework\View\Element\Template;
 /** @var Template $block */
 /** @var Escaper $escaper */
 /** @var Idin $magewire */
+
+// buckaroo-idin-required hides the payment methods until the shopper is verified (buckaroo-components.css)
 ?>
-<div id="buckaroo-idin-verification">
+<div id="buckaroo-idin-verification"<?= $magewire->isRequired() ? ' class="buckaroo-idin-required"' : '' ?>>
     <?php if ($magewire->isRequired()): ?>
-        <fieldset class="mb-6 p-4 border border-gray-300 rounded-md bg-gray-50">
+        <fieldset class="buckaroo-idin-verification mb-6 p-4 border border-gray-300 rounded-md">
             <legend class="flex items-center gap-x-2 px-1 font-semibold">
                 <img src="<?= $escaper->escapeUrl($block->getViewFileUrl('Buckaroo_Magento2::images/idin.svg')) ?>"
                      alt=""
@@ -24,10 +26,11 @@ use Magento\Framework\View\Element\Template;
 
             <p class="mb-4">
                 <?= $escaper->escapeHtml(__('Verify your age with iDIN to continue with this order.')) ?>
+                <?= $escaper->escapeHtml(__('The payment methods are shown after the verification.')) ?>
             </p>
 
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
-                <div class="flex flex-col gap-y-2 grow">
+            <div class="buckaroo-idin-verification__row">
+                <div class="buckaroo-idin-verification__bank">
                     <label for="buckaroo_idin_issuer">
                         <?= $escaper->escapeHtml(__('Select your bank')) ?>
                         <span class="text-red-600">*</span>
@@ -47,7 +50,7 @@ use Magento\Framework\View\Element\Template;
                 </div>
 
                 <button type="button"
-                        class="btn btn-primary"
+                        class="btn btn-primary buckaroo-idin-verification__button"
                         wire:click="verify"
                         wire:loading.attr="disabled">
                     <?= $escaper->escapeHtml(__('Verify your age via iDIN')) ?>
