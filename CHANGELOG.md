@@ -6,14 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-11-09
+
+Requires the Buckaroo Magento 2 plugin 2.7.5 or higher.
+
 ### Added
 
-- iDEAL Fast Checkout button on the product and cart page (BTI-1285).
+- Zakelijk op rekening payment method (BTI-1044).
 - Click to Pay payment method (BTI-1259).
-- iDIN age verification step in the checkout, shown when the cart needs an age verification (BTI-1373).
+- Apple Pay on browsers other than Safari (BTI-1814).
+- Apple Pay express button on the product and cart page (BTI-1815).
+- iDEAL Fast Checkout button on the product and cart page (BTI-1285).
+- iDIN age verification step in the checkout, shown when the cart needs an age verification; the payment methods are shown after the verification (BTI-1373).
+- This changelog and a security policy (BTI-1599).
 
 ### Changed
 
+- Payment components in the checkout now work as in the checkout of the Magento 2 plugin (BTI-1813).
+- Apple Pay in the checkout starts from the Place Order button, as in the Magento 2 checkout (BTI-1814).
+- Riverty payment fields now match the Magento 2 checkout (BTI-1817).
 - Improved the validation feedback for Hosted Fields (BTI-1284).
 - Updated the In3 payment method logo (BTI-1163).
 - Rewrote the README (BTI-1298).
@@ -27,6 +38,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Hosted Fields text and placeholders not visible on themes that do not include the field size classes; the fields now use the placeholders and styling from the payment method settings (BTI-1284).
 - In3 date of birth field was displayed when a company was present in the address (BTI-1130).
+- Inline gift card form was not shown when Giftcard Handling was set to Inline (BTI-1488, [#137](https://github.com/buckaroo-it/Magento2_Hyva_Checkout/pull/137)).
+- Dutch translation of the Riverty terms and conditions text was not shown.
 
 ## [2.3.0] - 2026-06-08
 
@@ -232,7 +245,8 @@ Requires the Buckaroo Magento 2 plugin 1.50.1 or higher.
 
 - Initial release, with support for Riverty (Afterpay), Apple Pay, Bancontact, Billink, credit and debit cards (including client-side encryption), giftcards, Giropay, iDEAL, In3, Klarna, PayPerEmail, SEPA Direct Debit, Tinka and Buckaroo Voucher.
 
-[Unreleased]: https://github.com/buckaroo-it/Magento2_Hyva_Checkout/compare/v2.3.0...develop
+[Unreleased]: https://github.com/buckaroo-it/Magento2_Hyva_Checkout/compare/v2.4.0...develop
+[2.4.0]: https://github.com/buckaroo-it/Magento2_Hyva_Checkout/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/buckaroo-it/Magento2_Hyva_Checkout/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/buckaroo-it/Magento2_Hyva_Checkout/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/buckaroo-it/Magento2_Hyva_Checkout/compare/v2.0.0...v2.1.0

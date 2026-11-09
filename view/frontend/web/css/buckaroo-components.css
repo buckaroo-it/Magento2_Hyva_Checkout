@@ -599,3 +599,40 @@
     height: 100% !important;
     border: 0;
 }
+
+/* iDIN age verification step (Magewire/Checkout/Idin). Layout rules live here instead of
+   Tailwind classes, so the step looks the same on themes whose CSS build does not include them. */
+.buckaroo-idin-verification {
+    background-color: #f9fafb;
+}
+
+.buckaroo-idin-verification__row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.buckaroo-idin-verification__bank {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+}
+
+.buckaroo-idin-verification__button {
+    flex: 0 0 auto;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+    .buckaroo-idin-verification__row {
+        flex-direction: row;
+        align-items: flex-end;
+    }
+}
+
+/* Payment methods stay hidden until the iDIN verification is done, as in the Magento 2 checkout */
+#buckaroo-idin-verification.buckaroo-idin-required ~ #payment-methods {
+    display: none;
+}

@@ -43,7 +43,7 @@ This repository is for **Hyvä Checkout**. If you use **Hyvä React Checkout**, 
 
 | Requirement | Supported versions |
 |---|---|
-| Buckaroo Magento 2 plugin | 2.0.0 or higher |
+| Buckaroo Magento 2 plugin | 2.7.5 or higher |
 | Hyvä Checkout | 1.1.8 or higher |
 
 Magento, PHP and Composer requirements come from the [main plugin](https://github.com/buckaroo-it/Magento2). You also need a Buckaroo account — don't have one yet? [Request an account](https://www.buckaroo.nl/start).

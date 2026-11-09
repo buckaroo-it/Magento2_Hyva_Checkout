@@ -23,6 +23,9 @@ use Magewirephp\Magewire\Component;
  * Shown when the cart needs an age verification that is not done yet; the order cannot be
  * placed until the shopper is verified. Verification itself runs on the Buckaroo side and
  * returns through the Magento 2 plugin (buckaroo/redirect/idinProcess).
+ *
+ * Keep this class name: the Magento 2 plugin (Buckaroo\Magento2\Model\Idin\CheckoutSupport) looks
+ * for it to tell whether the Hyvä Checkout of a store has an iDIN step.
  */
 class Idin extends Component implements EvaluationInterface
 {
@@ -75,13 +78,8 @@ class Idin extends Component implements EvaluationInterface
             /** @var Quote $quote */
             $quote = $this->sessionCheckout->getQuote();
 
-            // getQuoteIdinStatus() reads the customer from the quote (Magento 2 plugin 2.7.6+)
-            $status = method_exists($this->idinConfigProvider, 'getQuoteIdinStatus')
-                ? $this->idinConfigProvider->getQuoteIdinStatus($quote)
-                : $this->idinConfigProvider->getIdinStatus(
-                    $quote,
-                    $quote->getCustomerIsGuest() ? null : $quote->getCustomer()
-                );
+            // The same check the Magento 2 plugin runs when the order is placed
+            $status = $this->idinConfigProvider->getQuoteIdinStatus($quote);
 
             $this->required = !empty($status['active']);
         } catch (\Throwable $exception) {
