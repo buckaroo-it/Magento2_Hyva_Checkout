@@ -31,7 +31,11 @@ class In3 extends Component\Form implements EvaluationInterface
 
     public string $fullName = '';
 
+    public ?string $coc = null;
+
     public ?string $phone = null;
+
+    public const RULES_COC = ['required'];
 
     public const RULES_DATE_OF_BIRTH = ['required', 'date', 'before:-18 years'];
 
@@ -71,6 +75,7 @@ class In3 extends Component\Form implements EvaluationInterface
             ->getPayment();
 
         $this->phone = $payment->getAdditionalInformation('customer_telephone');
+        $this->coc = $payment->getAdditionalInformation('customer_chamberOfCommerce');
         $this->dateOfBirth = $payment->getAdditionalInformation('customer_DoB');
         $this->fullName = $this->getFullName();
     }
@@ -108,6 +113,13 @@ class In3 extends Component\Form implements EvaluationInterface
     {
         $this->validateField('phone', $this->getPhoneRules(), $value);
         $this->updatePaymentField('customer_telephone', $value);
+        return $value;
+    }
+
+    public function updatedCoc(string $value): ?string
+    {
+        $this->validateField('coc', self::RULES_COC, $value);
+        $this->updatePaymentField('customer_chamberOfCommerce', $value);
         return $value;
     }
 
@@ -237,9 +249,15 @@ class In3 extends Component\Form implements EvaluationInterface
      */
     private function getFormValues(): array
     {
-        $values = [
-            'dateOfBirth' => $this->dateOfBirth,
-        ];
+        $values = [];
+
+        if (!$this->showB2b()) {
+            $values['dateOfBirth'] = $this->dateOfBirth;
+        }
+
+        if ($this->showB2b()) {
+            $values['coc'] = $this->coc;
+        }
 
         if ($this->showPhone()) {
             $values = array_merge($values, ['phone' => $this->phone]);
@@ -255,15 +273,33 @@ class In3 extends Component\Form implements EvaluationInterface
      */
     private function getFormRules(): array
     {
-        $rules = [
-            'dateOfBirth' => self::RULES_DATE_OF_BIRTH,
-        ];
+        $rules = [];
+
+        if (!$this->showB2b()) {
+            $rules['dateOfBirth'] = self::RULES_DATE_OF_BIRTH;
+        }
+
+        if ($this->showB2b()) {
+            $rules['coc'] = self::RULES_COC;
+        }
 
         if ($this->showPhone()) {
             $rules = array_merge($rules, ['phone' => $this->getPhoneRules()]);
         }
 
         return $rules;
+    }
+
+    public function showB2b(): bool
+    {
+        $quote = $this->getQuote();
+        if ($quote === null) {
+            return false;
+        }
+
+        $billingCompany = $quote->getBillingAddress()->getCompany();
+
+        return !empty(trim((string) $billingCompany));
     }
 
     /**

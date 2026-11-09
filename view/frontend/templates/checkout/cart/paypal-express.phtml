@@ -44,4 +44,5 @@ $config['baseUrl'] = $block->getUrl('', ['_secure' => $block->getRequest()->isSe
     }
 })();
 </script>
+<?php if (isset($hyvaCsp)) { $hyvaCsp->registerInlineScript(); } ?>
 <?php endif; ?>

@@ -43,26 +43,9 @@
      * @returns {Promise}
      */
     function post(url, data) {
-        if (typeof window.jQuery !== 'undefined' && window.jQuery.post) {
-            return new Promise(function (resolve, reject) {
-                window.jQuery.post(url, data)
-                    .done(resolve)
-                    .fail(function (xhr) {
-                        var err = new Error(
-                            xhr.responseJSON && xhr.responseJSON.message
-                                ? xhr.responseJSON.message
-                                : 'Request failed'
-                        );
-                        err.response = xhr;
-                        err.body = xhr.responseJSON;
-                        reject(err);
-                    });
-            });
-        }
+        var payload = {};
 
-        var params = new URLSearchParams();
-
-        if (typeof data === 'object') {
+        if (typeof data === 'object' && data !== null) {
             Object.keys(data).forEach(function (key) {
                 var value = data[key];
                 if (value === null || value === undefined) {
@@ -70,14 +53,16 @@
                 }
 
                 if (typeof value === 'object' && !Array.isArray(value)) {
+                    var nested = {};
                     Object.keys(value).forEach(function (nestedKey) {
                         var nestedValue = value[nestedKey];
-                        if (nestedValue !== null && nestedValue !== undefined && nestedValue !== '') {
-                            params.append(key + '[' + nestedKey + ']', String(nestedValue));
+                        if (nestedValue !== null && nestedValue !== undefined) {
+                            nested[nestedKey] = String(nestedValue);
                         }
                     });
+                    payload[key] = nested;
                 } else {
-                    params.append(key, String(value));
+                    payload[key] = String(value);
                 }
             });
         }
@@ -85,10 +70,10 @@
         return fetch(url, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            body: params.toString(),
+            body: JSON.stringify(payload),
             credentials: 'same-origin'
         }).then(function (res) {
             if (!res.ok) {

@@ -21,6 +21,8 @@ class Creditcards extends Component\Form implements EvaluationInterface
 
     public array $issuerImages  = [];
 
+    protected array $uncallables = ['getHostedFieldsSettings'];
+
     protected SessionCheckout $sessionCheckout;
 
     protected CartRepositoryInterface $quoteRepository;
@@ -74,6 +76,37 @@ class Creditcards extends Component\Form implements EvaluationInterface
 
         return $resultFactory->createSuccess();
     }
+
+    /**
+     * Hosted Fields placeholders and styling from the Magento 2 plugin configuration
+     * (Stores > Configuration > Payment Methods > Buckaroo > Credit and debit cards),
+     * the same settings the Magento 2 checkout uses.
+     *
+     * @return array{placeholders: array<string, string>, styling: array<string, string>}
+     */
+    public function getHostedFieldsSettings(): array
+    {
+        $config = $this->methodConfigProvider;
+
+        return [
+            'placeholders' => [
+                'cardholderName' => $config->getPlaceholderCardholderName(),
+                'cardNumber'     => $config->getPlaceholderCardNumber(),
+                'expiryDate'     => $config->getPlaceholderExpiryDate(),
+                'cvc'            => $config->getPlaceholderCvc(),
+            ],
+            'styling' => [
+                'textColor'        => $config->getFieldTextColor(),
+                'backgroundColor'  => $config->getFieldBackgroundColor(),
+                'borderColor'      => $config->getFieldBorderColor(),
+                'placeholderColor' => $config->getFieldPlaceholderColor(),
+                'fontSize'         => $config->getFieldFontSize(),
+                'fontFamily'       => $config->getFieldFontFamily(),
+                'borderRadius'     => $config->getFieldBorderRadius(),
+            ],
+        ];
+    }
+
     private function getIssuerImages(): array
     {
         $issuerImages = [];

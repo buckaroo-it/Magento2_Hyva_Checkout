@@ -23,6 +23,7 @@
                 <item name="buckaroo_magento2_afterpay20" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_billink" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_capayablein3" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
+                <item name="buckaroo_magento2_zakelijkoprekening" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_sepadirectdebit" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_payperemail" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_giftcards" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
@@ -30,8 +31,8 @@
                 <item name="buckaroo_magento2_voucher" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_applepay" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_googlepay" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
+                <item name="buckaroo_magento2_clicktopay" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_multibanco" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
-                <item name="buckaroo_magento2_knaken" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_mbway" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_p24" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
                 <item name="buckaroo_magento2_blik" xsi:type="object">\Buckaroo\HyvaCheckout\Model\Magewire\Payment\PlaceOrderService</item>
@@ -51,5 +52,20 @@
                 <item name="buckaroo_last_paybybank_issuer" xsi:type="string">\Buckaroo\HyvaCheckout\Model\Form\Eav\Customer\Hide</item>
             </argument>
         </arguments>
+    </type>
+
+    <!-- iDIN verification request, same as the Magento 2 checkout (Buckaroo\Magento2\Controller\Checkout\Idin) -->
+    <type name="Buckaroo\HyvaCheckout\Magewire\Checkout\Idin">
+        <arguments>
+            <argument name="requestDataBuilder" xsi:type="object">IdinVerifyRequest</argument>
+            <argument name="transferFactory" xsi:type="object">Buckaroo\Magento2\Gateway\Http\SDKTransferFactory</argument>
+            <argument name="clientInterface" xsi:type="object">TransactionVerify</argument>
+        </arguments>
+    </type>
+
+    <!-- Hyvä renders its own cart express buttons; skip the Knockout versions of the Magento 2 plugin -->
+    <type name="Buckaroo\Magento2\Observer\AddExpressShortcuts">
+        <plugin name="buckaroo_hyvacheckout_skip_luma_express_shortcuts"
+                type="Buckaroo\HyvaCheckout\Plugin\SkipLumaExpressShortcuts"/>
     </type>
 </config>

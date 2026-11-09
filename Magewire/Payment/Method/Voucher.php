@@ -58,7 +58,10 @@ class Voucher extends Component\Form implements EvaluationInterface
 
     public function getAjaxUrl()
     {
-        return $this->urlBuilder->getRouteUrl('rest/default/V1/buckaroo/voucher/') . "apply";
+        $storeCode = $this->sessionCheckout->getQuote()->getStore()->getCode();
+
+        return $this->urlBuilder->getBaseUrl(['_type' => UrlInterface::URL_TYPE_WEB])
+            . 'rest/' . rawurlencode((string)$storeCode) . '/V1/buckaroo/voucher/apply';
     }
 
     public function setCanSubmit(bool $canSubmit): void

@@ -6,11 +6,25 @@
         <css src="Buckaroo_HyvaCheckout::css/buckaroo-components.css" />
 
         <script src="Buckaroo_HyvaCheckout::js/buckaroo-components.js" />
+        <script src="Buckaroo_Magento2::js/view/checkout/creditcards/hosted-fields-error-gate.js" />
         <script src="Buckaroo_HyvaCheckout::js/creditcards.js" />
         <script src="Buckaroo_HyvaCheckout::js/hide-applepay.js" />
         <script src="Buckaroo_HyvaCheckout::js/update-position.js"/>
     </head>
     <body>
+        <!-- iDIN age verification, above the payment methods -->
+        <referenceContainer name="checkout.payment.methods.before">
+            <block name="checkout.buckaroo.idin"
+                   after="component-messenger-payment-methods"
+                   template="Buckaroo_HyvaCheckout::component/checkout/idin.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Checkout\Idin
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+
         <referenceBlock name="checkout.payment.methods">
 
             <block name="checkout.payment.method.buckaroo_magento2_klarna"
@@ -83,6 +97,16 @@
                 </arguments>
             </block>
 
+            <block name="checkout.payment.method.buckaroo_magento2_zakelijkoprekening"
+                   as="buckaroo_magento2_zakelijkoprekening"
+                   template="Buckaroo_HyvaCheckout::component/payment/method/zakelijkoprekening.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\ZakelijkOpRekening
+                    </argument>
+                </arguments>
+            </block>
+
             <block name="checkout.payment.method.buckaroo_magento2_sepadirectdebit"
                    as="buckaroo_magento2_sepadirectdebit"
                    template="Buckaroo_HyvaCheckout::component/payment/method/sepaDirect.phtml">
@@ -149,6 +173,16 @@
                 <arguments>
                     <argument name="magewire" xsi:type="object">
                         \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Googlepay
+                    </argument>
+                </arguments>
+            </block>
+
+            <block name="checkout.payment.method.buckaroo_magento2_clicktopay"
+                   as="buckaroo_magento2_clicktopay"
+                   template="Buckaroo_HyvaCheckout::component/payment/method/clicktopay.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Clicktopay
                     </argument>
                 </arguments>
             </block>

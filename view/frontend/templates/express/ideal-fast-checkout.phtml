@@ -1,0 +1,52 @@
+<?php
+/**
+ * iDEAL Fast Checkout button for the product and cart page - Hyvä (no RequireJS/Knockout).
+ *
+ * @var \Buckaroo\Magento2\Block\Catalog\Product\View\IdealFastCheckout $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var \Buckaroo\HyvaCheckout\ViewModel\IdealFastCheckoutConfig $viewModel */
+$viewModel = $block->getData('ideal_fast_checkout_config');
+$page = (string)$block->getData('express_page') === 'Cart' ? 'Cart' : 'Product';
+
+if (!$viewModel || !$viewModel->canShow($block, $page)) {
+    return;
+}
+
+$config = $viewModel->getConfig($block, $page);
+$containerId = $page === 'Cart' ? 'ideal-fast-checkout-cart-hyva' : 'ideal-fast-checkout-product-hyva';
+?>
+<div id="<?= $escaper->escapeHtmlAttr($containerId) ?>"
+     class="buckaroo-ideal-fast-checkout buckaroo-ideal-fast-checkout-<?= $escaper->escapeHtmlAttr(strtolower($page)) ?>">
+    <div id="fast-checkout-ideal-btn-component">
+        <div class="actions">
+            <button id="fast-checkout-ideal-btn"
+                    type="button"
+                    data-variant="<?= $escaper->escapeHtmlAttr($config['buttonVariant']) ?>"
+                    aria-label="<?= $escaper->escapeHtmlAttr(__('iDEAL Fast Checkout')) ?>">
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+(function () {
+    'use strict';
+
+    var config = <?= /* @noEscape */ json_encode($config) ?>;
+    var containerId = <?= /* @noEscape */ json_encode($containerId) ?>;
+
+    function run() {
+        if (window.BuckarooHyvaIdealFastCheckout) {
+            window.BuckarooHyvaIdealFastCheckout.init(containerId, config);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run);
+    } else {
+        run();
+    }
+})();
+</script>
+<?php if (isset($hyvaCsp)) { $hyvaCsp->registerInlineScript(); } ?>

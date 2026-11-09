@@ -20,6 +20,7 @@
 // Hosted Fields SDK Integration for Hyva Checkout
 window.buckarooHostedFields = {
     sdkClient: null,
+    errorGate: null,
     tokenExpiresAt: null,
     oauthTokenError: '',
     paymentError: '',
@@ -32,15 +33,16 @@ window.buckarooHostedFields = {
      */
     async getOAuthToken() {
         try {
-            const response = await fetch('/buckaroo/credentialschecker/gettoken', {
+            const baseUrl = (window.BASE_URL || '/').replace(/\/?$/, '/');
+            const response = await fetch(baseUrl + 'buckaroo/credentialschecker/gettoken', {
                 method: 'GET',
                 headers: {
                     'X-Requested-From': 'MagentoFrontend'
                 }
             });
-            
+
             const data = await response.json();
-            
+
             if (data.error) {
                 this.oauthTokenError = "An error occurred, please try another payment method or try again later.";
                 return false;
@@ -91,10 +93,15 @@ window.buckarooHostedFields = {
      */
     async resetHostedFields(errorMsg = '') {
         this.removeHostedFieldIframes();
+
+        if (this.errorGate) {
+            this.errorGate.reset();
+        }
+
         this.paymentError = errorMsg;
         await this.getOAuthToken();
         this.isPayButtonDisabled = false;
-        
+
         // Trigger update for Alpine.js components
         window.dispatchEvent(new CustomEvent('buckaroo-hosted-fields-reset'));
     },
@@ -115,23 +122,40 @@ window.buckarooHostedFields = {
             this.sdkClient.setLanguage(languageCode);
             this.sdkClient.setSupportedServices(issuers);
 
+            this.errorGate = window.BuckarooHostedFieldsErrorGate
+                ? window.BuckarooHostedFieldsErrorGate.createErrorGate({
+                    errorElementIds: {
+                        cardHolderName: 'cc-name-error',
+                        cardNumber: 'cc-number-error',
+                        expiryDate: 'cc-expiry-error',
+                        cvc: 'cc-cvc-error'
+                    }
+                })
+                : null;
+
             // Start the session and update the pay button state based on validation.
             await this.sdkClient.startSession((event) => {
-                this.sdkClient.handleValidation(
-                    event,
-                    'cc-name-error',
-                    'cc-number-error',
-                    'cc-expiry-error',
-                    'cc-cvc-error'
-                );
+                if (this.errorGate) {
+                    this.sdkClient.handleValidation(event);
+                    this.errorGate.handle(event);
+                } else {
+                    this.sdkClient.handleValidation(
+                        event,
+                        'cc-name-error',
+                        'cc-number-error',
+                        'cc-expiry-error',
+                        'cc-cvc-error'
+                    );
+                }
+
                 this.isPayButtonDisabled = !this.sdkClient.formIsValid();
                 this.service = this.sdkClient.getService();
-                
+
                 // Trigger update for Alpine.js components
                 window.dispatchEvent(new CustomEvent('buckaroo-hosted-fields-validation', {
-                    detail: { 
+                    detail: {
                         isValid: this.sdkClient.formIsValid(),
-                        service: this.service 
+                        service: this.service
                     }
                 }));
             });
@@ -148,27 +172,45 @@ window.buckarooHostedFields = {
                 backgroundColor: 'inherit'
             };
 
+            const settings = this.getSettings();
+            const configuredStyling = settings.styling || {};
+            const getStyleValue = (value, defaultValue) => {
+                return (typeof value === 'string' && value.trim() !== '') ? value : defaultValue;
+            };
+
             const styling = {
-                fontSize: "14px",
+                fontSize: getStyleValue(configuredStyling.fontSize, "14px"),
                 fontStyle: "normal",
                 fontWeight: 400,
-                fontFamily: 'Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif',
+                fontFamily: getStyleValue(configuredStyling.fontFamily, 'Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif'),
                 textAlign: 'left',
-                background: '#fefefe',
-                color: '#333333',
-                placeholderColor: '#888888',
-                borderRadius: '5px',
+                textTransform: 'none',
+                background: getStyleValue(configuredStyling.backgroundColor, '#fefefe'),
+                color: getStyleValue(configuredStyling.textColor, '#333333'),
+                placeholderColor: getStyleValue(configuredStyling.placeholderColor, '#888888'),
+                borderRadius: getStyleValue(configuredStyling.borderRadius, '5px'),
                 padding: '8px 10px',
                 boxShadow: 'none',
                 transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-                border: '1px solid #d6d6d6',
                 cardLogoStyling: cardLogoStyling
             };
+
+            // The field box (border, radius, background, side padding) is drawn by the wrapper,
+            // because the input inside the iframe is as wide as the iframe plus its own border.
+            this.styleWrappers({
+                borderColor: getStyleValue(configuredStyling.borderColor, ''),
+                borderRadius: styling.borderRadius,
+                background: styling.background
+            });
+            styling.border = 'none';
+            styling.borderRadius = '0';
+
+            const placeholders = settings.placeholders || {};
 
             // Mount hosted fields concurrently.
             const mountCardHolderNamePromise = this.sdkClient.mountCardHolderName("#cc-name-wrapper", {
                 id: "ccname",
-                placeHolder: "John Doe",
+                placeHolder: placeholders.cardholderName || "John Doe",
                 labelSelector: "#cc-name-label",
                 baseStyling: styling
             }).then(field => {
@@ -178,21 +220,21 @@ window.buckarooHostedFields = {
 
             const mountCardNumberPromise = this.sdkClient.mountCardNumber("#cc-number-wrapper", {
                 id: "cc",
-                placeHolder: "555x xxxx xxxx xxxx",
+                placeHolder: placeholders.cardNumber || "555x xxxx xxxx xxxx",
                 labelSelector: "#cc-number-label",
                 baseStyling: styling
             });
 
             const mountCvcPromise = this.sdkClient.mountCvc("#cc-cvc-wrapper", {
                 id: "cvc",
-                placeHolder: "1234",
+                placeHolder: placeholders.cvc || "1234",
                 labelSelector: "#cc-cvc-label",
                 baseStyling: styling
             });
 
             const mountExpiryPromise = this.sdkClient.mountExpiryDate("#cc-expiry-wrapper", {
                 id: "expiry",
-                placeHolder: "MM / YY",
+                placeHolder: placeholders.expiryDate || "MM / YY",
                 labelSelector: "#cc-expiry-label",
                 baseStyling: styling
             });
@@ -206,10 +248,37 @@ window.buckarooHostedFields = {
 
             // Trigger success event
             window.dispatchEvent(new CustomEvent('buckaroo-hosted-fields-ready'));
-            
+
         } catch (error) {
             console.error("Error initializing hosted fields:", error);
             this.paymentError = "Failed to initialize payment form. Please try again.";
+        }
+    },
+
+    /**
+     * Apply the configured border, radius and background to the Hosted Fields wrappers
+     */
+    styleWrappers(style) {
+        document.querySelectorAll('.buckaroo-hosted-field').forEach(wrapper => {
+            wrapper.style.border = style.borderColor ? '1px solid ' + style.borderColor : '0';
+            wrapper.style.borderRadius = style.borderRadius;
+            wrapper.style.background = style.background;
+        });
+    },
+
+    /**
+     * Placeholders and styling configured in the Magento 2 plugin (set on the form by the template)
+     */
+    getSettings() {
+        const form = document.querySelector('[data-buckaroo-hosted-fields-settings]');
+        if (!form) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(form.dataset.buckarooHostedFieldsSettings) || {};
+        } catch (e) {
+            return {};
         }
     },
 
@@ -237,6 +306,10 @@ window.buckarooHostedFields = {
     async processPayment() {
         this.isPayButtonDisabled = true;
 
+        if (this.errorGate) {
+            this.errorGate.showAll();
+        }
+
         // Check if the token has expired before processing payment.
         if (Date.now() > this.tokenExpiresAt) {
             await this.resetHostedFields("We are refreshing the payment form, because the session has expired.");
@@ -252,7 +325,7 @@ window.buckarooHostedFields = {
             }
             this.encryptedCardData = paymentToken;
             this.service = this.sdkClient.getService();
-            
+
             return {
                 encryptedCardData: this.encryptedCardData,
                 service: this.service
@@ -264,4 +337,4 @@ window.buckarooHostedFields = {
             return null;
         }
     }
-}; 
+};
