@@ -8,35 +8,34 @@ use Buckaroo\HyvaCheckout\Magewire\Payment\Method\Giftcards;
 use Buckaroo\Magento2\Helper\PaymentGroupTransaction;
 use Buckaroo\Magento2\Logging\Log;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\Giftcards as MethodConfigProvider;
-use Buckaroo\Magento2\Model\Giftcard\Api\ApiException;
-use Buckaroo\Magento2\Model\Giftcard\Request\GiftcardInterface as GiftcardRequest;
-use Buckaroo\Magento2\Model\Giftcard\Response\Giftcard as GiftcardResponse;
-use Buckaroo\Magento2\Service\Giftcard\AttemptLimit;
-use Buckaroo\Transaction\Response\TransactionResponse;
+use Buckaroo\Magento2\Model\GroupTransaction;
+use Buckaroo\Magento2\Model\PartialPayment\ApplyResult;
+use Buckaroo\Magento2\Model\PartialPayment\ApplyService;
+use Buckaroo\Magento2\Model\PartialPayment\Instrument\Giftcard as GiftcardInstrument;
+use Buckaroo\Magento2\Model\PartialPayment\Instrument\GiftcardFactory;
+use Buckaroo\Magento2\Model\PartialPayment\PartialPaymentMethods;
+use Buckaroo\Magento2\Model\PartialPayment\PartialPaymentRejectedException;
 use Magento\Checkout\Model\Session as SessionCheckout;
+use Magento\Framework\DataObject;
 use Magento\Framework\Pricing\Helper\Data as PricingHelper;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Model\Quote;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Applying an inline giftcard goes through the shared failed-attempt limit and
- * is refused when the store sends giftcards to the hosted payment page.
- */
 class GiftcardsTest extends TestCase
 {
     /** @var Quote|MockObject */
     private $quote;
 
-    /** @var GiftcardRequest|MockObject */
-    private $giftcardRequest;
+    /** @var ApplyService|MockObject */
+    private $applyService;
 
-    /** @var GiftcardResponse|MockObject */
-    private $giftcardResponse;
+    /** @var PaymentGroupTransaction|MockObject */
+    private $groupTransaction;
 
-    /** @var AttemptLimit|MockObject */
-    private $attemptLimit;
+    /** @var PartialPaymentMethods|MockObject */
+    private $partialPaymentMethods;
 
     /** @var MethodConfigProvider|MockObject */
     private $configProvider;
@@ -46,13 +45,17 @@ class GiftcardsTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->quote = $this->createMock(Quote::class);
-        $this->giftcardRequest = $this->createMock(GiftcardRequest::class);
-        foreach (['setCardId', 'setCardNumber', 'setPin', 'setQuote'] as $setter) {
-            $this->giftcardRequest->method($setter)->willReturnSelf();
-        }
-        $this->giftcardResponse = $this->createMock(GiftcardResponse::class);
-        $this->attemptLimit = $this->createMock(AttemptLimit::class);
+        $this->quote = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->onlyMethods([])->getMock();
+        $this->quote->setReservedOrderId('000000042');
+        $this->quote->setGrandTotal(34.0);
+        $this->applyService = $this->createMock(ApplyService::class);
+        $this->groupTransaction = $this->createMock(PaymentGroupTransaction::class);
+        $this->partialPaymentMethods = $this->createMock(PartialPaymentMethods::class);
+        $this->partialPaymentMethods->method('find')->willReturnCallback(function ($code) {
+            return $code === 'buckaroovoucher'
+                ? ['code' => $code, 'label' => 'Voucher', 'logo' => null, 'type' => PartialPaymentMethods::TYPE_VOUCHER]
+                : ['code' => $code, 'label' => $code, 'logo' => null, 'type' => PartialPaymentMethods::TYPE_GIFTCARD];
+        });
         $this->configProvider = $this->createMock(MethodConfigProvider::class);
         $this->logger = $this->createMock(Log::class);
     }
@@ -60,9 +63,7 @@ class GiftcardsTest extends TestCase
     public function testRefusesWhenGiftcardsAreNotInline(): void
     {
         $this->configureInline(false);
-
-        $this->attemptLimit->expects(self::never())->method('assertWithinLimit');
-        $this->giftcardRequest->expects(self::never())->method('send');
+        $this->applyService->expects(self::never())->method('apply');
 
         $component = $this->createComponent();
         $component->applyGiftcard('fashioncheque', '123', '456');
@@ -70,62 +71,50 @@ class GiftcardsTest extends TestCase
         self::assertArrayHasKey('error', $this->lastEmittedParams($component));
     }
 
-    public function testStopsBeforeTheGatewayWhenTheLimitIsReached(): void
+    public function testShowsTheReasonOfARefusedCard(): void
     {
         $this->configureInline(true);
-
-        $this->attemptLimit->method('assertWithinLimit')
-            ->willThrowException(new ApiException('Too many giftcard attempts. Please try again later.'));
-        $this->giftcardRequest->expects(self::never())->method('send');
+        $this->applyService->method('apply')
+            ->willThrowException(new PartialPaymentRejectedException(__('Card does not exist')));
 
         $component = $this->createComponent();
         $component->applyGiftcard('fashioncheque', '123', '456');
 
-        self::assertArrayHasKey('error', $this->lastEmittedParams($component));
+        self::assertSame('Card does not exist', (string)$this->lastEmittedParams($component)['error']);
+        self::assertFalse($component->canSubmit);
     }
 
-    public function testCountsAGatewayFailure(): void
+    public function testAnAcceptedCardThatCoversTheOrderAllowsPlacingIt(): void
     {
         $this->configureInline(true);
-
-        $this->giftcardRequest->method('send')->willThrowException(new ApiException('declined'));
-        $this->attemptLimit->expects(self::once())->method('registerFailedAttempt')->with($this->quote);
-
-        $this->createComponent()->applyGiftcard('fashioncheque', '123', '456');
-    }
-
-    public function testCountsARejectedCard(): void
-    {
-        $this->configureInline(true);
-
-        $this->giftcardRequest->method('send')->willReturn($this->createMock(TransactionResponse::class));
-        $this->giftcardResponse->method('getErrorMessage')->willReturn('Invalid card');
-        $this->attemptLimit->expects(self::once())->method('registerFailedAttempt')->with($this->quote);
-
-        $this->createComponent()->applyGiftcard('fashioncheque', '123', '456');
-    }
-
-    public function testDoesNotCountAnAcceptedCard(): void
-    {
-        $this->configureInline(true);
-
-        $this->giftcardRequest->method('send')->willReturn($this->createMock(TransactionResponse::class));
-        $this->giftcardResponse->method('getErrorMessage')->willReturn(null);
-        $this->giftcardResponse->method('getRemainderAmount')->willReturn(0.0);
-        $this->attemptLimit->expects(self::never())->method('registerFailedAttempt');
+        $this->applyService->method('apply')->willReturn($this->createResult(0.0));
+        $this->groupTransaction->method('getAlreadyPaid')->willReturn(34.0);
+        $this->groupTransaction->method('getGroupTransactionItems')
+            ->willReturn([new DataObject(['servicecode' => 'fashioncheque'])]);
 
         $component = $this->createComponent();
         $component->applyGiftcard('fashioncheque', '123', '456');
 
         self::assertTrue($component->canSubmit);
+        self::assertSame(0.0, $this->lastEmittedParams($component)['remainder_amount']);
+    }
+
+    public function testAnOrderPaidByVouchersOnlyIsNoGiftcardPayment(): void
+    {
+        $this->groupTransaction->method('getAlreadyPaid')->willReturn(34.0);
+        $this->groupTransaction->method('getGroupTransactionItems')
+            ->willReturn([new DataObject(['servicecode' => 'buckaroovoucher'])]);
+
+        $component = $this->createComponent();
+        $component->mount();
+
+        self::assertFalse($component->canSubmit);
     }
 
     public function testDoesNotLogCardDetails(): void
     {
         $this->configureInline(true);
-
-        $this->giftcardRequest->method('send')->willReturn($this->createMock(TransactionResponse::class));
-        $this->giftcardResponse->method('getErrorMessage')->willReturn('Invalid card');
+        $this->applyService->method('apply')->willThrowException(new \RuntimeException('db down'));
 
         $logged = [];
         $collect = function ($message) use (&$logged) {
@@ -137,11 +126,16 @@ class GiftcardsTest extends TestCase
 
         $this->createComponent()->applyGiftcard('fashioncheque', '6064365011234567', '9876');
 
-        self::assertIsArray($logged);
+        self::assertNotEmpty($logged);
         foreach ($logged as $line) {
             self::assertStringNotContainsString('6064365011234567', $line);
             self::assertStringNotContainsString('9876', $line);
         }
+    }
+
+    private function createResult(float $remainder): ApplyResult
+    {
+        return new ApplyResult(10.0, $remainder, 34.0, 'EUR', $this->createMock(GroupTransaction::class));
     }
 
     private function configureInline(bool $inline): void
@@ -166,16 +160,19 @@ class GiftcardsTest extends TestCase
         $pricing = $this->createMock(PricingHelper::class);
         $pricing->method('currency')->willReturn('€0.00');
 
+        $giftcardFactory = $this->createMock(GiftcardFactory::class);
+        $giftcardFactory->method('create')->willReturn($this->createMock(GiftcardInstrument::class));
+
         return new Giftcards(
             $this->createMock(UrlInterface::class),
             $session,
-            $this->createMock(PaymentGroupTransaction::class),
+            $this->groupTransaction,
             $this->configProvider,
-            $this->giftcardRequest,
-            $this->giftcardResponse,
             $this->logger,
             $pricing,
-            $this->attemptLimit
+            $this->applyService,
+            $giftcardFactory,
+            $this->partialPaymentMethods
         );
     }
 

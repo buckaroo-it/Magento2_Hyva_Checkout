@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 /** @var Escaper $escaper */
-/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Giftcards $magewire */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Giftcards $magewire */
 
 use Magento\Framework\Escaper;
 
 if (!$magewire->isRedirect()) {
 ?>
     <div class="col-span-6" wire:key="buckaroo-giftcards">
+        <?php if ($magewire->canSubmit): ?>
+        <p class="message info">
+            <?= $escaper->escapeHtml(__('Your giftcards cover the full order amount. Place your order to finish.')); ?>
+        </p>
+        <?php else: ?>
         <form x-data="buckarooGiftcards" novalidate>
 
             <div class="flex flex-col gap-y-2 field field-reserved">
@@ -72,6 +77,7 @@ if (!$magewire->isRedirect()) {
                 <?= $escaper->escapeHtml(__('Apply Gift Card')); ?>
             </button>
         </form>
+        <?php endif; ?>
     </div>
 <?php
 } else {

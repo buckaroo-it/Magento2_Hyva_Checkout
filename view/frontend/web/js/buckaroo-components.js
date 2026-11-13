@@ -460,6 +460,8 @@ function initializeBuckarooComponents() {
                 cardNumber: '',
                 canSubmit:false,
                 isSubmitting: false,
+                pendingResponse: null,
+                applyingFromPlaceOrder: false,
 
                 updateCard(event) {
                     this.card = event.target.value;
@@ -516,90 +518,102 @@ function initializeBuckarooComponents() {
                 },
 
                 displayGenericSuccess() {
-                    if (typeof hyvaCheckout !== 'undefined' && hyvaCheckout.order && hyvaCheckout.order.refreshTotals) {
-                        try {
-                            hyvaCheckout.order.refreshTotals();
-                        } catch (e) {
-                            // Silent fail
-                        }
-                    }
-
-                    const message = 'Giftcard has been applied successfully! The order total will be updated.';
-                    window.buckaroo.showTemporaryBanner(message, 'success');
-
+                    // No response arrived in time: the server state is unknown, so reload to show it
+                    window.buckaroo.showTemporaryBanner(
+                        'Giftcard has been applied successfully! The order total will be updated.',
+                        'success'
+                    );
                     setTimeout(() => {
                         window.location.reload();
                     }, 3000);
                 },
 
-                async waitForGiftcardResponse(timeout = 3000) {
+                /**
+                 * Resolves with the next `giftcard_response`. The response itself is handled once,
+                 * by the listener registered in listenToSubmit().
+                 */
+                waitForGiftcardResponse(timeout = 3000) {
                     return new Promise((resolve, reject) => {
-                        let responseReceived = false;
-
-                        const handleResponse = (response) => {
-                            if (responseReceived) return;
-                            responseReceived = true;
-                            this.handleGiftcardResponse(response);
-                            resolve(response);
-                        };
-
-                        const eventHandler = (event) => {
-                            handleResponse(event.detail);
-                        };
-
-                        window.addEventListener('buckaroo-giftcard-response', eventHandler, { once: true });
-
-                        if (this.$wire && this.$wire.on) {
-                            this.$wire.on('giftcard_response', handleResponse);
-                        }
-
+                        this.pendingResponse = resolve;
                         setTimeout(() => {
-                            if (!responseReceived) {
-                                window.removeEventListener('buckaroo-giftcard-response', eventHandler);
+                            if (this.pendingResponse === resolve) {
+                                this.pendingResponse = null;
                                 reject(new Error('Timeout waiting for giftcard response'));
                             }
                         }, timeout);
                     });
                 },
 
-                handleGiftcardResponse(response) {
+                onGiftcardResponse(response) {
+                    this.handleGiftcardResponse(response);
+                    if (this.pendingResponse) {
+                        const resolve = this.pendingResponse;
+                        this.pendingResponse = null;
+                        resolve(response);
+                    }
+                },
+
+                async handleGiftcardResponse(response) {
+                    const fromPlaceOrder = this.applyingFromPlaceOrder;
                     if (response.error) {
                         this.displayError(response.error);
-                    } else if(response.remainder_amount === undefined) {
+                        return;
+                    }
+                    if (response.remainder_amount === undefined) {
                         this.displayError(response.message);
-                    } else if (response.remainder_amount == 0) {
+                        return;
+                    }
+
+                    this.cardNumber = '';
+                    this.pin = '';
+                    this.displaySuccess(response);
+
+                    // Giftcards cover the order: place it, as the voucher step does. When Place Order
+                    // itself applied the card, that placement is already running and continues.
+                    if ((parseFloat(response.remainder_amount) || 0) < 0.005 && !this.canSubmit) {
                         this.canSubmit = true;
-                        this.displaySuccess({
-                            ...response,
-                            message: 'Giftcard applied successfully. You can now complete your order.'
-                        });
-                    } else if (response.remainder_amount != 0) {
-                        this.displaySuccess(response);
+                        if (!fromPlaceOrder) {
+                            try {
+                                await hyvaCheckout.order.place();
+                            } catch (error) {
+                                this.canSubmit = false;
+                                this.displayError('Your order could not be placed. Please try again.');
+                            }
+                        }
                     }
                 },
 
                 displaySuccess(response) {
                     window.buckaroo.showTemporaryBanner(response.message, 'success');
-
-                    // Refresh page to show updated totals after successful giftcard application
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 3000);
                 },
 
                 displayError(message) {
                     window.buckaroo.showTemporaryBanner(message, 'error');
                 },
 
+                /**
+                 * One listener for the whole page: it hands each response to the giftcard form
+                 * that is currently shown, also after the form was rendered again
+                 */
                 listenToSubmit() {
+                    window.buckarooActiveGiftcards = this;
+                    if (window.buckarooGiftcardsListening) {
+                        return;
+                    }
+                    window.buckarooGiftcardsListening = true;
+
+                    const dispatch = (response) => {
+                        if (window.buckarooActiveGiftcards) {
+                            window.buckarooActiveGiftcards.onGiftcardResponse(response);
+                        }
+                    };
+
                     if (this.$wire && this.$wire.on) {
-                        this.$wire.on('giftcard_response', (response) => {
-                            this.handleGiftcardResponse(response);
-                        });
+                        this.$wire.on('giftcard_response', dispatch);
                     }
 
                     window.addEventListener('buckaroo-giftcard-response', (event) => {
-                        this.handleGiftcardResponse(event.detail);
+                        dispatch(event.detail);
                     });
                 },
 
@@ -607,7 +621,12 @@ function initializeBuckarooComponents() {
                     this.listenToSubmit();
                     window.buckarooTask = async () => {
                         if(!this.canSubmit) {
-                            await this.submit();
+                            this.applyingFromPlaceOrder = true;
+                            try {
+                                await this.submit();
+                            } finally {
+                                this.applyingFromPlaceOrder = false;
+                            }
                         }
                     };
                 },
@@ -690,6 +709,7 @@ function initializeBuckarooComponents() {
                 code:'',
                 canSubmit:false,
                 isSubmitting:false,
+                applyingFromPlaceOrder:false,
 
                 updateCode(event) {
                     this.code = event.target.value;
@@ -749,7 +769,10 @@ function initializeBuckarooComponents() {
                     }
 
                     this.canSubmit = true;
-                    await hyvaCheckout.order.place();
+                    // When Place Order itself applied the voucher, that placement continues
+                    if (!this.applyingFromPlaceOrder) {
+                        await hyvaCheckout.order.place();
+                    }
                 },
 
                 fallbackError() {
@@ -768,7 +791,12 @@ function initializeBuckarooComponents() {
                 register() {
                     window.buckarooTask = async () => {
                         if(!this.canSubmit) {
-                            await this.submit();
+                            this.applyingFromPlaceOrder = true;
+                            try {
+                                await this.submit();
+                            } finally {
+                                this.applyingFromPlaceOrder = false;
+                            }
                         }
                     };
                 },
