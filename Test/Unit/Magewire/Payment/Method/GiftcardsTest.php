@@ -111,6 +111,25 @@ class GiftcardsTest extends TestCase
         self::assertFalse($component->canSubmit);
     }
 
+    /**
+     * The 'cards cover the order' state is recomputed when the total can change (shipping, coupon)
+     */
+    public function testCoverageIsRecomputedWhenTheTotalGrows(): void
+    {
+        $this->groupTransaction->method('getAlreadyPaid')->willReturn(34.0);
+        $this->groupTransaction->method('getGroupTransactionItems')
+            ->willReturn([new DataObject(['servicecode' => 'fashioncheque'])]);
+
+        $component = $this->createComponent();
+        $component->mount();
+        self::assertTrue($component->canSubmit);
+
+        $this->quote->setGrandTotal(39.0);
+        $component->refreshCoverage();
+
+        self::assertFalse($component->canSubmit);
+    }
+
     public function testDoesNotLogCardDetails(): void
     {
         $this->configureInline(true);
@@ -178,11 +197,11 @@ class GiftcardsTest extends TestCase
 
     private function lastEmittedParams(Giftcards $component): array
     {
-        $events = $component->getEventQueue();
+        $events = array_values(array_filter($component->getBrowserEvents(), function ($event) {
+            return $event['event'] === 'buckaroo-giftcard-response';
+        }));
         self::assertNotEmpty($events);
 
-        $params = end($events)->getParams();
-
-        return $params[0] ?? [];
+        return end($events)['data'];
     }
 }

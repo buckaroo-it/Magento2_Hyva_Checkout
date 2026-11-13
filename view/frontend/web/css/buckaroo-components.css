@@ -416,6 +416,10 @@
     background-color: #ef4444;
 }
 
+.buckaroo-notification[data-type="info"] {
+    background-color: #4b5563;
+}
+
 .buckaroo-notification-show {
     opacity: 1 !important;
     transform: translateX(-50%) translateY(0) !important;

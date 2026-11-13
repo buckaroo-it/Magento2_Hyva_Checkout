@@ -37,6 +37,19 @@ class Giftcards extends Component\Form implements EvaluationInterface
     private const AMOUNT_TOLERANCE = 0.01;
 
     /**
+     * Recompute whether the order is covered when the order total can change
+     */
+    protected $listeners = [
+        'shipping_method_selected'   => 'refreshCoverage',
+        'shipping_address_saved'     => 'refreshCoverage',
+        'shipping_address_activated' => 'refreshCoverage',
+        'billing_address_saved'      => 'refreshCoverage',
+        'billing_address_activated'  => 'refreshCoverage',
+        'coupon_code_applied'        => 'refreshCoverage',
+        'coupon_code_revoked'        => 'refreshCoverage',
+    ];
+
+    /**
      * Whether applied partial payments, at least one of them a giftcard, cover the order total
      */
     public bool $canSubmit = false;
@@ -82,6 +95,14 @@ class Giftcards extends Component\Form implements EvaluationInterface
     }
 
     public function mount(): void
+    {
+        $this->canSubmit = $this->isFullyPaid();
+    }
+
+    /**
+     * Recompute from the server whether the order is covered
+     */
+    public function refreshCoverage(): void
     {
         $this->canSubmit = $this->isFullyPaid();
     }
@@ -141,7 +162,7 @@ class Giftcards extends Component\Form implements EvaluationInterface
     }
 
     /**
-     * Apply a giftcard through the partial payment service and emit `giftcard_response`
+     * Apply a giftcard through the partial payment service and send the outcome to the frontend
      *
      * @param string $card
      * @param string $cardNumber
@@ -190,15 +211,11 @@ class Giftcards extends Component\Form implements EvaluationInterface
         // Refresh the price summary so the paid amount shows at once
         $this->emit('payment_method_selected', ['method' => self::METHOD_CODE]);
 
-        try {
-            $this->emit('giftcard_response', $this->createResponse($result));
-        } catch (\Throwable $emitError) {
-            $this->logger->addDebug('Error emitting giftcard_response: ' . $emitError->getMessage());
-        }
+        $this->sendResponse($this->createResponse($result));
     }
 
     /**
-     * Emit a generic giftcard error to the frontend
+     * Send a giftcard error to the frontend
      *
      * @param \Magento\Framework\Phrase|string $message
      *
@@ -206,11 +223,22 @@ class Giftcards extends Component\Form implements EvaluationInterface
      */
     private function emitGiftcardError($message): void
     {
-        try {
-            $this->emit("giftcard_response", ["error" => $message]);
-        } catch (\Throwable $emitError) {
-            $this->logger->addDebug('Error emitting error response: ' . $emitError->getMessage());
-        }
+        $this->sendResponse(['error' => (string)$message]);
+    }
+
+    /**
+     * Send the giftcard response to the frontend as a browser event.
+     *
+     * A browser event reaches the page-wide listener also after the payment method was switched
+     * and the component rendered again; a Magewire listener registered on the old component would not.
+     *
+     * @param array $response
+     *
+     * @return void
+     */
+    private function sendResponse(array $response): void
+    {
+        $this->dispatchBrowserEvent('buckaroo-giftcard-response', $response);
     }
 
     /**
