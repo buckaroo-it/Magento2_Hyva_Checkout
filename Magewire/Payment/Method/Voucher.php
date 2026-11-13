@@ -22,13 +22,15 @@ class Voucher extends Component\Form implements EvaluationInterface
 {
     private const METHOD_CODE = 'buckaroo_magento2_voucher';
 
+    private const SERVICE_CODE = 'buckaroovoucher';
+
     /**
      * Amounts within this distance of each other count as equal
      */
     private const AMOUNT_TOLERANCE = 0.01;
 
     /**
-     * Whether applied vouchers already cover the order total
+     * Whether applied partial payments, at least one of them a voucher, cover the order total
      */
     public bool $canSubmit = false;
 
@@ -107,6 +109,21 @@ class Voucher extends Component\Form implements EvaluationInterface
         $alreadyPaid = (float)$this->groupTransaction->getAlreadyPaid($reservedOrderId);
 
         return $alreadyPaid > 0
-            && $alreadyPaid >= round((float)$quote->getGrandTotal(), 2) - self::AMOUNT_TOLERANCE;
+            && $alreadyPaid >= round((float)$quote->getGrandTotal(), 2) - self::AMOUNT_TOLERANCE
+            && $this->hasVoucherPayment($reservedOrderId);
+    }
+
+    /**
+     * Whether a voucher is among the successful partial payments; giftcards alone are no voucher payment
+     */
+    private function hasVoucherPayment(string $reservedOrderId): bool
+    {
+        foreach ($this->groupTransaction->getGroupTransactionItems($reservedOrderId) as $item) {
+            if ($item['servicecode'] === self::SERVICE_CODE) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
