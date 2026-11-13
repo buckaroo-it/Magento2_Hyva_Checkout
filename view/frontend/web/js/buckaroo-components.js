@@ -269,10 +269,12 @@ function initializeBuckarooComponents() {
                         </svg>
                         <span class="buckaroo-notification-text"></span>
                     </div>
-                    <button class="buckaroo-notification-close" onclick="this.closest('.buckaroo-notification').remove()">×</button>
+                    <button type="button" class="buckaroo-notification-close">×</button>
                 </div>
             `;
             banner.querySelector('.buckaroo-notification-text').textContent = String(message ?? '');
+            // No inline handler: the Hyvä checkout's Content Security Policy blocks those
+            banner.querySelector('.buckaroo-notification-close').addEventListener('click', () => banner.remove());
 
             document.body.appendChild(banner);
 
@@ -687,6 +689,7 @@ function initializeBuckarooComponents() {
             return Object.assign((typeof hyva !== 'undefined' ? hyva.formValidation($el) : {}), {
                 code:'',
                 canSubmit:false,
+                isSubmitting:false,
 
                 updateCode(event) {
                     this.code = event.target.value;
@@ -707,36 +710,51 @@ function initializeBuckarooComponents() {
                 },
 
                 async submit() {
-                    if(!await this.formValid()) {
+                    if (this.isSubmitting || !await this.formValid()) {
                         return;
                     }
 
-                    const params = {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        credentials: 'same-origin',
-                        body: JSON.stringify({voucherCode: this.code})
-                    };
+                    this.isSubmitting = true;
+                    let response;
+                    try {
+                        const result = await fetch(ajaxUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({voucherCode: this.code})
+                        });
+                        response = await result.json().catch(() => ({}));
+                        if (!result.ok) {
+                            this.displayError(response.message || this.fallbackError());
+                            return;
+                        }
+                    } catch (error) {
+                        this.displayError(this.fallbackError());
+                        return;
+                    } finally {
+                        this.isSubmitting = false;
+                    }
 
-                    const response = await (
-                        await fetch(ajaxUrl, params)
-                    ).json();
+                    this.code = '';
+                    // The server decides whether the vouchers cover the order; this also
+                    // refreshes the price summary
                     await this.$wire.refreshTotals();
 
-                    if (response.error) {
-                        this.displayError(response.error);
-                    } else if(response.remainder_amount === undefined) {
-                        this.displayError(response.message);
-                    } else if (response.remainder_amount == 0) {
-                        this.canSubmit = true;
-                        await this.$wire.setCanSubmit(true);
-                        await hyvaCheckout.order.place();
-                    } else if (response.remainder_amount != 0) {
+                    if (parseFloat(response.remainder_amount) > 0) {
                         this.displaySuccess(response);
+                        return;
                     }
+
+                    this.canSubmit = true;
+                    await hyvaCheckout.order.place();
+                },
+
+                fallbackError() {
+                    return $el.dataset.errorFallback
+                        || 'The voucher could not be redeemed. Please check the code and try again.';
                 },
 
                 displaySuccess(response) {
