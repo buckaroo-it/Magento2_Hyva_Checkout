@@ -2,14 +2,21 @@
 
 declare(strict_types=1);
 /** @var Escaper $escaper */
-/** @var \Buckaroo\HyvaCheckout\Magewire\Checkout\Payment\Method\Voucher $magewire */
+/** @var \Buckaroo\HyvaCheckout\Magewire\Payment\Method\Voucher $magewire */
 
 use Magento\Framework\Escaper;
 
 ?>
 <div class="col-span-6">
-
-    <form x-data="buckarooVoucher" data-ajax-url="<?= $escaper->escapeUrl($magewire->getAjaxUrl()); ?>" novalidate>
+    <?php if ($magewire->canSubmit): ?>
+    <p class="message info">
+        <?= $escaper->escapeHtml(__('Your vouchers cover the full order amount. Place your order to finish.')); ?>
+    </p>
+    <?php else: ?>
+    <form x-data="buckarooVoucher"
+          data-ajax-url="<?= $escaper->escapeUrl($magewire->getAjaxUrl()); ?>"
+          data-error-fallback="<?= $escaper->escapeHtmlAttr(__('The voucher could not be redeemed. Please check the code and try again.')); ?>"
+          novalidate>
         <div class="flex flex-col gap-y-2 field field-reserved">
             <label for="buckaroo_voucher_code">
                 <?= $escaper->escapeHtml(__('Voucher code:')); ?>
@@ -29,4 +36,5 @@ use Magento\Framework\Escaper;
             <?= $escaper->escapeHtml(__('Apply Voucher')); ?>
         </button>
     </form>
+    <?php endif; ?>
 </div>
