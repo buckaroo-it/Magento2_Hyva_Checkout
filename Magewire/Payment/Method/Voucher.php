@@ -30,6 +30,19 @@ class Voucher extends Component\Form implements EvaluationInterface
     private const AMOUNT_TOLERANCE = 0.01;
 
     /**
+     * Recompute whether the order is covered when the order total can change
+     */
+    protected $listeners = [
+        'shipping_method_selected'   => 'refreshCoverage',
+        'shipping_address_saved'     => 'refreshCoverage',
+        'shipping_address_activated' => 'refreshCoverage',
+        'billing_address_saved'      => 'refreshCoverage',
+        'billing_address_activated'  => 'refreshCoverage',
+        'coupon_code_applied'        => 'refreshCoverage',
+        'coupon_code_revoked'        => 'refreshCoverage',
+    ];
+
+    /**
      * Whether applied partial payments, at least one of them a voucher, cover the order total
      */
     public bool $canSubmit = false;
@@ -51,6 +64,14 @@ class Voucher extends Component\Form implements EvaluationInterface
     }
 
     public function mount(): void
+    {
+        $this->canSubmit = $this->isFullyPaid();
+    }
+
+    /**
+     * Recompute from the server whether the order is covered
+     */
+    public function refreshCoverage(): void
     {
         $this->canSubmit = $this->isFullyPaid();
     }

@@ -4,24 +4,54 @@ declare(strict_types=1);
 
 namespace Buckaroo\HyvaCheckout\Magewire\Payment\Method;
 
-use Magento\Quote\Model\Quote;
-use Buckaroo\Magento2\Logging\Log;
 use Magento\Framework\UrlInterface;
 use Magewirephp\Magewire\Component;
+use Buckaroo\Magento2\Logging\Log;
 use Buckaroo\Magento2\Helper\PaymentGroupTransaction;
-use Buckaroo\Magento2\Service\Giftcard\AttemptLimit;
-use Buckaroo\Magento2\Model\Giftcard\Api\ApiException;
+use Buckaroo\Magento2\Model\PartialPayment\ApplyResult;
+use Buckaroo\Magento2\Model\PartialPayment\ApplyService;
+use Buckaroo\Magento2\Model\PartialPayment\Instrument\GiftcardFactory;
+use Buckaroo\Magento2\Model\PartialPayment\PartialPaymentMethods;
+use Buckaroo\Magento2\Model\PartialPayment\PartialPaymentRejectedException;
+use Buckaroo\Magento2\Model\PartialPayment\PartialPaymentUnavailableException;
 use Magento\Checkout\Model\Session as SessionCheckout;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationInterface;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
-use Buckaroo\Magento2\Model\Giftcard\Response\Giftcard as GiftcardResponse;
-use Buckaroo\Magento2\Model\Giftcard\Request\GiftcardInterface as GiftcardRequest;
 use Buckaroo\Magento2\Model\ConfigProvider\Method\Giftcards as MethodConfigProvider;
 use Magento\Framework\Pricing\Helper\Data as PricingHelper;
 
+/**
+ * Inline giftcards on the Hyvä checkout.
+ *
+ * Giftcards are applied through the Buckaroo partial payment service. Whether they cover the order
+ * total is always read from the server.
+ */
 class Giftcards extends Component\Form implements EvaluationInterface
 {
+    private const METHOD_CODE = 'buckaroo_magento2_giftcards';
+
+    /**
+     * Amounts within this distance of each other count as equal
+     */
+    private const AMOUNT_TOLERANCE = 0.01;
+
+    /**
+     * Recompute whether the order is covered when the order total can change
+     */
+    protected $listeners = [
+        'shipping_method_selected'   => 'refreshCoverage',
+        'shipping_address_saved'     => 'refreshCoverage',
+        'shipping_address_activated' => 'refreshCoverage',
+        'billing_address_saved'      => 'refreshCoverage',
+        'billing_address_activated'  => 'refreshCoverage',
+        'coupon_code_applied'        => 'refreshCoverage',
+        'coupon_code_revoked'        => 'refreshCoverage',
+    ];
+
+    /**
+     * Whether applied partial payments, at least one of them a giftcard, cover the order total
+     */
     public bool $canSubmit = false;
 
     protected UrlInterface $urlBuilder;
@@ -32,51 +62,54 @@ class Giftcards extends Component\Form implements EvaluationInterface
 
     protected MethodConfigProvider $methodConfigProvider;
 
-    protected GiftcardRequest $giftcardRequest;
-
-    protected GiftcardResponse $giftcardResponse;
-
     protected Log $logger;
+
     protected $pricingHelper;
 
-    protected AttemptLimit $attemptLimit;
+    private ApplyService $applyService;
+
+    private GiftcardFactory $giftcardFactory;
+
+    private PartialPaymentMethods $partialPaymentMethods;
 
     public function __construct(
         UrlInterface $urlBuilder,
         SessionCheckout $sessionCheckout,
         PaymentGroupTransaction $groupTransaction,
         MethodConfigProvider $methodConfigProvider,
-        GiftcardRequest $giftcardRequest,
-        GiftcardResponse $giftcardResponse,
         Log $logger,
         PricingHelper $pricingHelper,
-        AttemptLimit $attemptLimit
+        ApplyService $applyService,
+        GiftcardFactory $giftcardFactory,
+        PartialPaymentMethods $partialPaymentMethods
     ) {
         $this->urlBuilder = $urlBuilder;
         $this->sessionCheckout = $sessionCheckout;
         $this->groupTransaction = $groupTransaction;
         $this->methodConfigProvider = $methodConfigProvider;
-        $this->giftcardRequest = $giftcardRequest;
-        $this->giftcardResponse = $giftcardResponse;
         $this->logger = $logger;
         $this->pricingHelper = $pricingHelper;
-        $this->attemptLimit = $attemptLimit;
+        $this->applyService = $applyService;
+        $this->giftcardFactory = $giftcardFactory;
+        $this->partialPaymentMethods = $partialPaymentMethods;
+    }
+
+    public function mount(): void
+    {
+        $this->canSubmit = $this->isFullyPaid();
     }
 
     /**
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
+     * Recompute from the server whether the order is covered
      */
-    public function mount(): void
+    public function refreshCoverage(): void
     {
-        $quote = $this->sessionCheckout->getQuote();
-        $this->canSubmit = abs(
-            $this->groupTransaction->getAlreadyPaid($quote->getReservedOrderId()) - round(floatval($quote->getGrandTotal()), 2)
-        ) < 0.05;
+        $this->canSubmit = $this->isFullyPaid();
     }
 
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
+        $this->canSubmit = $this->isFullyPaid();
 
         if ($this->canSubmit === false && !$this->isRedirect()) {
             return $resultFactory->createErrorMessageEvent()
@@ -129,8 +162,7 @@ class Giftcards extends Component\Form implements EvaluationInterface
     }
 
     /**
-     * Do a partial payment request, update canSubmit if remainder amount is 0,
-     * emit `giftcard_response` with the response
+     * Apply a giftcard through the partial payment service and send the outcome to the frontend
      *
      * @param string $card
      * @param string $cardNumber
@@ -149,44 +181,41 @@ class Giftcards extends Component\Form implements EvaluationInterface
         }
 
         try {
-            $quote = $this->sessionCheckout->getQuote();
-            $this->attemptLimit->assertWithinLimit($quote);
-
-            try {
-                $buckarooResponse = $this->buildGiftcardRequest($quote, $card, $cardNumber, $pin)->send();
-            } catch (ApiException $apiException) {
-                $this->attemptLimit->registerFailedAttempt($quote);
-                throw $apiException;
-            }
-
-            $response = $this->getGiftcardResponse($quote, $buckarooResponse);
-
-            if (isset($response['error'])) {
-                $this->attemptLimit->registerFailedAttempt($quote);
-            }
-
-            if (isset($response['remainder_amount']) && $response['remainder_amount'] == 0) {
-                $this->canSubmit = true;
-            }
-
-            try {
-                $this->emit("giftcard_response", $response);
-            } catch (\Throwable $emitError) {
-                $this->logger->addDebug('Error emitting giftcard_response: ' . $emitError->getMessage());
-            }
+            $result = $this->applyService->apply(
+                $this->sessionCheckout->getQuote(),
+                $this->giftcardFactory->create([
+                    'cardId'     => $card,
+                    'cardNumber' => $cardNumber,
+                    'pin'        => $pin,
+                ])
+            );
+        } catch (PartialPaymentRejectedException|PartialPaymentUnavailableException $e) {
+            $this->emitGiftcardError($e->getMessage());
+            return;
         } catch (\Throwable $th) {
+            // Class and message only: a stack trace can carry the card number and PIN as call arguments
             $this->logger->addError(sprintf(
-                '[Giftcard] | [Hyva] | [%s:%s] - Apply Inline Giftcard | [ERROR]: %s',
+                '[Giftcard] | [Hyva] | [%s:%s] - Apply Inline Giftcard | [ERROR]: %s: %s',
                 __METHOD__,
                 __LINE__,
+                get_class($th),
                 $th->getMessage()
             ));
-            $this->emitGiftcardError(__('Cannot apply giftcard'));
+            $this->emitGiftcardError(
+                __('The giftcard could not be applied. Please check the card number and PIN and try again.')
+            );
+            return;
         }
+
+        $this->canSubmit = $this->isFullyPaid();
+        // Refresh the price summary so the paid amount shows at once
+        $this->emit('payment_method_selected', ['method' => self::METHOD_CODE]);
+
+        $this->sendResponse($this->createResponse($result));
     }
 
     /**
-     * Emit a generic giftcard error to the frontend
+     * Send a giftcard error to the frontend
      *
      * @param \Magento\Framework\Phrase|string $message
      *
@@ -194,11 +223,22 @@ class Giftcards extends Component\Form implements EvaluationInterface
      */
     private function emitGiftcardError($message): void
     {
-        try {
-            $this->emit("giftcard_response", ["error" => $message]);
-        } catch (\Throwable $emitError) {
-            $this->logger->addDebug('Error emitting error response: ' . $emitError->getMessage());
-        }
+        $this->sendResponse(['error' => (string)$message]);
+    }
+
+    /**
+     * Send the giftcard response to the frontend as a browser event.
+     *
+     * A browser event reaches the page-wide listener also after the payment method was switched
+     * and the component rendered again; a Magewire listener registered on the old component would not.
+     *
+     * @param array $response
+     *
+     * @return void
+     */
+    private function sendResponse(array $response): void
+    {
+        $this->dispatchBrowserEvent('buckaroo-giftcard-response', $response);
     }
 
     /**
@@ -227,66 +267,63 @@ class Giftcards extends Component\Form implements EvaluationInterface
         // Ensure the remaining amount is never negative
         $this->emit("remainingAmount", $this->getFormattedPrice($remainingAmount));
     }
-    protected function getGiftcardResponse(Quote $quote, $response)
+    /**
+     * Response for an accepted giftcard, in the shape the giftcard component reads
+     *
+     * @param ApplyResult $result
+     *
+     * @return array
+     */
+    private function createResponse(ApplyResult $result): array
     {
-        $this->giftcardResponse->set($response, $quote);
-
-        if ($this->giftcardResponse->getErrorMessage() !== null) {
-            return ["error" => $this->giftcardResponse->getErrorMessage()];
-        }
-
-        $remainingAmount = $this->giftcardResponse->getRemainderAmount();
-
-        if ($remainingAmount == 0) {
-            $this->canSubmit = true;
-        }
-
-        $buttonMessage = '';
-        $textMessage = __("Your paid successfully. Please finish your order");
-
-        if ($remainingAmount > 0) {
-            $textMessage = __(
+        if ($result->isFullyPaid()) {
+            $message = __('You paid successfully.');
+            $buttonMessage = '';
+        } else {
+            $message = __(
                 'A partial payment of %1 %2 was successfully performed on a requested amount. Remainder amount %3 %4',
-                $this->giftcardResponse->getCurrency(),
-                $this->giftcardResponse->getAmountDebit(),
-                $this->giftcardResponse->getRemainderAmount(),
-                $this->giftcardResponse->getCurrency()
+                $result->getCurrency(),
+                $result->getAmountDebit(),
+                $result->getRemainderAmount(),
+                $result->getCurrency()
             );
-
-            $buttonMessage = __(
-                'Pay remaining amount: %1 %2',
-                $remainingAmount,
-                $this->giftcardResponse->getCurrency()
-            );
+            $buttonMessage = __('Pay remaining amount: %1 %2', $result->getRemainderAmount(), $result->getCurrency());
         }
+
         return [
-            'remainder_amount_currency' => $this->getFormattedPrice($remainingAmount),
-            'remainder_amount' => $remainingAmount,
-            'already_paid' => $this->giftcardResponse->getAlreadyPaid($quote),
-            'remaining_amount_message' => $buttonMessage,
-            'message' => $textMessage
+            'remainder_amount_currency' => $this->getFormattedPrice($result->getRemainderAmount()),
+            'remainder_amount'          => $result->getRemainderAmount(),
+            'already_paid'              => $result->getAlreadyPaid(),
+            'remaining_amount_message'  => (string)$buttonMessage,
+            'message'                   => (string)$message,
         ];
     }
+
     /**
-     * Build giftcard request
-     *
-     * @param Quote $quote
-     * @param string $card
-     * @param string $cardNumber
-     * @param string $pin
-     *
-     * @return GiftcardRequest
+     * Whether applied partial payments cover the order total and at least one of them is a giftcard
      */
-    protected function buildGiftcardRequest(
-        Quote $quote,
-        string $card,
-        string $cardNumber,
-        string $pin
-    ) {
-        return $this->giftcardRequest
-            ->setCardId($card)
-            ->setCardNumber($cardNumber)
-            ->setPin($pin)
-            ->setQuote($quote);
+    private function isFullyPaid(): bool
+    {
+        $quote = $this->sessionCheckout->getQuote();
+        $reservedOrderId = $quote->getReservedOrderId();
+        if (!$reservedOrderId) {
+            return false;
+        }
+
+        $alreadyPaid = (float)$this->groupTransaction->getAlreadyPaid($reservedOrderId);
+        if ($alreadyPaid <= 0
+            || $alreadyPaid < round((float)$quote->getGrandTotal(), 2) - self::AMOUNT_TOLERANCE
+        ) {
+            return false;
+        }
+
+        foreach ($this->groupTransaction->getGroupTransactionItems($reservedOrderId) as $item) {
+            $method = $this->partialPaymentMethods->find($item['servicecode']);
+            if ($method !== null && $method['type'] === PartialPaymentMethods::TYPE_GIFTCARD) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

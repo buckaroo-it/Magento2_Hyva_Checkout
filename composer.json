@@ -3,7 +3,7 @@
     "description": "Buckaroo Magento 2 hyva checkout extension",
     "require": {
         "php": ">=8.1",
-        "buckaroo/magento2": ">=2.7.5",
+        "buckaroo/magento2": ">=2.8.0",
         "magewirephp/validation": "^1.0"
     },
     "type": "magento2-module",
