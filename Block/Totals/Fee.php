@@ -35,4 +35,40 @@ class Fee extends \Magento\Framework\View\Element\Template
             return 'Payment Fee';
         }
     }
+
+    /**
+     * Get the fee segment, filling in the value the quote total does not expose itself
+     *
+     * @return array
+     */
+    public function getSegment(): array
+    {
+        $segment = $this->getData('segment');
+        $segment = is_array($segment) ? $segment : [];
+
+        $fee = $this->getFeeFromExtensionAttributes($segment['extension_attributes'] ?? null);
+
+        $segment['code'] = $segment['code'] ?? 'buckaroo_fee';
+        $segment['value'] = $fee ?? (float)($segment['value'] ?? 0);
+
+        return $segment;
+    }
+
+    /**
+     * @param mixed $extensionAttributes
+     *
+     * @return float|null
+     */
+    private function getFeeFromExtensionAttributes($extensionAttributes): ?float
+    {
+        if (is_array($extensionAttributes)) {
+            $fee = $extensionAttributes['buckaroo_fee'] ?? null;
+        } elseif (is_object($extensionAttributes) && method_exists($extensionAttributes, 'getBuckarooFee')) {
+            $fee = $extensionAttributes->getBuckarooFee();
+        } else {
+            return null;
+        }
+
+        return is_numeric($fee) ? (float)$fee : null;
+    }
 }
