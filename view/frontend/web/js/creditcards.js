@@ -29,16 +29,34 @@ window.buckarooHostedFields = {
     encryptedCardData: null,
 
     /**
+     * Current storefront form key; the token endpoint rejects requests without it.
+     */
+    getFormKey() {
+        if (typeof hyva !== 'undefined' && typeof hyva.getFormKey === 'function') {
+            return hyva.getFormKey();
+        }
+
+        const match = document.cookie.match(/(?:^|; )form_key=([^;]*)/);
+        return match ? decodeURIComponent(match[1]) : '';
+    },
+
+    /**
      * Retrieve OAuth token via AJAX.
      */
     async getOAuthToken() {
         try {
             const baseUrl = (window.BASE_URL || '/').replace(/\/?$/, '/');
+            const body = new URLSearchParams();
+            body.append('form_key', this.getFormKey());
+
             const response = await fetch(baseUrl + 'buckaroo/credentialschecker/gettoken', {
-                method: 'GET',
+                method: 'POST',
                 headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                     'X-Requested-From': 'MagentoFrontend'
-                }
+                },
+                body: body.toString(),
+                credentials: 'same-origin'
             });
 
             const data = await response.json();
