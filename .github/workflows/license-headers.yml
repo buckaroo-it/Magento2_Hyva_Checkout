@@ -26,7 +26,7 @@ jobs:
           files=$(git grep -l -I -E "$pattern" -- . ':!.github/workflows/license-headers.yml' || true)
           if [ -n "$files" ]; then
             for f in $files; do
-              echo "::error file=$f,line=1::Old license header. Use the MIT header from any other file (Copyright (c) Buckaroo B.V. / @license MIT)."
+              echo "::error file=$f,line=1::Old license header. Replace it with the MIT header from view/frontend/web/js/creditcards.js (Copyright (c) Buckaroo B.V. / @license MIT), or remove it."
             done
             echo "Files with the old license header:"
             echo "$files"
