@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <!-- Added by AddHyvaPaypalLayoutHandle only when PayPal Express is enabled for the product page. -->
+    <head>
+        <script src="jquery/jquery.min.js"/>
+        <script src="Buckaroo_HyvaCheckout::js/paypal-express-common.js"/>
+        <script src="Buckaroo_HyvaCheckout::js/paypal-express-ui.js"/>
+        <script src="Buckaroo_HyvaCheckout::js/product-price-mixin.js"/>
+        <script src="Buckaroo_Magento2::js/lib/buckaroo-sdk.js"/>
+        <script src="Buckaroo_HyvaCheckout::js/paypal-express-product.js"/>
+    </head>
+</page>
