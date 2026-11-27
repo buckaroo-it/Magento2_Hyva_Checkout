@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <!-- Added by AddHyvaPaypalLayoutHandle when at least one express button can be shown on the page. -->
+    <head>
+        <css src="Buckaroo_HyvaCheckout::css/buckaroo-components.css"/>
+        <css src="Buckaroo_Magento2::css/express-payments.css"/>
+    </head>
+</page>
