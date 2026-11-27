@@ -25,6 +25,7 @@ class ApplePayExpressConfig implements ArgumentInterface
         'cultureCode',
         'guid',
         'buttonStyle',
+        'buttonType',
         'supportedNetworks',
     ];
 

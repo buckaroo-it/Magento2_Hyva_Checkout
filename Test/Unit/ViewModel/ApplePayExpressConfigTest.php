@@ -29,6 +29,7 @@ class ApplePayExpressConfigTest extends TestCase
                 'cultureCode'       => 'nl-NL',
                 'guid'              => 'GUID',
                 'buttonStyle'       => 'black',
+                'buttonType'        => 'check-out',
                 'supportedNetworks' => ['visa'],
                 'availableButtons'  => ['Product'],
                 'integrationMode'   => '0',
@@ -48,10 +49,11 @@ class ApplePayExpressConfigTest extends TestCase
             ->getConfig($block, 'Cart');
 
         self::assertSame(
-            ['storeName', 'currency', 'country', 'cultureCode', 'guid', 'buttonStyle', 'supportedNetworks',
-                'page', 'baseUrl', 'formKey', 'amount'],
+            ['storeName', 'currency', 'country', 'cultureCode', 'guid', 'buttonStyle', 'buttonType',
+                'supportedNetworks', 'page', 'baseUrl', 'formKey', 'amount'],
             array_keys($config)
         );
+        self::assertSame('check-out', $config['buttonType']);
         self::assertSame('cart', $config['page']);
         self::assertArrayNotHasKey('secretKey', $config);
     }

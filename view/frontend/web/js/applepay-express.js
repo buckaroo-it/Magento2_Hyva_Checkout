@@ -112,6 +112,8 @@
             }
 
             self.button.setAttribute('buttonstyle', self.config.buttonStyle || 'black');
+            // Older Magento 2 plugin versions don't send buttonType; Apple's button throws on type=""
+            self.button.setAttribute('type', self.config.buttonType || 'buy');
             if (self.config.cultureCode) {
                 self.button.setAttribute('locale', self.config.cultureCode);
             }
