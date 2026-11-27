@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- The Apple Pay express button on the product and cart page now shows the "Button type" set in the admin instead of always "Buy"; it falls back to "Buy" with a Magento 2 plugin that doesn't send the setting (BTI-2132).
+
 ## [2.4.0] - 2026-11-09
 
 Requires the Buckaroo Magento 2 plugin 2.7.5 or higher.
